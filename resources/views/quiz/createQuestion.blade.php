@@ -24,7 +24,7 @@
         <div class="card mb-4">
             <form method="post" action="{{ route('quiz.store') }}">
                 @csrf
-                <h5 class="card-header">문제를 만들어볼까요?</h5>
+                <h5 class="card-header">ㅁㄴㅇㄹ</h5>
                 <div class="card-body">
                     <div class="mt-2 mb-3">
                             <label for="largeInput" class="form-label">이 시험의 이름을 알려주세요.</label>

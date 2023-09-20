@@ -22,6 +22,7 @@ class CreateTestsTable extends Migration
             $table->string('count')->nullable(); // 응시 횟수
             $table->string('avg')->nullable(); // 평균 점수
             $table->string('secret')->nullable(); // 공개 여부
+            $table->timestamps();
         });
     }
 

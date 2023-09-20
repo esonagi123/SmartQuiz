@@ -20,7 +20,9 @@ Route::get('/', function () {
 
 Route::get('quiz', [QuizCore::class, 'index'])->name('quiz.index');
 Route::get('quiz/create', [QuizCore::class, 'create'])->name('quiz.create');
+Route::post('quiz/store', [QuizCore::class, 'store'])->name('quiz.store');
 
+Route::get('quiz/{testID}/create', [QuizCore::class, 'createQuestion'])->name('quiz.createQuestion');
 
 
 
