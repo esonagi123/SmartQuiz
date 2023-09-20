@@ -12,7 +12,7 @@
                 <p class="mb-4">
                     지금 바로 문제를 만들어 보세요.
                 </p>
-                <a href="#" class="btn btn-sm btn-outline-primary">문제 만들기</a>
+                <a href="{{ url('quiz/create') }}" class="btn btn-sm btn-outline-primary">문제 만들기</a>
                 </div>
             </div>
             <div class="col-sm-12 text-center text-sm-left">

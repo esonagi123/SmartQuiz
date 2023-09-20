@@ -19,7 +19,7 @@ Route::get('/', function () {
 });
 
 Route::get('quiz', [QuizCore::class, 'index'])->name('quiz.index');
-
+Route::get('quiz/create', [QuizCore::class, 'create'])->name('quiz.create');
 
 
 
