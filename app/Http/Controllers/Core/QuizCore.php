@@ -1,9 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Core;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
+use App\Models\User;
+use App\Models\Test;
+use App\Models\Question;
+use App\Models\Choice;
 class QuizCore extends Controller
 {
 
@@ -12,25 +18,30 @@ class QuizCore extends Controller
         return view('quiz.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        
+        return view('quiz.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    public function createQuestion($testID)
+    {
+        return view('quiz.createQuestion');
+    }
+
     public function store(Request $request)
     {
-        //
+        $testModel = new Test();
+        $serverTime = now();
+
+        $testModel->name = $request->input('name');
+        $testModel->subject = $request->input('subject');
+        $testModel->date = $serverTime;
+
+        $testModel->save();
+        
+        $testID = $testModel->id;
+        return redirect()->route('quiz.createQuestion', ['testID' => $testID]);
+        
     }
 
     /**

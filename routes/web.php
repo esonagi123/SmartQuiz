@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Core\QuizCore;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,18 +18,29 @@ Route::get('/', function () {
     return view('base');
 });
 
+Route::get('quiz', [QuizCore::class, 'index'])->name('quiz.index');
+Route::get('quiz/create', [QuizCore::class, 'create'])->name('quiz.create');
+Route::post('quiz/store', [QuizCore::class, 'store'])->name('quiz.store');
+
+Route::get('quiz/{testID}/create', [QuizCore::class, 'createQuestion'])->name('quiz.createQuestion');
+
+
+
+
+
+
+
+
+
 Route::get('/login', function () {
-    return view('account/login');
+    return view('account.login');
 });
-
 Route::get('/register', function () {
-    return view('account/register');
+    return view('account.register');
 });
-
 Route::get('/forgot-pw', function () {
-    return view('account/forgot-pw');
+    return view('account.forgot-pw');
 });
-
 Route::get('/quiz', function () {
-    return view('/quiz/index');
+    return view('quiz.index');
 });

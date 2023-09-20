@@ -15,10 +15,10 @@ class CreateQuestionsTable extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
-            $table->string('testID');
-            $table->string('gubun'); //
-            $table->string('title'); // 문제 제목
-            $table->string('d'); // 
+            $table->string('testID')->nullable();
+            $table->string('gubun')->nullable(); //
+            $table->string('title')->nullable(); // 문제 제목
+            $table->string('answer')->nullable();
             $table->timestamps();
         });
     }
