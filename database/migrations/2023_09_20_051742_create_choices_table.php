@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateModelNamesTable extends Migration
+class CreateChoicesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,10 @@ class CreateModelNamesTable extends Migration
      */
     public function up()
     {
-        Schema::create('model_names', function (Blueprint $table) {
+        Schema::create('choices', function (Blueprint $table) {
             $table->id();
+            $table->string('qid')->nullable();
+            $table->string('content')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +28,6 @@ class CreateModelNamesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('model_names');
+        Schema::dropIfExists('choices');
     }
 }

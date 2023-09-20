@@ -15,13 +15,13 @@ class CreateTestsTable extends Migration
     {
         Schema::create('tests', function (Blueprint $table) {
             $table->id();
-            $table->string('uid'); // 유저 아이디
-            $table->string('name'); // 테스트 이름
-            $table->string('subject'); // 주제
-            $table->datetime('date'); // 생성 날짜
-            $table->string('count'); // 응시 횟수
-            $table->string('avg'); // 평균 점수
-            $table->string('secret'); // 공개 여부
+            $table->string('uid')->nullable(); // 유저 아이디
+            $table->string('name')->nullable(); // 테스트 이름
+            $table->string('subject')->nullable(); // 주제
+            $table->datetime('date')->nullable(); // 생성 날짜
+            $table->string('count')->nullable(); // 응시 횟수
+            $table->string('avg')->nullable(); // 평균 점수
+            $table->string('secret')->nullable(); // 공개 여부
         });
     }
 
