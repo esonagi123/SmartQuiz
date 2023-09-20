@@ -18,13 +18,17 @@ Route::get('/', function () {
 });
 
 Route::get('/login', function () {
-    return view('login');
+    return view('account/login');
 });
 
 Route::get('/register', function () {
-    return view('register');
+    return view('account/register');
 });
 
 Route::get('/forgot-pw', function () {
-    return view('forgot-pw');
+    return view('account/forgot-pw');
+});
+
+Route::get('/quiz', function () {
+    return view('/quiz/index');
 });
