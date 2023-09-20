@@ -19,4 +19,18 @@ Route::get('/', function () {
 });
 
 Route::get('quiz', [QuizCore::class, 'index'])->name('quiz.index');
+Route::get('/login', function () {
+    return view('account/login');
+});
 
+Route::get('/register', function () {
+    return view('account/register');
+});
+
+Route::get('/forgot-pw', function () {
+    return view('account/forgot-pw');
+});
+
+Route::get('/quiz', function () {
+    return view('/quiz/index');
+});
