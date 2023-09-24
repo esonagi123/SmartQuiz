@@ -28,7 +28,7 @@
                 <div class="card-body">
                     <div class="mt-2 mb-3">
                             <label for="largeInput" class="form-label">이 시험의 이름을 알려주세요.</label>
-                            <input id="largeInput" class="form-control form-control-lg" type="text" name="name" placeholder="">
+                            <input id="largeInput" class="form-control form-control-lg" type="text" name="name" placeholder="과목명 등">
                     </div>
                     <div class="mt-2 mb-3">
                             <label for="largeInput" class="form-label">이 시험의 주제는 무엇인가요?</label>
