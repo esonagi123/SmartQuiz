@@ -53,17 +53,17 @@
 
 <script>
     var testID = @json($testID); // Laravel PHP 변수를 JavaScript 변수로 변환
-    var questionID = 1;
+    var questionID = 1; // 테스트를 위한 임시 전역 변수
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
     
-    // 페이지가 로딩될 때 JavaScript를 사용하여 페이드 효과를 적용
-    // 페이지가 로딩될 때
     window.addEventListener('load', function() {
-        // addCard();
+        
+        // 페이지가 로딩될 때 JavaScript를 사용하여 페이드 효과를 적용
         const fadeElement = document.querySelector('.fade-element');
         fadeElement.style.opacity = 1;
         // 페이지 로딩 후에 투명도를 1로 설정하여 나타나게 함
     
+        // 페이지 로딩 시 Question 자동 Store AJAX
         $.ajax({
         headers: {'X-CSRF-TOKEN': csrfToken},
         // url: "{{ url('quiz/storeQuestion') }}", // AjaxController -> index 함수 실행
@@ -97,15 +97,6 @@
             hiddenDiv.style.display = "none";
         }
     }    
-
-    var cardCount = 0; // 현재 카드 수를 추적하는 변수
-    // 카드 추가 함수
-    function addCard() {
-      cardCount++; // 카드 수 증가
-    
-
-    
-    }
 
     var inputCount = 0;
     var maxInputs = 5; // 최대 인풋 개수 
@@ -197,6 +188,7 @@
             
         }
 
+        // 삭제 시 동작할 ajax 추가 예정..
         // $.ajax({
         // headers: {'X-CSRF-TOKEN': csrfToken},
         // url: "{{ url('quiz/storeChoice') }}", // AjaxController -> index 함수 실행
