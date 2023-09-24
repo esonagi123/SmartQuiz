@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Test;
 use App\Models\Question;
 use App\Models\Choice;
+
 class QuizCore extends Controller
 {
 
@@ -25,7 +26,7 @@ class QuizCore extends Controller
 
     public function createQuestion($testID)
     {
-        return view('quiz.createQuestion');
+        return view('quiz.createQuestion', ['testID' => $testID]);
     }
 
     public function store(Request $request)
@@ -38,52 +39,79 @@ class QuizCore extends Controller
         $testModel->date = $serverTime;
 
         $testModel->save();
-        
+
         $testID = $testModel->id;
         return redirect()->route('quiz.createQuestion', ['testID' => $testID]);
         
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+	public function ajax_QuestionStore(Request $request)
+	{
+	
+		if ($request->input('testID')) {
+            $questionModel = new Question();
+            $questionModel->testID = $request->input('testID');
+            $questionModel->save();
+
+            $questionID = $questionModel->id;
+
+            $response = [
+                'success' => true,
+                'questionID' => $questionID,
+            ];
+            
+		} else {
+			$response = [
+				'success' => false,
+				'message' => '실패했습니다.',
+			];
+		}
+		return response()->json($response);
+	}
+
+	public function ajax_ChoiceStore(Request $request)
+	{
+	
+		if ($request->input('questionID')) {
+            $choiceModel = new Choice();
+
+            $choiceModel->qid = $request->input('questionID');
+            $choiceModel->number = $request->input('number');
+            $choiceModel->valid = 2;
+
+            $choiceModel->save();
+
+            $choiceID = $choiceModel->id;
+
+            $response = [
+                'success' => true,
+                'choiceID' => $choiceID,
+            ];
+            
+		} else {
+			$response = [
+				'success' => false,
+				'message' => '실패했습니다.',
+			];
+		}
+		return response()->json($response);
+	}
+
     public function show($id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         //
