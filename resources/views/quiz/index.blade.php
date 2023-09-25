@@ -8,10 +8,8 @@
             <div class="d-flex align-items-end row">
             <div class="col-sm-7">
                 <div class="card-body">
-                <h5 class="card-title text-primary">환영합니다. 닉네임 님! 🎉</h5>
-                <p class="mb-4">
-                    지금 바로 문제를 만들어 보세요.
-                </p>
+                <h5 class="card-title text-primary">안녕하세요, 닉네임님! 🎉</h5>
+                <p>SmartQuiz는 빠르고 간편해요!<br>지금 바로 문제를 만들어 보세요.</p>
                 <a href="{{ url('quiz/create') }}" class="btn btn-sm btn-outline-primary">문제 만들기</a>
                 </div>
             </div>
