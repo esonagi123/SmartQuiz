@@ -97,6 +97,37 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
+	public function ajax_ChoiceDestroy(Request $request)
+	{
+	
+		if ($request->input('choiceID')) {
+            $choiceID = $request->input('choiceID');
+            $choice = Choice::where('number', $choiceID)->first();
+
+			if (!$choice)
+			{
+                $response = [
+                    'success' => false,
+                    'message' => '삭제할 대상을 찾을 수 없습니다.',
+                ];				
+                return response()->json($response);
+            }
+            
+            $choice->delete();
+
+            $response = [
+                'success' => true,
+            ];
+            
+		} else {
+			$response = [
+				'success' => false,
+				'message' => '실패했습니다.',
+			];
+		}
+		return response()->json($response);
+	}    
+
     public function show($id)
     {
         //
