@@ -76,7 +76,7 @@
             alert('AJAX 성공');
         },
         error: function() {
-            alert('실패');
+            alert('페이지 로딩 시 Question 자동 Store 실패');
         }
         });
 
@@ -100,27 +100,30 @@
 
     var inputCount = 0;
     var maxInputs = 5; // 최대 인풋 개수 
+    var usedValues = []; // 현재 사용 중인 Value 값을 추적하기 위한 배열
 
     function addInput() {
-    
         // 최대 인풋 개수에 도달하면 더 이상 인풋을 추가하지 않음.
         if (inputCount >= maxInputs) {
             alert("최대 " + maxInputs + "개만 만들 수 있어요.");
             return;
         }
 
+        // 사용 가능한 Value 값을 찾아서 할당
+        var newValue = findUnusedValue();
+
         // text 타입의 인풋 태그 생성
         var newTextInput = document.createElement("input");
         newTextInput.type = "text";
-        newTextInput.name = "text_option_" + inputCount; // 각 인풋 태그마다 고유한 이름을 설정.
-        newTextInput.placeholder = "보기 " + (inputCount + 1) + "번";
+        newTextInput.name = "text_option_" + newValue; // 각 인풋 태그마다 고유한 이름을 설정.
+        newTextInput.placeholder = "보기 " + (newValue) + "번";
         newTextInput.classList.add("form-control");
 
         // hidden 타입의 인풋 태그 생성
         var newHiddenInput = document.createElement("input");
         newHiddenInput.type = "hidden";
-        newHiddenInput.name = "hidden_option_" + inputCount; // 각 인풋 태그마다 고유한 이름을 설정.
-        newHiddenInput.value = inputCount + 1; // 값을 설정
+        newHiddenInput.name = "hidden_option_" + newValue; // 각 인풋 태그마다 고유한 이름을 설정.
+        newHiddenInput.value = newValue; // 값을 설정
 
         // 삭제 버튼을 생성
         var deleteButton = document.createElement("button");
@@ -128,7 +131,7 @@
         deleteButton.classList.add("btn", "btn-danger");
         deleteButton.textContent = "삭제";
         deleteButton.onclick = function() {
-            removeInput(newTextInput, newHiddenInput, newHiddenInput.value);
+            removeInput(newTextInput, newHiddenInput, newValue);
         };
 
         // 인풋 태그와 삭제 버튼을 감싸는 div를 생성
@@ -141,70 +144,77 @@
         var inputContainer = document.getElementById("inputContainer");
         inputContainer.appendChild(inputDiv);
 
-        // 인풋 태그마다 고유한 이름을 가지기 위해 inputCount를 증가
-        inputCount++;
+        // inputCount를 증가하지 않습니다. 대신, 사용한 Value 값을 usedValues 배열에 추가
+        usedValues.push(newValue);
 
-        $.ajax({
-        headers: {'X-CSRF-TOKEN': csrfToken},
-        url: "{{ url('quiz/storeChoice') }}", // AjaxController -> index 함수 실행
-        type: "POST",
-        data: { questionID: questionID, number: newHiddenInput.value }, // ex) $request->input('id') == var movieID
-        dataType: "json",
-        success: function(data) // data == $response
-        {
-            alert('choice store success!');
-        },
-        error: function() {
-            alert('fail..');
-        }
-        });
+        // Ajax로 선택지 정보를 저장할 수 있도록 코드 추가
+        saveChoiceToServer(newValue);
     }
 
     // 보기 삭제
     function removeInput(textInput, hiddenInput, hiddenInputValue) {
-        alert("보기" + hiddenInputValue + "번을 삭제합니다..");
-        var inputContainer = document.getElementById("inputContainer");
-        var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
-        inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
+        var confirmation = confirm("보기 " + hiddenInputValue + "번을 삭제합니다..");
+        
+        if (confirmation) {
+            // 삭제 시 동작할 ajax
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                url: "{{ url('quiz/destroyChoice') }}",
+                type: "DELETE",
+                data: { choiceID: hiddenInputValue },
+                dataType: "json",
+                success: function(data) {
+                    alert('Delete Complete!');
+                    var inputContainer = document.getElementById("inputContainer");
+                    var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
+                    inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
 
-        // 인풋 태그 개수 감소
-        window.inputCount--; // window: 브라우저 환경에서의 전역 객체
-        alert(window.inputCount);
+                    // 사용한 Value 값을 usedValues 배열에서 제거
+                    usedValues.splice(usedValues.indexOf(hiddenInputValue), 1);
 
-        // 각 인풋 태그의 placeholder 업데이트
-        var inputElements = inputContainer.querySelectorAll("input[type='text']");
-        for (var i = 0; i < inputElements.length; i++) {
-            inputElements[i].placeholder = "옵션 " + (i + 1);
+                    // 각 인풋 태그의 placeholder 업데이트
+                    var inputElements = inputContainer.querySelectorAll("input[type='text']");
+                    for (var i = 0; i < inputElements.length; i++) {
+                        var newValue = usedValues[i];
+                        inputElements[i].name = "text_option_" + newValue;
+                        inputElements[i].placeholder = "보기 " + (newValue) + "번";
+                    }
+                },
+                error: function() {
+                    alert('fail..');
+                }
+            });
         }
-
-        // hidden 타입의 인풋 태그도 제거
-        var hiddenInputParent = hiddenInput.parentElement;
-        inputContainer.removeChild(hiddenInputParent);
-
-        // hidden 타입의 인풋 태그의 value를 업데이트
-        var hiddenInputElements = inputContainer.querySelectorAll("input[type='hidden']");
-        for (var j = 0; j < hiddenInputElements.length; j++) {
-            hiddenInputElements[j].value = j; // 원하는 값으로 업데이트
-            
-        }
-
-        // 삭제 시 동작할 ajax 추가 예정..
-        // $.ajax({
-        // headers: {'X-CSRF-TOKEN': csrfToken},
-        // url: "{{ url('quiz/storeChoice') }}", // AjaxController -> index 함수 실행
-        // type: "POST",
-        // data: { questionID: questionID, number: newHiddenInput.value }, // ex) $request->input('id') == var movieID
-        // dataType: "json",
-        // success: function(data) // data == $response
-        // {
-        //     alert('choice store success!');
-        // },
-        // error: function() {
-        //     alert('fail..');
-        // }
-        // });
-
     }
+
+    // 사용 가능한 가장 작은 Value 값을 찾아서 반환
+    function findUnusedValue() {
+        for (var value = 1; value <= maxInputs; value++) {
+            if (!usedValues.includes(value)) {
+                return value;
+            }
+        }
+        return null; // 모든 값이 사용 중인 경우
+    }
+
+    // 선택지 정보를 서버에 저장하는 함수 (Ajax로 호출)
+    function saveChoiceToServer(choiceValue) {
+        $.ajax({
+            headers: {'X-CSRF-TOKEN': csrfToken},
+            url: "{{ url('quiz/storeChoice') }}", // AjaxController -> index 함수 실행
+            type: "POST",
+            data: { questionID: questionID, number: choiceValue }, // ex) $request->input('id') == var movieID
+            dataType: "json",
+            success: function(data) {
+                alert('Choice Store Complete!');
+            },
+            error: function() {
+                alert('fail..');
+            }
+        });
+    }
+
+
 
 </script>
 
