@@ -15,9 +15,10 @@
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-3 mb-4">문제 만들기 📝</h4>
     <div class="col-md-12">
-        <div class="card mb-4">
-            <form method="post" action="{{ route('quiz.store') }}">
-                @csrf
+
+        {{-- <form method="patch" action="">
+            @csrf
+            <div class="card mb-4">
                 <input type="hidden" class="card-header form-control" name="number" value="0">
                 <div class="mt-4 card-body">
                     <div class="mt-2 mb-3">
@@ -26,7 +27,7 @@
                     </div>
                     <div class="mt-2 mb-3">
                         <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
-                        <select id="largeSelect" class="form-select form-select-lg" onchange="showHideDiv({{ $testID }})">
+                        <select id="largeSelect" class="form-select form-select-lg" onchange="showHideDiv()">
                           <option>선택하세요.</option>
                           <option value="1">선택형</option>
                           <option value="2">서술형</option>
@@ -36,18 +37,21 @@
 
                     <div id="hiddenDiv" style="display: none;">
                         <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput()">보기 추가</button>
-                        <div id="inputContainer"></div>
                     </div>
-                    
+                    <div id="inputContainer"></div>
+
                     <div class="text-end mt-5 mb-3">
-                        <button type="button" class="btn rounded-pill btn-primary">문제 추가</button>
+                        <button type="button" class="btn rounded-pill btn-primary" onclick="addCard()">문제 추가</button>
                     </div>
                     <div class="text-end">
                         <button type="button" class="btn rounded-pill btn-primary">저장하고 끝내기</button>
                     </div>                    
                 </div>
-            </form>
-        </div>      
+            </div>
+        </form> --}}
+
+        <div id="cardContainer"></div>
+        
     </div>
 </div>
 
@@ -55,13 +59,17 @@
     var testID = @json($testID); // Laravel PHP 변수를 JavaScript 변수로 변환
     var questionID = 1; // 테스트를 위한 임시 전역 변수
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
-    
+    var cardCount = 0;
+
     window.addEventListener('load', function() {
         
+        addCard();
+
         // 페이지가 로딩될 때 JavaScript를 사용하여 페이드 효과를 적용
         const fadeElement = document.querySelector('.fade-element');
-        fadeElement.style.opacity = 1;
         // 페이지 로딩 후에 투명도를 1로 설정하여 나타나게 함
+        fadeElement.style.opacity = 1;
+        
     
         // 페이지 로딩 시 Question 자동 Store AJAX
         $.ajax({
@@ -82,10 +90,24 @@
 
     });
 
-    function showHideDiv(testID) {
-        var selectBox = document.getElementById("largeSelect");
-        var hiddenDiv = document.getElementById("hiddenDiv");
-        var testID = testID;
+    // function showHideDiv() {
+    //     var selectBox = document.getElementById("largeSelect");
+    //     var hiddenDiv = document.getElementById("hiddenDiv");
+        
+    //     // 선택된 옵션의 값을 가져옵니다.
+    //     var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+    
+    //     // 값이 1(객관식)일 경우
+    //     if (selectedValue === "1") {
+    //         hiddenDiv.style.display = "block";
+    //     } else {
+    //         hiddenDiv.style.display = "none";
+    //     }
+    // }
+
+    function showHideDiv(cardCount) {
+        var selectBox = document.getElementById("largeSelect"+cardCount);
+        var hiddenDiv = document.getElementById("hiddenDiv"+cardCount);
         
         // 선택된 옵션의 값을 가져옵니다.
         var selectedValue = selectBox.options[selectBox.selectedIndex].value;
@@ -98,11 +120,15 @@
         }
     }    
 
+    // $(document).on("change", "#largeSelect", function() {
+    //     showHideDiv();
+    // });
+    
     var inputCount = 0;
     var maxInputs = 5; // 최대 인풋 개수 
     var usedValues = []; // 현재 사용 중인 Value 값을 추적하기 위한 배열
 
-    function addInput() {
+    function addInput(cardCount) {
         // 최대 인풋 개수에 도달하면 더 이상 인풋을 추가하지 않음.
         if (inputCount >= maxInputs) {
             alert("최대 " + maxInputs + "개만 만들 수 있어요.");
@@ -141,7 +167,7 @@
         inputDiv.appendChild(deleteButton);
 
         // 생성한 div를 inputContainer에 추가
-        var inputContainer = document.getElementById("inputContainer");
+        var inputContainer = document.getElementById("inputContainer" + cardCount);
         inputContainer.appendChild(inputDiv);
 
         // inputCount를 증가하지 않습니다. 대신, 사용한 Value 값을 usedValues 배열에 추가
@@ -214,8 +240,58 @@
         });
     }
 
+    
+    function addCard() {
+    
+        cardCount++;
 
+    var cardHtml = `
+        <form>
+        <div class="card mb-4 ">
+                <input type="hidden" class="card-header form-control" name="number" value="0">
+                <div class="mt-4 card-body">
+                    <div class="mt-2 mb-3">
+                            <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
+                            <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name" placeholder="" rows="5"></textarea>
+                    </div>
+                    <div class="mt-2 mb-3">
+                        <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
+                        <select id="largeSelect${cardCount}" class="form-select form-select-lg" onchange="showHideDiv(${cardCount})">
+                          <option>선택하세요.</option>
+                          <option value="1">선택형</option>
+                          <option value="2">서술형</option>
+                          <option value="3">O/X</option>
+                        </select>
+                    </div>
 
+                    <div id="hiddenDiv${cardCount}" style="display: none;">
+                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount})">보기 추가</button>
+                        <div id="inputContainer${cardCount}"></div>
+                    </div>
+                    
+                    <div class="text-end mt-5 mb-3">
+                        <button class="btn rounded-pill btn-danger" onclick="removeCard(this)">카드 삭제</button>
+                        <button type="button" class="btn rounded-pill btn-primary" onclick="addCard()">문제 추가</button>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn rounded-pill btn-primary">저장하고 끝내기</button>
+                    </div>                    
+                </div>
+        </div>
+        </form>
+        `;
+
+        // 새로운 카드를 cardContainer에 추가
+        var cardContainer = document.getElementById("cardContainer");
+        var newCard = document.createElement("div");
+        newCard.innerHTML = cardHtml;
+        cardContainer.appendChild(newCard);
+
+        var selectElement = newCard.querySelector(`#largeSelect${cardCount}`);
+        selectElement.addEventListener("change", function() {
+            showHideDiv(cardCount)
+        });        
+    }
 </script>
 
 @endsection()
