@@ -38,6 +38,9 @@ Route::post('register/join', [Account::class, 'store'])->name('register.join');
 Route::get('login', [Login::class, 'index'])->name('login');
 Route::post('login/check', [Login::class, 'check'])->name('login.check');
 
+
+Route::get('register', [Account::class, 'index'])->name('register');
+
 Route::get('/quiz', function () {
     return view('quiz.index');
 });
