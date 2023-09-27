@@ -45,30 +45,80 @@ class QuizCore extends Controller
         
     }
 
+    // 문제 생성
 	public function ajax_QuestionStore(Request $request)
 	{
-	
-		if ($request->input('testID')) {
+        $testID = $request->input('testID');
+        $number = $request->input('number');
+        
+        if ($number == 1)
+        {
+            // cardCount(number)가 1일 경우
+            // DB 조회
+            $check = Question::where('number', '1')->where('testID', $testID)->first();
+            if (!$check) {
+                // 1번 문제가 없으면 실행
+                $questionModel = new Question();
+                $questionModel->testID = $request->input('testID');
+                $questionModel->number = $request->input('number');
+                $questionModel->save();
+    
+                $questionID = $questionModel->id;
+
+                $response = [
+                    'success' => true,
+                    'questionID' => $questionID,
+                ];
+            } else {
+                // 1번 문제가 있으면
+                $response = [
+                    'success' => false,
+                    'message' => '이미 1번 문제가 있습니다.'
+                ];
+                
+            }
+        } else {
+            // cardCount(number)가 1이 아닐 경우 (addCard2)
             $questionModel = new Question();
             $questionModel->testID = $request->input('testID');
+            $questionModel->number = $request->input('number');
             $questionModel->save();
-
+    
             $questionID = $questionModel->id;
-
+    
             $response = [
                 'success' => true,
                 'questionID' => $questionID,
             ];
-            
-		} else {
-			$response = [
-				'success' => false,
-				'message' => '실패했습니다.',
-			];
-		}
+        }
+
 		return response()->json($response);
 	}
 
+
+    // 문제 업데이트
+	public function ajax_QuestionUpdate(Request $request)
+	{
+        $testID = $request->input('testID');
+
+            //$check = Question::where('number', '1')->where('testID', $testID)->first();
+
+        $questionModel = new Question();
+        $questionModel->testID = $request->input('testID');
+        $questionModel->number = $request->input('number');
+        $questionModel->save();
+
+        $questionID = $questionModel->id;
+
+        $response = [
+            'success' => true,
+            'questionID' => $questionID,
+        ];
+
+		return response()->json($response);
+	}
+
+    // 선택지 생성
 	public function ajax_ChoiceStore(Request $request)
 	{
 	
@@ -96,6 +146,38 @@ class QuizCore extends Controller
 		}
 		return response()->json($response);
 	}
+
+	public function ajax_ChoiceDestroy(Request $request)
+	{
+	
+		if ($request->input('choiceID')) {
+            $choiceID = $request->input('choiceID');
+            $questionID = $request->input('questionID');
+            $choice = Choice::where('number', $choiceID)->where('qid', $questionID)->first();
+
+			if (!$choice)
+			{
+                $response = [
+                    'success' => false,
+                    'message' => '삭제할 대상을 찾을 수 없습니다.',
+                ];				
+                return response()->json($response);
+            }
+            
+            $choice->delete();
+
+            $response = [
+                'success' => true,
+            ];
+            
+		} else {
+			$response = [
+				'success' => false,
+				'message' => '실패했습니다.',
+			];
+		}
+		return response()->json($response);
+	}    
 
     public function show($id)
     {

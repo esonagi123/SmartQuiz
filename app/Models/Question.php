@@ -11,6 +11,6 @@ class Question extends Model
 	protected $table = 'questions';
 	protected $primaryKey = 'id';
     protected $fillable = [
-        'testID', 'gubun', 'title', 'answer'
+        'testID', 'number', 'gubun', 'title', 'answer'
     ];
 }

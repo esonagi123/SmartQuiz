@@ -2,12 +2,38 @@
 
 @section('content')
 
-<style>
-.fade-element {
-  opacity: 0; /* 초기에는 투명도 0으로 설정 */
-  transition: opacity 1s; /* 투명도 속성에 1초 동안의 트랜지션 적용 */
-}
 
+
+<style>
+    .fade-element {
+    opacity: 0; /* 초기에는 투명도 0으로 설정 */
+    transition: opacity 1s; /* 투명도 속성에 1초 동안의 트랜지션 적용 */
+    }
+
+    body {
+    /* Add some padding to the bottom to prevent the fixed bar from overlapping content */
+    margin-bottom: 60px; /* Adjust the value based on the height of your button bar */
+    }
+
+    .button-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    padding: 10px;
+    text-align: center;
+    }
+
+    .button-bar button {
+    margin: 0 5px;
+    padding: 8px 16px;
+    background-color: #fff;
+    color: #333;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    }
 </style>
 
 
@@ -15,9 +41,10 @@
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-3 mb-4">문제 만들기 📝</h4>
     <div class="col-md-12">
-        <div class="card mb-4">
-            <form method="post" action="{{ route('quiz.store') }}">
-                @csrf
+
+        {{-- <form method="patch" action="">
+            @csrf
+            <div class="card mb-4">
                 <input type="hidden" class="card-header form-control" name="number" value="0">
                 <div class="mt-4 card-body">
                     <div class="mt-2 mb-3">
@@ -26,7 +53,7 @@
                     </div>
                     <div class="mt-2 mb-3">
                         <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
-                        <select id="largeSelect" class="form-select form-select-lg" onchange="showHideDiv({{ $testID }})">
+                        <select id="largeSelect" class="form-select form-select-lg" onchange="showHideDiv()">
                           <option>선택하세요.</option>
                           <option value="1">선택형</option>
                           <option value="2">서술형</option>
@@ -36,56 +63,85 @@
 
                     <div id="hiddenDiv" style="display: none;">
                         <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput()">보기 추가</button>
-                        <div id="inputContainer"></div>
                     </div>
-                    
+                    <div id="inputContainer"></div>
+
                     <div class="text-end mt-5 mb-3">
-                        <button type="button" class="btn rounded-pill btn-primary">문제 추가</button>
+                        <button type="button" class="btn rounded-pill btn-primary" onclick="addCard()">문제 추가</button>
                     </div>
                     <div class="text-end">
                         <button type="button" class="btn rounded-pill btn-primary">저장하고 끝내기</button>
                     </div>                    
                 </div>
-            </form>
-        </div>      
+            </div>
+        </form> --}}
+
+        <div id="cardContainer"></div>
+        
     </div>
 </div>
 
+  <!-- Fixed Button Bar -->
+  <div class="button-bar">
+    <button type="button" id="newQuestion" class="btn rounded-pill btn-primary" onclick="addCard2()">문제 추가</button>
+    <button type="button" class="btn rounded-pill btn-primary">저장하고 끝내기</button>
+    <button>Button 3</button>
+  </div>
+
 <script>
     var testID = @json($testID); // Laravel PHP 변수를 JavaScript 변수로 변환
-    var questionID = 1; // 테스트를 위한 임시 전역 변수
+    // var questionID = 1; // 테스트를 위한 임시 전역 변수
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
-    
-    window.addEventListener('load', function() {
-        
-        // 페이지가 로딩될 때 JavaScript를 사용하여 페이드 효과를 적용
-        const fadeElement = document.querySelector('.fade-element');
-        fadeElement.style.opacity = 1;
-        // 페이지 로딩 후에 투명도를 1로 설정하여 나타나게 함
-    
-        // 페이지 로딩 시 Question 자동 Store AJAX
-        $.ajax({
-        headers: {'X-CSRF-TOKEN': csrfToken},
-        // url: "{{ url('quiz/storeQuestion') }}", // AjaxController -> index 함수 실행
-        type: "POST",
-        data: { testID: testID }, // ex) $request->input('id') == var movieID
-        dataType: "json",
-        success: function(data) // data == $response
-        {
-            questionID = data.questionID;
-            alert('AJAX 성공');
-        },
-        error: function() {
-            alert('실패');
-        }
-        });
+    var cardCount = 0;
 
+    window.addEventListener('load', function() {
+        // 페이지 로딩 시 자동 실행
+        
+        const fadeElement = document.querySelector('.fade-element'); // JavaScript를 사용하여 페이드 효과를 적용
+        fadeElement.style.opacity = 1; // 투명도를 1로 설정하여 나타나게 함
+        
+        cardCount++;
+
+        // Question 생성
+        $.ajax({
+            headers: {'X-CSRF-TOKEN': csrfToken},
+            url: "{{ url('quiz/storeQuestion') }}",
+            type: "POST",
+            data: { testID: testID, number: cardCount },
+            dataType: "json",
+            success: function(data) {
+                if (data.success === true) {
+                    var questionID = data.questionID;
+                    addCard(questionID);
+                    alert('AJAX 성공 ' + questionID);
+                } else {
+                    alert(data.message);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+            }
+        });
     });
 
-    function showHideDiv(testID) {
-        var selectBox = document.getElementById("largeSelect");
-        var hiddenDiv = document.getElementById("hiddenDiv");
-        var testID = testID;
+    // function showHideDiv() {
+    //     var selectBox = document.getElementById("largeSelect");
+    //     var hiddenDiv = document.getElementById("hiddenDiv");
+        
+    //     // 선택된 옵션의 값을 가져옵니다.
+    //     var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+    
+    //     // 값이 1(객관식)일 경우
+    //     if (selectedValue === "1") {
+    //         hiddenDiv.style.display = "block";
+    //     } else {
+    //         hiddenDiv.style.display = "none";
+    //     }
+    // }
+
+    function showHideDiv(cardCount) {
+        var selectBox = document.getElementById("largeSelect"+cardCount);
+        var hiddenDiv = document.getElementById("hiddenDiv"+cardCount);
         
         // 선택된 옵션의 값을 가져옵니다.
         var selectedValue = selectBox.options[selectBox.selectedIndex].value;
@@ -98,29 +154,43 @@
         }
     }    
 
-    var inputCount = 0;
+    // $(document).on("change", "#largeSelect", function() {
+    //     showHideDiv();
+    // });
     var maxInputs = 5; // 최대 인풋 개수 
+    var inputCount = 0;
+    var usedValues = {}; // 초기화
+    function addInput(cardCount, questionID) {
 
-    function addInput() {
-    
+        if (!usedValues[cardCount]) {
+            usedValues[cardCount] = [];
+        }
+
         // 최대 인풋 개수에 도달하면 더 이상 인풋을 추가하지 않음.
-        if (inputCount >= maxInputs) {
+        if (usedValues[cardCount].length >= maxInputs) {
             alert("최대 " + maxInputs + "개만 만들 수 있어요.");
             return;
         }
 
+
+        // 사용 가능한 Value 값을 찾아서 할당
+        var newValue = findUnusedValue(cardCount);
+
+        // 사용한 Value 값을 usedValues 배열에 추가
+        usedValues[cardCount].push(newValue);
+
         // text 타입의 인풋 태그 생성
         var newTextInput = document.createElement("input");
         newTextInput.type = "text";
-        newTextInput.name = "text_option_" + inputCount; // 각 인풋 태그마다 고유한 이름을 설정.
-        newTextInput.placeholder = "보기 " + (inputCount + 1) + "번";
+        newTextInput.name = "text_option_" + newValue; // 각 인풋 태그마다 고유한 이름을 설정.
+        newTextInput.placeholder = "보기 " + (newValue) + "번";
         newTextInput.classList.add("form-control");
 
         // hidden 타입의 인풋 태그 생성
         var newHiddenInput = document.createElement("input");
         newHiddenInput.type = "hidden";
-        newHiddenInput.name = "hidden_option_" + inputCount; // 각 인풋 태그마다 고유한 이름을 설정.
-        newHiddenInput.value = inputCount + 1; // 값을 설정
+        newHiddenInput.name = "hidden_option_" + newValue; // 각 인풋 태그마다 고유한 이름을 설정.
+        newHiddenInput.value = newValue; // 값을 설정
 
         // 삭제 버튼을 생성
         var deleteButton = document.createElement("button");
@@ -128,7 +198,7 @@
         deleteButton.classList.add("btn", "btn-danger");
         deleteButton.textContent = "삭제";
         deleteButton.onclick = function() {
-            removeInput(newTextInput, newHiddenInput, newHiddenInput.value);
+            removeInput(newTextInput, newHiddenInput, newValue, questionID, cardCount);
         };
 
         // 인풋 태그와 삭제 버튼을 감싸는 div를 생성
@@ -138,74 +208,183 @@
         inputDiv.appendChild(deleteButton);
 
         // 생성한 div를 inputContainer에 추가
-        var inputContainer = document.getElementById("inputContainer");
+        var inputContainer = document.getElementById("inputContainer" + cardCount);
         inputContainer.appendChild(inputDiv);
 
-        // 인풋 태그마다 고유한 이름을 가지기 위해 inputCount를 증가
-        inputCount++;
+        // inputCount를 증가하지 않습니다. 대신, 사용한 Value 값을 usedValues 배열에 추가
+        // usedValues[cardCount].push(newValue);
 
+        // Ajax로 선택지 정보를 저장할 수 있도록 코드 추가
+        saveChoiceToServer(newValue, questionID);
+
+        console.log("Type:", typeof usedValues[cardCount]);
+        console.log("Contents:", usedValues[cardCount]);
+    }
+
+    // 선택지 정보를 서버에 저장하는 함수 (Ajax로 호출)
+    function saveChoiceToServer(choiceValue, questionID) {
         $.ajax({
-        headers: {'X-CSRF-TOKEN': csrfToken},
-        url: "{{ url('quiz/storeChoice') }}", // AjaxController -> index 함수 실행
-        type: "POST",
-        data: { questionID: questionID, number: newHiddenInput.value }, // ex) $request->input('id') == var movieID
-        dataType: "json",
-        success: function(data) // data == $response
-        {
-            alert('choice store success!');
-        },
-        error: function() {
-            alert('fail..');
-        }
+            headers: {'X-CSRF-TOKEN': csrfToken},
+            url: "{{ url('quiz/storeChoice') }}", // AjaxController -> index 함수 실행
+            type: "POST",
+            data: { questionID: questionID, number: choiceValue }, // ex) $request->input('id') == var movieID
+            dataType: "json",
+            success: function(data) {
+                alert('Choice Store Complete!');
+            },
+            error: function() {
+                alert('fail..');
+            }
         });
     }
 
     // 보기 삭제
-    function removeInput(textInput, hiddenInput, hiddenInputValue) {
-        alert("보기" + hiddenInputValue + "번을 삭제합니다..");
-        var inputContainer = document.getElementById("inputContainer");
-        var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
-        inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
+    function removeInput(textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
+        var confirmation = confirm(questionID + "(" + cardCount + ") 의 보기" + hiddenInputValue + "번을 삭제합니다..");
+        
+        if (confirmation) {
+            // 삭제 시 동작할 ajax
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                url: "{{ url('quiz/destroyChoice') }}",
+                type: "DELETE",
+                data: { choiceID: hiddenInputValue, questionID: questionID },
+                dataType: "json",
+                success: function(data) {
+                    alert('Delete Complete!');
+                    var inputContainer = document.getElementById("inputContainer" + cardCount);
+                    var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
+                    inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
 
-        // 인풋 태그 개수 감소
-        window.inputCount--; // window: 브라우저 환경에서의 전역 객체
-        alert(window.inputCount);
+                    // 사용한 Value 값을 usedValues 배열에서 제거
+                    // usedValues.splice(usedValues.indexOf(hiddenInputValue), 1);
+                    // 사용한 Value 값을 usedValues 배열에서 제거
+                    var index = usedValues[cardCount].indexOf(hiddenInputValue);
+                    if (index !== -1) {
+                        usedValues[cardCount].splice(index, 1);
+                    }                    
 
-        // 각 인풋 태그의 placeholder 업데이트
-        var inputElements = inputContainer.querySelectorAll("input[type='text']");
-        for (var i = 0; i < inputElements.length; i++) {
-            inputElements[i].placeholder = "옵션 " + (i + 1);
+                    // 각 인풋 태그의 placeholder 업데이트
+                    var inputElements = inputContainer.querySelectorAll("input[type='text']");
+                    for (var i = 0; i < inputElements.length; i++) {
+                        var newValue = usedValues[cardCount][i];
+                        inputElements[i].name = "text_option_" + newValue;
+                        inputElements[i].placeholder = "보기 " + (newValue) + "번";
+                    }
+                },
+                error: function() {
+                    alert('fail..');
+                }
+            });
         }
-
-        // hidden 타입의 인풋 태그도 제거
-        var hiddenInputParent = hiddenInput.parentElement;
-        inputContainer.removeChild(hiddenInputParent);
-
-        // hidden 타입의 인풋 태그의 value를 업데이트
-        var hiddenInputElements = inputContainer.querySelectorAll("input[type='hidden']");
-        for (var j = 0; j < hiddenInputElements.length; j++) {
-            hiddenInputElements[j].value = j; // 원하는 값으로 업데이트
-            
-        }
-
-        // 삭제 시 동작할 ajax 추가 예정..
-        // $.ajax({
-        // headers: {'X-CSRF-TOKEN': csrfToken},
-        // url: "{{ url('quiz/storeChoice') }}", // AjaxController -> index 함수 실행
-        // type: "POST",
-        // data: { questionID: questionID, number: newHiddenInput.value }, // ex) $request->input('id') == var movieID
-        // dataType: "json",
-        // success: function(data) // data == $response
-        // {
-        //     alert('choice store success!');
-        // },
-        // error: function() {
-        //     alert('fail..');
-        // }
-        // });
-
     }
 
+    // 사용 가능한 가장 작은 Value 값을 찾아서 반환
+    function findUnusedValue(cardCount) {
+        for (var value = 1; value <= maxInputs; value++) {
+            if (!usedValues[cardCount].includes(value)) {
+                return value;
+            }
+        }
+        return null; // 모든 값이 사용 중인 경우
+    }
+
+
+    function updateQuestion()
+    {
+        var formData = $("#question" + cardCount).serialize();
+        formData.append('number', cardCount);
+
+        $.ajax({
+            headers: {'X-CSRF-TOKEN': csrfToken},
+            url: "{{ url('quiz/updateQuestuion') }}", // AjaxController -> index 함수 실행
+            type: "POST",
+            data: formData, // ex) $request->input('id') == var movieID
+            dataType: "json",
+            success: function(data) {
+                alert('Questuion Update Complete!');
+                addCard();
+            },
+            error: function() {
+                alert('fail..');
+            }
+        });
+
+        
+    }
+
+    function addCard2() {
+        $.ajax({
+            headers: {'X-CSRF-TOKEN': csrfToken},
+            url: "{{ url('quiz/storeQuestion') }}",
+            type: "POST",
+            data: { testID: testID, number: cardCount },
+            dataType: "json",
+            success: function(data) {
+                if (data.success === true) {
+                    var questionID = data.questionID;
+                    addCard(questionID);
+                    alert('AJAX 성공 ' + questionID);
+                } else {
+                    alert(data.message);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+            }
+        });
+    }
+
+    function addCard(questionID) {
+
+        inputCount = 0;
+        // usedValues = [];
+        
+        var cardHtml = `
+        <form id="question${cardCount}">
+        <div class="card mb-4 ">
+                <input type="hidden" class="card-header form-control" name="number" value="0">
+                <div class="mt-4 card-body">
+                    <div class="mt-2 mb-3">
+                            <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
+                            <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}" placeholder="" rows="5"></textarea>
+                    </div>
+                    <div class="mt-2 mb-3">
+                        <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
+                        <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount})">
+                          <option>선택하세요.</option>
+                          <option value="1">선택형</option>
+                          <option value="2">서술형</option>
+                          <option value="3">O/X</option>
+                        </select>
+                    </div>
+
+                    <div id="hiddenDiv${cardCount}" style="display: none;">
+                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
+                        <div id="inputContainer${cardCount}"></div>
+                    </div>
+                    
+                    <div class="text-end mt-5 mb-3">
+                        <button class="btn rounded-pill btn-danger" onclick="removeCard(this)">카드 삭제</button>
+                    </div>                   
+                </div>
+        </div>
+        </form>
+        `;
+
+        // 새로운 카드를 cardContainer에 추가
+        var cardContainer = document.getElementById("cardContainer");
+        var newCard = document.createElement("div");
+        newCard.innerHTML = cardHtml;
+        cardContainer.appendChild(newCard);
+
+        var selectElement = newCard.querySelector(`#largeSelect${cardCount}`);
+        selectElement.addEventListener("change", function() {
+            showHideDiv(cardCount)
+        });
+        
+        cardCount++;
+    }
 </script>
 
 @endsection()
