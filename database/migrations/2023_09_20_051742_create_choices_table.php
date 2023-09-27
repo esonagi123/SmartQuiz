@@ -19,7 +19,7 @@ class CreateChoicesTable extends Migration
             $table->string('number')->nullable();
             $table->string('content')->nullable();
             $table->string('corAns')->nullable();
-            $table->string('valid')->nullable();
+            $table->tinyInteger('valid')->nullable();
             $table->timestamps();
         });
     }
