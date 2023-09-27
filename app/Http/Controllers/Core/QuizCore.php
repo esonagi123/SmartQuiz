@@ -45,10 +45,16 @@ class QuizCore extends Controller
         
     }
 
+    // 문제 생성
 	public function ajax_QuestionStore(Request $request)
 	{
         $testID = $request->input('testID');
-
+        $number = $request->input('number');
+        
+        if ($number == 1)
+        {
+            // cardCount(number)가 1일 경우
+            // DB 조회
             $check = Question::where('number', '1')->where('testID', $testID)->first();
             if (!$check) {
                 // 1번 문제가 없으면 실행
@@ -64,16 +70,55 @@ class QuizCore extends Controller
                     'questionID' => $questionID,
                 ];
             } else {
+                // 1번 문제가 있으면
                 $response = [
                     'success' => false,
-                    'message' => '오류'
+                    'message' => '이미 1번 문제가 있습니다.'
                 ];
                 
             }
+        } else {
+            // cardCount(number)가 1이 아닐 경우 (addCard2)
+            $questionModel = new Question();
+            $questionModel->testID = $request->input('testID');
+            $questionModel->number = $request->input('number');
+            $questionModel->save();
+    
+            $questionID = $questionModel->id;
+    
+            $response = [
+                'success' => true,
+                'questionID' => $questionID,
+            ];
+        }
 
 		return response()->json($response);
 	}
 
+
+    // 문제 업데이트
+	public function ajax_QuestionUpdate(Request $request)
+	{
+        $testID = $request->input('testID');
+
+            //$check = Question::where('number', '1')->where('testID', $testID)->first();
+
+        $questionModel = new Question();
+        $questionModel->testID = $request->input('testID');
+        $questionModel->number = $request->input('number');
+        $questionModel->save();
+
+        $questionID = $questionModel->id;
+
+        $response = [
+            'success' => true,
+            'questionID' => $questionID,
+        ];
+
+		return response()->json($response);
+	}
+
+    // 선택지 생성
 	public function ajax_ChoiceStore(Request $request)
 	{
 	
