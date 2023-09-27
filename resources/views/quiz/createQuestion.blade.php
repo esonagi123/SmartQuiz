@@ -159,16 +159,25 @@
     // });
     var maxInputs = 5; // 최대 인풋 개수 
     var inputCount = 0;
-    var usedValues = [];
+    var usedValues = {}; // 초기화
     function addInput(cardCount, questionID) {
+
+        if (!usedValues[cardCount]) {
+            usedValues[cardCount] = [];
+        }
+
         // 최대 인풋 개수에 도달하면 더 이상 인풋을 추가하지 않음.
-        if (usedValues.length >= maxInputs) {
+        if (usedValues[cardCount].length >= maxInputs) {
             alert("최대 " + maxInputs + "개만 만들 수 있어요.");
             return;
         }
 
+
         // 사용 가능한 Value 값을 찾아서 할당
-        var newValue = findUnusedValue();
+        var newValue = findUnusedValue(cardCount);
+
+        // 사용한 Value 값을 usedValues 배열에 추가
+        usedValues[cardCount].push(newValue);
 
         // text 타입의 인풋 태그 생성
         var newTextInput = document.createElement("input");
@@ -203,10 +212,13 @@
         inputContainer.appendChild(inputDiv);
 
         // inputCount를 증가하지 않습니다. 대신, 사용한 Value 값을 usedValues 배열에 추가
-        usedValues.push(newValue);
+        // usedValues[cardCount].push(newValue);
 
         // Ajax로 선택지 정보를 저장할 수 있도록 코드 추가
         saveChoiceToServer(newValue, questionID);
+
+        console.log("Type:", typeof usedValues[cardCount]);
+        console.log("Contents:", usedValues[cardCount]);
     }
 
     // 선택지 정보를 서버에 저장하는 함수 (Ajax로 호출)
@@ -245,12 +257,17 @@
                     inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
 
                     // 사용한 Value 값을 usedValues 배열에서 제거
-                    usedValues.splice(usedValues.indexOf(hiddenInputValue), 1);
+                    // usedValues.splice(usedValues.indexOf(hiddenInputValue), 1);
+                    // 사용한 Value 값을 usedValues 배열에서 제거
+                    var index = usedValues[cardCount].indexOf(hiddenInputValue);
+                    if (index !== -1) {
+                        usedValues[cardCount].splice(index, 1);
+                    }                    
 
                     // 각 인풋 태그의 placeholder 업데이트
                     var inputElements = inputContainer.querySelectorAll("input[type='text']");
                     for (var i = 0; i < inputElements.length; i++) {
-                        var newValue = usedValues[i];
+                        var newValue = usedValues[cardCount][i];
                         inputElements[i].name = "text_option_" + newValue;
                         inputElements[i].placeholder = "보기 " + (newValue) + "번";
                     }
@@ -263,14 +280,15 @@
     }
 
     // 사용 가능한 가장 작은 Value 값을 찾아서 반환
-    function findUnusedValue() {
+    function findUnusedValue(cardCount) {
         for (var value = 1; value <= maxInputs; value++) {
-            if (!usedValues.includes(value)) {
+            if (!usedValues[cardCount].includes(value)) {
                 return value;
             }
         }
         return null; // 모든 값이 사용 중인 경우
     }
+
 
     function updateQuestion()
     {
@@ -296,7 +314,6 @@
     }
 
     function addCard2() {
-        alert("이전에 생성된 선택지 개수 : " + usedValues);
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
             url: "{{ url('quiz/storeQuestion') }}",
@@ -321,7 +338,7 @@
     function addCard(questionID) {
 
         inputCount = 0;
-        usedValues = [];
+        // usedValues = [];
         
         var cardHtml = `
         <form id="question${cardCount}">
