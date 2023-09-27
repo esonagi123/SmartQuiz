@@ -2,6 +2,8 @@
 
 @section('content')
 
+
+
 <style>
 .fade-element {
   opacity: 0; /* 초기에는 투명도 0으로 설정 */
@@ -57,34 +59,33 @@
 
 <script>
     var testID = @json($testID); // Laravel PHP 변수를 JavaScript 변수로 변환
-    var questionID = 1; // 테스트를 위한 임시 전역 변수
+    // var questionID = 1; // 테스트를 위한 임시 전역 변수
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
     var cardCount = 0;
 
     window.addEventListener('load', function() {
         
-        addCard();
-
         // 페이지가 로딩될 때 JavaScript를 사용하여 페이드 효과를 적용
         const fadeElement = document.querySelector('.fade-element');
         // 페이지 로딩 후에 투명도를 1로 설정하여 나타나게 함
         fadeElement.style.opacity = 1;
         
-    
+        cardCount++;
         // 페이지 로딩 시 Question 자동 Store AJAX
         $.ajax({
         headers: {'X-CSRF-TOKEN': csrfToken},
-        // url: "{{ url('quiz/storeQuestion') }}", // AjaxController -> index 함수 실행
+        url: "{{ url('quiz/storeQuestion') }}",
         type: "POST",
-        data: { testID: testID }, // ex) $request->input('id') == var movieID
+        data: { testID: testID, number: cardCount },
         dataType: "json",
         success: function(data) // data == $response
         {
-            questionID = data.questionID;
-            alert('AJAX 성공');
+            var questionID = data.questionID;
+            addCard();
+            alert('AJAX 성공' + questionID);
         },
-        error: function() {
-            alert('페이지 로딩 시 Question 자동 Store 실패');
+        error: function(data) {
+            alert(data.message);
         }
         });
 
@@ -130,10 +131,11 @@
 
     function addInput(cardCount) {
         // 최대 인풋 개수에 도달하면 더 이상 인풋을 추가하지 않음.
-        if (inputCount >= maxInputs) {
+        if (usedValues.length >= maxInputs) {
             alert("최대 " + maxInputs + "개만 만들 수 있어요.");
             return;
         }
+
 
         // 사용 가능한 Value 값을 찾아서 할당
         var newValue = findUnusedValue();
@@ -240,13 +242,59 @@
         });
     }
 
+    function updateQuestion()
+    {
+        $.ajax({
+            headers: {'X-CSRF-TOKEN': csrfToken},
+            url: "{{ url('quiz/updateQuestuion') }}", // AjaxController -> index 함수 실행
+            type: "POST",
+            data: { questionID: questionID, number: choiceValue }, // ex) $request->input('id') == var movieID
+            dataType: "json",
+            success: function(data) {
+                alert('Questuion Update Complete!');
+            },
+            error: function() {
+                alert('fail..');
+            }
+        });
+
+        addCard();
+    }
+
+    function addCard2() {
+    cardCount++;
+    var formData = $("#question").serialize();
+    // formData.append('testID', testID);
+    // formData.append('number', cardCount);
+    $.ajax({
+        headers: {'X-CSRF-TOKEN': csrfToken},
+        url: "{{ url('quiz/storeQuestion') }}",
+        type: "POST",
+        data: { testID: testID, number: cardCount },
+        dataType: "json",
+        success: function(data) // data == $response
+        {
+            var questionID = data.questionID;
+            addCard();
+            alert('AJAX 성공' + questionID);
+        },
+        error: function(data) {
+            alert(data.message);
+        }
+        });
+    }
     
+
     function addCard() {
-    
+
+        var inputCount = 0;
+
+        var usedValues = [];
+
         cardCount++;
 
     var cardHtml = `
-        <form>
+        <form id="question">
         <div class="card mb-4 ">
                 <input type="hidden" class="card-header form-control" name="number" value="0">
                 <div class="mt-4 card-body">
@@ -271,7 +319,7 @@
                     
                     <div class="text-end mt-5 mb-3">
                         <button class="btn rounded-pill btn-danger" onclick="removeCard(this)">카드 삭제</button>
-                        <button type="button" class="btn rounded-pill btn-primary" onclick="addCard()">문제 추가</button>
+                        <button type="button" id="newQuestion" class="btn rounded-pill btn-primary" onclick="addCard2()">문제 추가</button>
                     </div>
                     <div class="text-end">
                         <button type="button" class="btn rounded-pill btn-primary">저장하고 끝내기</button>
