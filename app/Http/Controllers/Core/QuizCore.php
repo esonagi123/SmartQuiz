@@ -152,7 +152,8 @@ class QuizCore extends Controller
 	
 		if ($request->input('choiceID')) {
             $choiceID = $request->input('choiceID');
-            $choice = Choice::where('number', $choiceID)->first();
+            $questionID = $request->input('questionID');
+            $choice = Choice::where('number', $choiceID)->where('qid', $questionID)->first();
 
 			if (!$choice)
 			{

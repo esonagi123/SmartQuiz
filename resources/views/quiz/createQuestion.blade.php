@@ -189,7 +189,7 @@
         deleteButton.classList.add("btn", "btn-danger");
         deleteButton.textContent = "삭제";
         deleteButton.onclick = function() {
-            removeInput(newTextInput, newHiddenInput, newValue);
+            removeInput(newTextInput, newHiddenInput, newValue, questionID, cardCount);
         };
 
         // 인풋 태그와 삭제 버튼을 감싸는 div를 생성
@@ -207,18 +207,6 @@
 
         // Ajax로 선택지 정보를 저장할 수 있도록 코드 추가
         saveChoiceToServer(newValue, questionID);
-    }
-
-
-
-    // 사용 가능한 가장 작은 Value 값을 찾아서 반환
-    function findUnusedValue() {
-        for (var value = 1; value <= maxInputs; value++) {
-            if (!usedValues.includes(value)) {
-                return value;
-            }
-        }
-        return null; // 모든 값이 사용 중인 경우
     }
 
     // 선택지 정보를 서버에 저장하는 함수 (Ajax로 호출)
@@ -239,8 +227,8 @@
     }
 
     // 보기 삭제
-    function removeInput(textInput, hiddenInput, hiddenInputValue) {
-        var confirmation = confirm("보기 " + hiddenInputValue + "번을 삭제합니다..");
+    function removeInput(textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
+        var confirmation = confirm(questionID + "(" + cardCount + ") 의 보기" + hiddenInputValue + "번을 삭제합니다..");
         
         if (confirmation) {
             // 삭제 시 동작할 ajax
@@ -248,11 +236,11 @@
                 headers: {'X-CSRF-TOKEN': csrfToken},
                 url: "{{ url('quiz/destroyChoice') }}",
                 type: "DELETE",
-                data: { choiceID: hiddenInputValue },
+                data: { choiceID: hiddenInputValue, questionID: questionID },
                 dataType: "json",
                 success: function(data) {
                     alert('Delete Complete!');
-                    var inputContainer = document.getElementById("inputContainer");
+                    var inputContainer = document.getElementById("inputContainer" + cardCount);
                     var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
                     inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
 
@@ -272,6 +260,16 @@
                 }
             });
         }
+    }
+
+    // 사용 가능한 가장 작은 Value 값을 찾아서 반환
+    function findUnusedValue() {
+        for (var value = 1; value <= maxInputs; value++) {
+            if (!usedValues.includes(value)) {
+                return value;
+            }
+        }
+        return null; // 모든 값이 사용 중인 경우
     }
 
     function updateQuestion()
