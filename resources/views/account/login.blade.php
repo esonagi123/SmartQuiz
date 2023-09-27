@@ -144,10 +144,11 @@
                   <label for="email" class="form-label">아이디</label>
                   <input
                     type="text"
+                    value="{{ old('email') }}"
                     class="form-control"
-                    id="email"
-                    name="email-username"
-                    placeholder="Enter your email or username"
+                    id="uid"
+                    name="uid"
+                    placeholder="Enter your uid"
                     autofocus
                   />
                 </div>
