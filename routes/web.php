@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Core\QuizCore;
+use App\Http\Controllers\Account\Account;
+use App\Http\Controllers\Account\Login;
+use App\Http\Controllers\MainController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,8 +18,10 @@ use App\Http\Controllers\Core\QuizCore;
 */
 
 Route::get('/', function () {
-    return view('base');
+    return view('main.index');
 });
+
+Route::get('main', [MainController::class, 'index'])->name('main.index');
 
 Route::get('quiz', [QuizCore::class, 'index'])->name('quiz.index');
 Route::get('quiz/create', [QuizCore::class, 'create'])->name('quiz.create');
@@ -28,20 +33,11 @@ Route::post('quiz/storeChoice', [QuizCore::class, 'ajax_ChoiceStore'])->name('aj
 Route::delete('quiz/destroyChoice', [QuizCore::class, 'ajax_ChoiceDestroy'])->name('ajax.ChoiceDestroy');
 
 
+Route::get('register', [Account::class, 'index'])->name('register');
+Route::post('register/join', [Account::class, 'store'])->name('register.join');
+Route::get('login', [Login::class, 'index'])->name('login');
+Route::post('login/check', [Login::class, 'check'])->name('login.check');
 
-
-
-
-
-Route::get('/login', function () {
-    return view('account.login');
-});
-Route::get('/register', function () {
-    return view('account.register');
-});
-Route::get('/forgot-pw', function () {
-    return view('account.forgot-pw');
-});
 Route::get('/quiz', function () {
     return view('quiz.index');
 });

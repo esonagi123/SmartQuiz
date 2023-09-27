@@ -134,25 +134,32 @@
                   <span class="app-brand-text demo text-body fw-bolder">SmartQuiz</span>
                 </a>
               </div>
+
+              @if ($errors->any())
+              @foreach ($errors->all() as $error)
+                <div class="alert alert-danger alert-dismissible" role="alert">
+                {{ $error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              @endforeach
+            @endif
+ 
               <!-- /Logo -->
               <h4 class="mb-2">회원가입🚀</h4>
               <p class="mb-4"></p>
 
-              <form id="formAuthentication" class="mb-3" action="index.html" method="POST">
+              <form id="formAuthentication" class="mb-3" action="{{ url('register/join') }}" method="POST">
+                @csrf
                 <div class="mb-3">
-                  <label for="username" class="form-label">이름</label>
+                  <label for="uid" class="form-label">아이디</label>
                   <input
                     type="text"
                     class="form-control"
-                    id="username"
-                    name="username"
-                    placeholder="Enter your username"
+                    id="uid"
+                    name="uid"
+                    placeholder="Enter your uid"
                     autofocus
                   />
-                </div>
-                <div class="mb-3">
-                  <label for="email" class="form-label">이메일</label>
-                  <input type="text" class="form-control" id="email" name="email" placeholder="Enter your email" />
                 </div>
                 <div class="mb-3 form-password-toggle">
                   <label class="form-label" for="password">비밀번호</label>
@@ -168,7 +175,24 @@
                     <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                   </div>
                 </div>
+                <div class="mb-3">
+                  <label for="nickname" class="form-label">닉네임</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nickname"
+                    name="nickname"
+                    placeholder="Enter your nickname"
+                    autofocus
+                  />
+                </div>
 
+                <div class="mb-3">
+                  <label for="email" class="form-label">이메일</label>
+                  <input type="text" class="form-control" id="email" name="email" placeholder="Enter your email" />
+                </div>
+               
+{{-- 
                 <div class="mb-3">
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="terms-conditions" name="terms" />
@@ -177,7 +201,8 @@
                       <a href="javascript:void(0);">privacy policy & terms</a>
                     </label>
                   </div>
-                </div>
+                </div> 
+--}}
                 <button class="btn btn-primary d-grid w-100" type="submit">회원가입</button>
               </form>
 

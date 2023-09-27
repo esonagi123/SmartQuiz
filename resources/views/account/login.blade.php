@@ -138,7 +138,8 @@
               <h4 class="mb-2">SmartQuiz에 오신걸 환영합니다👋</h4>
               <p class="mb-4"></p>
 
-              <form id="formAuthentication" class="mb-3" action="index.html" method="POST">
+              <form id="formAuthentication" class="mb-3" action="{{ url('login/check') }}" method="POST">
+                @csrf
                 <div class="mb-3">
                   <label for="email" class="form-label">아이디</label>
                   <input
