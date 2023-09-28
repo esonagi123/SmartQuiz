@@ -138,6 +138,7 @@
         });
     });
 
+    // 문제 타입 선택
     function showHideDiv(cardCount) {
         var selectBox = document.getElementById("largeSelect"+cardCount);
         var hiddenDiv = document.getElementById("hiddenDiv"+cardCount);
@@ -153,6 +154,7 @@
         }
     }    
 
+    // 선택지 생성
     function addInput(cardCount, questionID) {
 
         if (!usedValues[cardCount]) {
@@ -276,6 +278,7 @@
         return null; // 모든 값이 사용 중인 경우
     }
 
+    // 아직 미완성
     function updateQuestion() {
         var formData = $("#question" + cardCount).serialize();
         formData.append('number', cardCount);
@@ -296,6 +299,7 @@
         });
     }
 
+    // 문제 추가 버튼을 누르면
     function addCard2() {
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
@@ -318,6 +322,7 @@
         });
     }
 
+    // 문제 카드 생성
     function addCard(questionID) {
 
         inputCount = 0;
