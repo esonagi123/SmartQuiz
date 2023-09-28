@@ -24,14 +24,14 @@
         <div class="card mb-4">
             <form method="post" action="{{ route('quiz.store') }}">
                 @csrf
-                <h5 class="card-header">문제를 만들어볼까요?</h5>
+                <h5 class="card-header">✨ 문제를 만들어볼까요?</h5>
                 <div class="card-body">
                     <div class="mt-2 mb-3">
-                            <label for="largeInput" class="form-label">이 시험의 이름을 알려주세요.</label>
+                            <label for="largeInput" class="form-label">❗ 이 시험의 이름을 알려주세요.</label>
                             <input id="largeInput" class="form-control form-control-lg" type="text" name="name" placeholder="과목명 등">
                     </div>
                     <div class="mt-2 mb-3">
-                            <label for="largeInput" class="form-label">이 시험의 주제는 무엇인가요?</label>
+                            <label for="largeInput" class="form-label">❗ 이 시험의 주제는 무엇인가요?</label>
                             <input id="largeInput" class="form-control form-control-lg" type="text" name="subject" placeholder="시험, 상식, 퀴즈 등">
                             <div id="floatingInputHelp" class="form-text"></div>
                     </div>                  
