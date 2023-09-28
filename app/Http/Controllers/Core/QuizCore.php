@@ -95,7 +95,6 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
-
     // 문제 업데이트
 	public function ajax_QuestionUpdate(Request $request)
 	{
@@ -147,6 +146,7 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
+    // 선택지 삭제
 	public function ajax_ChoiceDestroy(Request $request)
 	{
 	
@@ -178,6 +178,39 @@ class QuizCore extends Controller
 		}
 		return response()->json($response);
 	}    
+
+    // 문제&선택지 초기화
+    public function ajax_reset(Request $request)
+    {
+		if ($request->input('testID')) {
+            $testID = $request->input('testID');
+            
+            $questions = Question::where('testID', $testID)->get();
+            $choices = Choice::leftJoin('questions', 'choices.qid', '=', 'questions.id')
+            ->select('choices.*', 'questions.testID')
+            ->where('questions.testID', $testID)
+            ->get();
+            
+            foreach ($choices as $choice) {
+                $choice->delete();
+            }
+
+            foreach ($questions as $question) {
+                $question->delete();
+            }
+
+            $response = [
+                'success' => true,
+            ];
+		} else {
+			$response = [
+				'success' => false,
+				'message' => '초기화 실패',
+			];
+		}
+
+		return response()->json($response);
+    }
 
     public function show($id)
     {

@@ -2,8 +2,6 @@
 
 @section('content')
 
-
-
 <style>
     .fade-element {
     opacity: 0; /* 초기에는 투명도 0으로 설정 */
@@ -25,15 +23,6 @@
     text-align: center;
     }
 
-    .button-bar button {
-    margin: 0 5px;
-    padding: 8px 16px;
-    background-color: #fff;
-    color: #333;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    }
 </style>
 
 
@@ -81,18 +70,43 @@
     </div>
 </div>
 
-  <!-- Fixed Button Bar -->
-  <div class="button-bar">
+<!-- Fixed Button Bar -->
+<div class="button-bar text-center">
     <button type="button" id="newQuestion" class="btn rounded-pill btn-primary" onclick="addCard2()">문제 추가</button>
-    <button type="button" class="btn rounded-pill btn-primary">저장하고 끝내기</button>
-    <button>Button 3</button>
-  </div>
+    <button type="button" class="btn rounded-pill btn-primary">저장</button>
+    <button type="button" class="btn rounded-pill btn-primary">종료</button>
+</div>
+  
+<!-- Modal -->
+<div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+        {{-- <div class="modal-header">
+            <h5 class="modal-title" id="modalCenterTitle"></h5>
+        </div> --}}
+        <div class="modal-body mt-3">
+            <div class="mb-4">
+                <h5><strong>❗만들고 있던 문제가 있어요 🧐</strong></h5>
+                <p><strong>이어서 만들까요?</strong></p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-danger" onclick="reset()">초기화</button>
+            <button type="button" class="btn btn-primary">이어서 만들기</button>
+        </div>
+        </div>
+    </div>
+</div>
+
 
 <script>
+
     var testID = @json($testID); // Laravel PHP 변수를 JavaScript 변수로 변환
     // var questionID = 1; // 테스트를 위한 임시 전역 변수
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
-    var cardCount = 0;
+    var cardCount = 0; // 문제 수
+    var maxInputs = 5; // 최대 보기 개수 
+    var inputCount = 0; // 보기 추가 횟수
+    var usedValues = {}; // 초기화    
 
     window.addEventListener('load', function() {
         // 페이지 로딩 시 자동 실행
@@ -115,7 +129,7 @@
                     addCard(questionID);
                     alert('AJAX 성공 ' + questionID);
                 } else {
-                    alert(data.message);
+                    $('#modalCenter').modal('show');
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -123,21 +137,6 @@
             }
         });
     });
-
-    // function showHideDiv() {
-    //     var selectBox = document.getElementById("largeSelect");
-    //     var hiddenDiv = document.getElementById("hiddenDiv");
-        
-    //     // 선택된 옵션의 값을 가져옵니다.
-    //     var selectedValue = selectBox.options[selectBox.selectedIndex].value;
-    
-    //     // 값이 1(객관식)일 경우
-    //     if (selectedValue === "1") {
-    //         hiddenDiv.style.display = "block";
-    //     } else {
-    //         hiddenDiv.style.display = "none";
-    //     }
-    // }
 
     function showHideDiv(cardCount) {
         var selectBox = document.getElementById("largeSelect"+cardCount);
@@ -154,12 +153,6 @@
         }
     }    
 
-    // $(document).on("change", "#largeSelect", function() {
-    //     showHideDiv();
-    // });
-    var maxInputs = 5; // 최대 인풋 개수 
-    var inputCount = 0;
-    var usedValues = {}; // 초기화
     function addInput(cardCount, questionID) {
 
         if (!usedValues[cardCount]) {
@@ -211,9 +204,6 @@
         var inputContainer = document.getElementById("inputContainer" + cardCount);
         inputContainer.appendChild(inputDiv);
 
-        // inputCount를 증가하지 않습니다. 대신, 사용한 Value 값을 usedValues 배열에 추가
-        // usedValues[cardCount].push(newValue);
-
         // Ajax로 선택지 정보를 저장할 수 있도록 코드 추가
         saveChoiceToServer(newValue, questionID);
 
@@ -221,7 +211,7 @@
         console.log("Contents:", usedValues[cardCount]);
     }
 
-    // 선택지 정보를 서버에 저장하는 함수 (Ajax로 호출)
+    // 선택지 정보를 서버에 저장
     function saveChoiceToServer(choiceValue, questionID) {
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
@@ -238,7 +228,7 @@
         });
     }
 
-    // 보기 삭제
+    // 선택지 삭제
     function removeInput(textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
         var confirmation = confirm(questionID + "(" + cardCount + ") 의 보기" + hiddenInputValue + "번을 삭제합니다..");
         
@@ -256,9 +246,6 @@
                     var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
                     inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
 
-                    // 사용한 Value 값을 usedValues 배열에서 제거
-                    // usedValues.splice(usedValues.indexOf(hiddenInputValue), 1);
-                    // 사용한 Value 값을 usedValues 배열에서 제거
                     var index = usedValues[cardCount].indexOf(hiddenInputValue);
                     if (index !== -1) {
                         usedValues[cardCount].splice(index, 1);
@@ -279,7 +266,7 @@
         }
     }
 
-    // 사용 가능한 가장 작은 Value 값을 찾아서 반환
+    // 보기의 사용 가능한 가장 작은 Value 값을 찾아서 반환
     function findUnusedValue(cardCount) {
         for (var value = 1; value <= maxInputs; value++) {
             if (!usedValues[cardCount].includes(value)) {
@@ -289,9 +276,7 @@
         return null; // 모든 값이 사용 중인 경우
     }
 
-
-    function updateQuestion()
-    {
+    function updateQuestion() {
         var formData = $("#question" + cardCount).serialize();
         formData.append('number', cardCount);
 
@@ -309,8 +294,6 @@
                 alert('fail..');
             }
         });
-
-        
     }
 
     function addCard2() {
@@ -385,6 +368,32 @@
         
         cardCount++;
     }
+
+    // 이 시험의 모든 문제+선택지 삭제
+    function reset() {
+        var confirmation = confirm("이 시험에서 생성된 모든 문제를 삭제합니다.");
+        if (confirmation) {
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                url: "{{ url('quiz/reset') }}",
+                type: "DELETE",
+                data: { testID: testID },
+                dataType: "json",
+                success: function(data) {
+                    if (data.success === true) {
+                        alert('모든 문제를 삭제했어요.')
+                        location.reload()
+                    } else {
+                        alert('초기화 실패!')
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+                }
+            });
+        }
+    }
+
 </script>
 
 @endsection()

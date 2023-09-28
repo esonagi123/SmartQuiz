@@ -31,7 +31,9 @@ Route::get('quiz/{testID}/create', [QuizCore::class, 'createQuestion'])->name('q
 Route::post('quiz/storeQuestion', [QuizCore::class, 'ajax_QuestionStore'])->name('ajax.QuestionStore');
 Route::post('quiz/updateQuestion', [QuizCore::class, 'ajax_QuestionUpdate'])->name('ajax.QuestionUpdate');
 Route::post('quiz/storeChoice', [QuizCore::class, 'ajax_ChoiceStore'])->name('ajax.ChoiceStore');
+
 Route::delete('quiz/destroyChoice', [QuizCore::class, 'ajax_ChoiceDestroy'])->name('ajax.ChoiceDestroy');
+Route::delete('quiz/reset', [QuizCore::class, 'ajax_reset'])->name('ajax.QuestionReset');
 
 
 Route::get('register', [Account::class, 'index'])->name('register');
