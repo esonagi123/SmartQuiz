@@ -127,7 +127,7 @@
                 if (data.success === true) {
                     var questionID = data.questionID;
                     addCard(questionID);
-                    alert('AJAX 성공 ' + questionID);
+                    alert('문제 생성 완료 QID : ' + questionID);
                 } else {
                     $('#modalCenter').modal('show');
                 }
@@ -280,18 +280,18 @@
 
     // 아직 미완성
     function updateQuestion() {
-        var formData = $("#question" + cardCount).serialize();
-        formData.append('number', cardCount);
-
+        var formData = $("#question" + (cardCount-1)).serialize();
+        // var form = document.getElementById("question" + cardCount);
+        // var formData = new FormData(form);
+        console.log(formData);
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
-            url: "{{ url('quiz/updateQuestuion') }}", // AjaxController -> index 함수 실행
-            type: "POST",
+            url: "{{ url('quiz/updateQuestion') }}", // AjaxController -> index 함수 실행
+            type: "PATCH",
             data: formData, // ex) $request->input('id') == var movieID
             dataType: "json",
             success: function(data) {
-                alert('Questuion Update Complete!');
-                addCard();
+                alert('Question Update Complete!');
             },
             error: function() {
                 alert('fail..');
@@ -301,6 +301,8 @@
 
     // 문제 추가 버튼을 누르면
     function addCard2() {
+        updateQuestion();
+
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
             url: "{{ url('quiz/storeQuestion') }}",
@@ -311,7 +313,7 @@
                 if (data.success === true) {
                     var questionID = data.questionID;
                     addCard(questionID);
-                    alert('AJAX 성공 ' + questionID);
+                    alert('문제 생성 완료 QID : ' + questionID);
                 } else {
                     alert(data.message);
                 }
@@ -330,35 +332,35 @@
         
         var cardHtml = `
         <form id="question${cardCount}">
-        <div class="card mb-4 ">
-                <input type="hidden" class="card-header form-control" name="number" value="0">
-                <div class="mt-4 card-body">
-                    <div class="mt-2 mb-3">
-                            <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
-                            <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}" placeholder="" rows="5"></textarea>
-                    </div>
-                    <div class="mt-2 mb-3">
-                        <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
-                        <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount})">
-                          <option>선택하세요.</option>
-                          <option value="1">선택형</option>
-                          <option value="2">서술형</option>
-                          <option value="3">O/X</option>
-                        </select>
-                    </div>
+            <input type="hidden" name="questionID" value="${questionID}">
+            <div class="card mb-4 ">
+                    <input type="hidden" class="card-header form-control" name="number" value="${cardCount}">
+                    <div class="mt-4 card-body">
+                        <div class="mt-2 mb-3">
+                                <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
+                                <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}" placeholder="" rows="5"></textarea>
+                        </div>
+                        <div class="mt-2 mb-3">
+                            <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
+                            <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount})">
+                            <option>선택하세요.</option>
+                            <option value="1">선택형</option>
+                            <option value="2">서술형</option>
+                            <option value="3">O/X</option>
+                            </select>
+                        </div>
 
-                    <div id="hiddenDiv${cardCount}" style="display: none;">
-                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
-                        <div id="inputContainer${cardCount}"></div>
+                        <div id="hiddenDiv${cardCount}" style="display: none;">
+                            <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
+                            <div id="inputContainer${cardCount}"></div>
+                        </div>
+                        
+                        <div class="text-end mt-5 mb-3">
+                            <button class="btn rounded-pill btn-danger" onclick="removeCard(this)">카드 삭제</button>
+                        </div>                   
                     </div>
-                    
-                    <div class="text-end mt-5 mb-3">
-                        <button class="btn rounded-pill btn-danger" onclick="removeCard(this)">카드 삭제</button>
-                    </div>                   
-                </div>
-        </div>
-        </form>
-        `;
+            </div>
+        </form>`;
 
         // 새로운 카드를 cardContainer에 추가
         var cardContainer = document.getElementById("cardContainer");
