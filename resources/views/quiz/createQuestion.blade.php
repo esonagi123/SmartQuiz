@@ -278,7 +278,7 @@
         return null; // 모든 값이 사용 중인 경우
     }
 
-    // 아직 미완성
+    // 문제 추가 시 업데이트 : 미완성
     function updateQuestion() {
         var formData = $("#question" + (cardCount-1)).serialize();
         // var form = document.getElementById("question" + cardCount);
