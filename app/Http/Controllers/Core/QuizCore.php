@@ -96,7 +96,7 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
-    // 문제&선택지 업데이트 (문제 추가 시 자동 저장)
+    // 문제&선택지 업데이트 updateQuestion() & save()
 	public function ajax_QuestionUpdate(Request $request)
 	{
         $questionID = $request->input('questionID');

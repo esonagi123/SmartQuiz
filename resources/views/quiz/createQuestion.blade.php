@@ -72,11 +72,11 @@
 
 <!-- Fixed Button Bar -->
 <div class="button-bar text-center">
-    <button type="button" id="newQuestion" class="btn rounded-pill btn-primary" onclick="addCard2()">문제 추가</button>
-    <button type="button" class="btn rounded-pill btn-primary">저장</button>
-    <button type="button" class="btn rounded-pill btn-primary">종료</button>
+    <button type="button" id="newQuestion" class="btn rounded-pill btn-icon btn-success" onclick="addCard2()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>문제 추가</span>"><box-icon name='plus' flip='horizontal' color='#ffffff' ></box-icon></button>
+    <button type="button" class="btn rounded-pill btn-icon btn-warning" onclick="save()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>저장</span>"><box-icon name='save' type='solid' animation='tada' flip='horizontal' color='#ffffff' ></box-icon></button>
+    <button type="button" class="btn rounded-pill btn-icon btn-danger" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>초기화</span>"><box-icon name='reset' flip='horizontal' color='#ffffff' ></box-icon></button>
 </div>
-  
+
 <!-- Modal -->
 <div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -394,6 +394,31 @@
         }
     }
 
+    // 전체 저장
+    function save() {
+        alert('현재 cardCount : ' + cardCount);
+
+        for (var i = 1; i < cardCount; i++) {
+            alert(i + "번 문제를 저장합니다..");
+            var formData = $("#question" + i).serialize();
+            
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                url: "{{ url('quiz/updateQuestion') }}",
+                type: "PATCH",
+                data: formData,
+                dataType: "json",
+                success: function(data) {
+                    alert("완료!");
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+                }
+            }); 
+        }
+        alert('i 초기화..');
+        i = 0;
+    }
 </script>
 
 @endsection()
