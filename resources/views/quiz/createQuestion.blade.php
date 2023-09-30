@@ -154,9 +154,8 @@
         }
     }    
 
-    // 선택지 생성
+    // 선택지 만들기
     function addInput(cardCount, questionID) {
-
         if (!usedValues[cardCount]) {
             usedValues[cardCount] = [];
         }
@@ -167,54 +166,17 @@
             return;
         }
 
-
         // 사용 가능한 Value 값을 찾아서 할당
         var newValue = findUnusedValue(cardCount);
 
         // 사용한 Value 값을 usedValues 배열에 추가
         usedValues[cardCount].push(newValue);
-
-        // text 타입의 인풋 태그 생성
-        var newTextInput = document.createElement("input");
-        newTextInput.type = "text";
-        newTextInput.name = "text_option_" + newValue; // 각 인풋 태그마다 고유한 이름을 설정.
-        newTextInput.placeholder = "보기 " + (newValue) + "번";
-        newTextInput.classList.add("form-control");
-
-        // hidden 타입의 인풋 태그 생성
-        var newHiddenInput = document.createElement("input");
-        newHiddenInput.type = "hidden";
-        newHiddenInput.name = "hidden_option_" + newValue; // 각 인풋 태그마다 고유한 이름을 설정.
-        newHiddenInput.value = newValue; // 값을 설정
-
-        // 삭제 버튼을 생성
-        var deleteButton = document.createElement("button");
-        deleteButton.type = "button";
-        deleteButton.classList.add("btn", "btn-danger");
-        deleteButton.textContent = "삭제";
-        deleteButton.onclick = function() {
-            removeInput(newTextInput, newHiddenInput, newValue, questionID, cardCount);
-        };
-
-        // 인풋 태그와 삭제 버튼을 감싸는 div를 생성
-        var inputDiv = document.createElement("div");
-        inputDiv.appendChild(newTextInput);
-        inputDiv.appendChild(newHiddenInput);
-        inputDiv.appendChild(deleteButton);
-
-        // 생성한 div를 inputContainer에 추가
-        var inputContainer = document.getElementById("inputContainer" + cardCount);
-        inputContainer.appendChild(inputDiv);
-
         // Ajax로 선택지 정보를 저장할 수 있도록 코드 추가
-        saveChoiceToServer(newValue, questionID);
-
-        console.log("Type:", typeof usedValues[cardCount]);
-        console.log("Contents:", usedValues[cardCount]);
+        saveChoiceToServer(cardCount, newValue, questionID);
     }
 
-    // 선택지 정보를 서버에 저장
-    function saveChoiceToServer(choiceValue, questionID) {
+    // 선택지 정보를 서버에 저장 후 input 생성
+    function saveChoiceToServer(cardCount, choiceValue, questionID) {
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
             url: "{{ url('quiz/storeChoice') }}", // AjaxController -> index 함수 실행
@@ -222,7 +184,39 @@
             data: { questionID: questionID, number: choiceValue }, // ex) $request->input('id') == var movieID
             dataType: "json",
             success: function(data) {
-                alert('Choice Store Complete!');
+                alert('Choice Store Complete! : ' + data.choiceID);
+
+                // 내용 text input
+                var newTextInput = document.createElement("input");
+                newTextInput.type = "text";
+                newTextInput.name = "choice" + choiceValue; // 각 태그마다 고유한 이름을 설정.
+                newTextInput.placeholder = "보기 " + (choiceValue) + "번";
+                newTextInput.classList.add("form-control");
+
+                // 번호 hidden input
+                var newHiddenInput = document.createElement("input");
+                newHiddenInput.type = "hidden";
+                newHiddenInput.name = "choiceNumber" + choiceValue; // 각 태그마다 고유한 이름을 설정.
+                newHiddenInput.value = choiceValue; // 사용 가능한 Value 값
+
+                // 삭제 버튼을 생성
+                var deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.classList.add("btn", "btn-icon", "btn-danger");
+                deleteButton.innerHTML = "<i class='bx bxs-trash-alt' ></i>";
+                deleteButton.onclick = function() {
+                    removeInput(newTextInput, newHiddenInput, choiceValue, questionID, cardCount);
+                };
+
+                // 인풋 태그와 삭제 버튼을 감싸는 div를 생성
+                var inputDiv = document.createElement("div");
+                inputDiv.appendChild(newTextInput);
+                inputDiv.appendChild(newHiddenInput);
+                inputDiv.appendChild(deleteButton);
+
+                // 생성한 div를 inputContainer에 추가
+                var inputContainer = document.getElementById("inputContainer" + cardCount);
+                inputContainer.appendChild(inputDiv);                
             },
             error: function() {
                 alert('fail..');
@@ -257,7 +251,7 @@
                     var inputElements = inputContainer.querySelectorAll("input[type='text']");
                     for (var i = 0; i < inputElements.length; i++) {
                         var newValue = usedValues[cardCount][i];
-                        inputElements[i].name = "text_option_" + newValue;
+                        inputElements[i].name = "choice" + newValue;
                         inputElements[i].placeholder = "보기 " + (newValue) + "번";
                     }
                 },
@@ -278,7 +272,7 @@
         return null; // 모든 값이 사용 중인 경우
     }
 
-    // 문제 추가 시 업데이트 : 미완성
+    // 문제 추가 시 Question + Choice 업데이트 
     function updateQuestion() {
         var formData = $("#question" + (cardCount-1)).serialize();
         // var form = document.getElementById("question" + cardCount);
@@ -293,9 +287,9 @@
             success: function(data) {
                 alert('Question Update Complete!');
             },
-            error: function() {
-                alert('fail..');
-            }
+            error: function(jqXHR, textStatus, errorThrown) {
+                    alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+                }
         });
     }
 
@@ -333,34 +327,33 @@
         var cardHtml = `
         <form id="question${cardCount}">
             <input type="hidden" name="questionID" value="${questionID}">
-            <div class="card mb-4 ">
-                    <input type="hidden" class="card-header form-control" name="number" value="${cardCount}">
-                    <div class="mt-4 card-body">
-                        <div class="mt-2 mb-3">
-                                <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
-                                <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}" placeholder="" rows="5"></textarea>
-                        </div>
-                        <div class="mt-2 mb-3">
-                            <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
-                            <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount})">
+            <div class="card mb-4">
+                <input type="hidden" class="card-header form-control" name="number" value="${cardCount}">
+                <div class="mt-4 card-body">
+                    <div class="mt-2 mb-3">
+                        <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
+                        <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}" placeholder="" rows="5"></textarea>
+                    </div>
+                    <div class="mt-2 mb-3">
+                        <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
+                        <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount})">
                             <option>선택하세요.</option>
                             <option value="1">선택형</option>
                             <option value="2">서술형</option>
                             <option value="3">O/X</option>
-                            </select>
-                        </div>
-
-                        <div id="hiddenDiv${cardCount}" style="display: none;">
-                            <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
-                            <div id="inputContainer${cardCount}"></div>
-                        </div>
-                        
-                        <div class="text-end mt-5 mb-3">
-                            <button class="btn rounded-pill btn-danger" onclick="removeCard(this)">카드 삭제</button>
-                        </div>                   
+                        </select>
                     </div>
+                    <div id="hiddenDiv${cardCount}" style="display: none;">
+                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
+                        <div id="inputContainer${cardCount}"></div>
+                    </div>
+                    <div class="text-end mt-5 mb-3">
+                        <button class="btn rounded-pill btn-danger" onclick="removeCard(this)">카드 삭제</button>
+                    </div>
+                </div>
             </div>
-        </form>`;
+        `;
+
 
         // 새로운 카드를 cardContainer에 추가
         var cardContainer = document.getElementById("cardContainer");

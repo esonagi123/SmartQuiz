@@ -29,6 +29,7 @@ class QuizCore extends Controller
         return view('quiz.createQuestion', ['testID' => $testID]);
     }
 
+    // 시험 생성
     public function store(Request $request)
     {
         $testModel = new Test();
@@ -101,14 +102,29 @@ class QuizCore extends Controller
         $questionID = $request->input('questionID');
         $number = $request->input('number');
 
+        // 동적 생성된 input name을 위한 코드
         $name = 'name' . $number; // 문제명
         $gubun = 'gubun' . $number; // 문제 유형
 
+        // 문제 정보 Update
         $questionModel = Question::find($questionID);
         $questionModel->question = $request->input($name);
         $questionModel->gubun = $request->input($gubun);
         
         $questionModel->save();
+
+        // 선택지 정보 Update
+        // $choiceCount = Choice::where('qid', $questionID)->select('number')->count();
+
+        $choices = Choice::where('qid', $questionID)->orderBy('number', 'asc')->get();
+        foreach($choices as $choice) {
+
+            // $choiceModel = Choice::where('qid', $questionID)->where('number', $cNumber)->first();
+            
+            $inputValue = 'choice' . $choice->number;
+            $choice->content = $request->input($inputValue);
+            $choice->save();
+        }
 
         $response = [
             'success' => true,
