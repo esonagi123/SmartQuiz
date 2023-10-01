@@ -159,7 +159,8 @@
         if (!usedValues[cardCount]) {
             usedValues[cardCount] = [];
         }
-
+        console.log(usedValues[cardCount]);
+        
         // 최대 인풋 개수에 도달하면 더 이상 인풋을 추가하지 않음.
         if (usedValues[cardCount].length >= maxInputs) {
             alert("최대 " + maxInputs + "개만 만들 수 있어요.");

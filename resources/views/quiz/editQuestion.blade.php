@@ -32,11 +32,11 @@
         <form id="question{{ $question->number }}">
             <input type="hidden" name="questionID" value="{{ $question->id }}">
             <div class="card mb-4">
-                <input type="hidden" class="card-header form-control" name="number" value="{{ $question->number }}">
+                <input type="text" class="card-header form-control" name="number" value="{{ $question->number }}">
                 <div class="mt-4 card-body">
                     <div class="mt-2 mb-3">
                         <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
-                        <textarea id="largeInput{{ $question->number }}" class="form-control form-control-lg" name="name${{ $question->number }}" placeholder="" rows="5">{{ $question->question }}</textarea>
+                        <textarea id="largeInput{{ $question->number }}" class="form-control form-control-lg" name="name{{ $question->number }}" placeholder="" rows="5">{{ $question->question }}</textarea>
                     </div>
                     <div class="mt-2 mb-3">
                         <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
@@ -57,11 +57,36 @@
                                 <option value="1">선택형</option>
                                 <option value="2">서술형</option>
                                 <option value="3" selected>O/X</option>
+                            @else
+                            <option>선택하세요.</option>
+                            <option value="1">선택형</option>
+                            <option value="2">서술형</option>
+                            <option value="3">O/X</option>                            
                             @endif
                         </select>
                         
                     </div>
                     @if ($items['choices'][$question->id] && $question->gubun == 1)
+                        <div id="hiddenDiv{{ $question->number }}" style="display: block;">
+                            <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput({{ $question->number }}, {{ $question->id }})">보기 추가</button>
+                            <div id="inputContainer{{ $question->number }}">
+                                @foreach ($items['choices'][$question->id] as $choice)
+                                    <div>
+                                        <input type="hidden" name="choiceNumber{{ $choice->number }}" value="{{ $choice->number }}" id="{{ $question->number}}_{{ $choice->number }}">
+                                        <input type="text" class="form-control" name="choice{{ $choice->number }}" value="{{ $choice->content }}" placeholder="보기 {{ $choice->number }} 번" id="{{ $question->number}}_{{ $choice->number }}">
+                                        <button id="{{ $question->number}}_{{ $choice->number }}" type="button" class="btn btn-icon btn-danger" onclick="removeChoice('{{ $choice->number }}', '{{ $choice->id }}', '{{ $question->id }}')""><i class='bx bxs-trash-alt'></i></button>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>                          
+                    @else
+                        <div id="hiddenDiv{{ $question->number }}" style="display: none;">
+                            <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput({{ $question->number }}, {{ $question->id }})">보기 추가</button>
+                            <div id="inputContainer{{ $question->number }}"></div>
+                        </div>                            
+                    @endif
+
+                    {{-- @if ($items['choices'][$question->id] && $question->gubun == 1)
                         <div id="hiddenDiv{{ $question->number }}" style="display: block;">
                     @else
                         <div id="hiddenDiv{{ $question->number }}" style="display: hidden;">
@@ -76,7 +101,8 @@
                                 </div>
                             @endforeach
                         </div>
-                    </div>
+                    </div>                     --}}
+                    
                     <div class="text-end mt-5 mb-3">
                         <button class="btn rounded-pill btn-danger" onclick="removeCard(this)">카드 삭제</button>
                     </div>
@@ -107,12 +133,21 @@
     var cardCount = questionCount; // 만들어진 문제 수
     var maxInputs = 5; // 최대 보기 개수 
     var inputCount = 0; // 보기 추가 횟수
-    var usedValues = {}; // 초기화
+    //var usedValues = {}; // 초기화
+    var usedValues = {};
+
+    @foreach($value as $questionID => $choiceNumbers)
+        usedValues[{{ $questionID }}] = {!! json_encode($choiceNumbers) !!}.map(function(number) {
+            return parseInt(number, 10);
+        });
+    @endforeach
+
 
     window.addEventListener('load', function() {
         // 페이지 로딩 시 자동 실행
         const fadeElement = document.querySelector('.fade-element'); // JavaScript를 사용하여 페이드 효과를 적용
         fadeElement.style.opacity = 1; // 투명도를 1로 설정하여 나타나게 함
+        alert("문제 수 : " + cardCount);
     });
 
     // 문제 타입 선택
@@ -136,7 +171,7 @@
         if (!usedValues[cardCount]) {
             usedValues[cardCount] = [];
         }
-
+        console.log(usedValues[cardCount]);
         // 최대 인풋 개수에 도달하면 더 이상 인풋을 추가하지 않음.
         if (usedValues[cardCount].length >= maxInputs) {
             alert("최대 " + maxInputs + "개만 만들 수 있어요.");
@@ -232,6 +267,43 @@
                         var newValue = usedValues[cardCount][i];
                         inputElements[i].name = "choice" + newValue;
                         inputElements[i].placeholder = "보기 " + (newValue) + "번";
+                    }
+                },
+                error: function() {
+                    alert('fail..');
+                }
+            });
+        }
+    }
+
+    // 선택지 삭제 2 (서버에서 불러온 문제들 전용)
+    function removeChoice(choiceNumber, choiceID, questionID) {
+        var confirmation = confirm(choiceNumber + "번을 삭제합니다..");
+        if (confirmation) {
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                url: "{{ url('quiz/destroyChoice') }}",
+                type: "DELETE",
+                data: { choiceID: choiceID, questionID: questionID },
+                dataType: "json",
+                success: function(data) {
+                    alert('!Delete Complete!');
+                    // 선택한 보기 번호에 해당하는 input 태그들을 삭제
+                    var choiceNumberInput = document.getElementById(questionID + '_' + choiceNumber);
+                    var choiceInput = document.getElementById(questionID + '_' + choiceNumber);
+
+                    // 삭제 버튼도 가져오기
+                    var deleteButton = document.getElementById(questionID + '_' + choiceNumber);
+
+                    // 각 input 태그와 삭제 버튼이 존재하면 삭제
+                    if (choiceNumberInput) {
+                        choiceNumberInput.parentNode.removeChild(choiceNumberInput);
+                    }
+                    if (choiceInput) {
+                        choiceInput.parentNode.removeChild(choiceInput);
+                    }
+                    if (deleteButton) {
+                        deleteButton.parentNode.removeChild(deleteButton);
                     }
                 },
                 error: function() {
@@ -378,7 +450,7 @@
     function save() {
         alert('현재 cardCount : ' + cardCount);
 
-        for (var i = 1; i < cardCount; i++) {
+        for (var i = 1; i <= cardCount; i++) {
             alert(i + "번 문제를 저장합니다..");
             var formData = $("#question" + i).serialize();
             
@@ -397,7 +469,7 @@
             }); 
         }
         alert('i 초기화..');
-        i = 0;
+        i = 1;
     }
 
 </script>

@@ -38,9 +38,21 @@ class QuizCore extends Controller
         $questionCount = Question::where('testID', $testID)->count();
         
         $choices = [];
-        foreach($questions as $question) {
+        $value = [];
+        
+        foreach ($questions as $question) {
             $choices[$question->id] = Choice::where('qid', $question->id)->get();
+            
+            // 질문에 대한 선택지 번호 배열을 초기화
+            $value[$question->number] = [];
+            
+            foreach ($choices[$question->id] as $choice) {
+                $value[$question->number][] = $choice->number;
+            }
         }
+        
+
+
 
         $result = [
             'questions' => $questions,
@@ -53,6 +65,7 @@ class QuizCore extends Controller
             'testID' => $testID,
             'testModel' => $testModel,
             'items' => $result,
+            'value' => $value,
 
         ]);
     }
