@@ -25,45 +25,65 @@
 
 </style>
 
-
-
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-3 mb-4">문제 만들기 📝</h4>
     <div class="col-md-12">
-
-        {{-- <form method="patch" action="">
-            @csrf
+    @foreach($items['questions'] as $question)
+        <form id="question{{ $question->number }}">
+            <input type="hidden" name="questionID" value="{{ $question->id }}">
             <div class="card mb-4">
-                <input type="hidden" class="card-header form-control" name="number" value="0">
+                <input type="hidden" class="card-header form-control" name="number" value="{{ $question->number }}">
                 <div class="mt-4 card-body">
                     <div class="mt-2 mb-3">
-                            <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
-                            <textarea id="largeInput" class="form-control form-control-lg" name="name" placeholder="" rows="5"></textarea>
+                        <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
+                        <textarea id="largeInput{{ $question->number }}" class="form-control form-control-lg" name="name${{ $question->number }}" placeholder="" rows="5">{{ $question->question }}</textarea>
                     </div>
                     <div class="mt-2 mb-3">
                         <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
-                        <select id="largeSelect" class="form-select form-select-lg" onchange="showHideDiv()">
-                          <option>선택하세요.</option>
-                          <option value="1">선택형</option>
-                          <option value="2">서술형</option>
-                          <option value="3">O/X</option>
+                        
+                        <select id="largeSelect${{ $question->number }}" class="form-select form-select-lg" name="gubun{{ $question->number }}" onchange="showHideDiv({{ $question->number }})">
+                            @if ($question->gubun == 1)
+                                <option>선택하세요.</option>
+                                <option value="1" selected>선택형</option>
+                                <option value="2">서술형</option>
+                                <option value="3">O/X</option>
+                            @elseif ($question->gubun == 2)
+                                <option>선택하세요.</option>
+                                <option value="1">선택형</option>
+                                <option value="2" selected>서술형</option>
+                                <option value="3">O/X</option>
+                            @elseif ($question->gubun == 3)
+                                <option>선택하세요.</option>
+                                <option value="1">선택형</option>
+                                <option value="2">서술형</option>
+                                <option value="3" selected>O/X</option>
+                            @endif
                         </select>
+                        
                     </div>
-
-                    <div id="hiddenDiv" style="display: none;">
-                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput()">보기 추가</button>
+                    @if ($items['choices'][$question->id] && $question->gubun == 1)
+                        <div id="hiddenDiv{{ $question->number }}" style="display: block;">
+                    @else
+                        <div id="hiddenDiv{{ $question->number }}" style="display: hidden;">
+                    @endif
+                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput({{ $question->number }}, {{ $question->id }})">보기 추가</button>
+                        <div id="inputContainer{{ $question->number }}">
+                            @foreach ($items['choices'][$question->id] as $choice)
+                                <div>
+                                    <input type="hidden" name="choiceNumber{{ $choice->number }}" value="{{ $choice->number }}">
+                                    <input type="text" class="form-control" name="choice{{ $choice->number }}" value="{{ $choice->content }}" placeholder="보기 {{ $choice->number }} 번">
+                                    <button type="button" class="btn btn-icon btn-danger" onclick=""><i class='bx bxs-trash-alt' ></i></button>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
-                    <div id="inputContainer"></div>
-
                     <div class="text-end mt-5 mb-3">
-                        <button type="button" class="btn rounded-pill btn-primary" onclick="addCard()">문제 추가</button>
+                        <button class="btn rounded-pill btn-danger" onclick="removeCard(this)">카드 삭제</button>
                     </div>
-                    <div class="text-end">
-                        <button type="button" class="btn rounded-pill btn-primary">저장하고 끝내기</button>
-                    </div>                    
                 </div>
             </div>
-        </form> --}}
+        </form>
+    @endforeach
 
         <div id="cardContainer"></div>
         
@@ -77,71 +97,28 @@
     <button type="button" class="btn rounded-pill btn-icon btn-danger" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>초기화</span>"><box-icon name='reset' flip='horizontal' color='#ffffff' ></box-icon></button>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-        {{-- <div class="modal-header">
-            <h5 class="modal-title" id="modalCenterTitle"></h5>
-        </div> --}}
-        <div class="modal-body mt-3">
-            <div class="mb-4">
-                <h5><strong>❗만들고 있던 문제가 있어요 🧐</strong></h5>
-                <p><strong>이어서 만들까요?</strong></p>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-danger" onclick="reset()">초기화</button>
-            <a class="btn btn-primary" href="{{ url('quiz/' . $testID . '/edit' ) }}">이어서 만들기</a>
-        </div>
-        </div>
-    </div>
-</div>
-
-
 <script>
+    // Laravel PHP 변수를 JavaScript 변수로 변환
+    var testID = @json($testID); 
+    var questionCount = @json($items['questionCount']);
 
-    var testID = @json($testID); // Laravel PHP 변수를 JavaScript 변수로 변환
-    // var questionID = 1; // 테스트를 위한 임시 전역 변수
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
-    var cardCount = 0; // 문제 수
+
+    var cardCount = questionCount; // 만들어진 문제 수
     var maxInputs = 5; // 최대 보기 개수 
     var inputCount = 0; // 보기 추가 횟수
-    var usedValues = {}; // 초기화    
+    var usedValues = {}; // 초기화
 
     window.addEventListener('load', function() {
         // 페이지 로딩 시 자동 실행
-        
         const fadeElement = document.querySelector('.fade-element'); // JavaScript를 사용하여 페이드 효과를 적용
         fadeElement.style.opacity = 1; // 투명도를 1로 설정하여 나타나게 함
-        
-        cardCount++;
-
-        // Question 생성
-        $.ajax({
-            headers: {'X-CSRF-TOKEN': csrfToken},
-            url: "{{ url('quiz/storeQuestion') }}",
-            type: "POST",
-            data: { testID: testID, number: cardCount },
-            dataType: "json",
-            success: function(data) {
-                if (data.success === true) {
-                    var questionID = data.questionID;
-                    addCard(questionID);
-                    alert('문제 생성 완료 QID : ' + questionID);
-                } else {
-                    $('#modalCenter').modal('show');
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert("AJAX 오류: " + textStatus + " - " + errorThrown);
-            }
-        });
     });
 
     // 문제 타입 선택
     function showHideDiv(cardCount) {
-        var selectBox = document.getElementById("largeSelect"+cardCount);
-        var hiddenDiv = document.getElementById("hiddenDiv"+cardCount);
+        var selectBox = document.getElementById("largeSelect" + cardCount);
+        var hiddenDiv = document.getElementById("hiddenDiv" + cardCount);
         
         // 선택된 옵션의 값을 가져옵니다.
         var selectedValue = selectBox.options[selectBox.selectedIndex].value;
@@ -172,9 +149,9 @@
         // 사용한 Value 값을 usedValues 배열에 추가
         usedValues[cardCount].push(newValue);
         
+
         // Ajax로 선택지 정보를 저장할 수 있도록 코드 추가
         saveChoiceToServer(cardCount, newValue, questionID);
-        
     }
 
     // 선택지 정보를 서버에 저장 후 input 생성
@@ -325,7 +302,7 @@
 
         inputCount = 0;
         // usedValues = [];
-        
+
         var cardHtml = `
         <form id="question${cardCount}">
             <input type="hidden" name="questionID" value="${questionID}">
@@ -368,7 +345,7 @@
         selectElement.addEventListener("change", function() {
             showHideDiv(cardCount)
         });
-        
+
         cardCount++;
     }
 
@@ -422,6 +399,7 @@
         alert('i 초기화..');
         i = 0;
     }
+
 </script>
 
 @endsection()

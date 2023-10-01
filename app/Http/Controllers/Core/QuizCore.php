@@ -24,12 +24,40 @@ class QuizCore extends Controller
         return view('quiz.create');
     }
 
+    // 문제 생성 뷰
     public function createQuestion($testID)
     {
         return view('quiz.createQuestion', ['testID' => $testID]);
     }
 
-    // 시험 생성
+    // 문제 수정 뷰
+    public function editQuestion($testID)
+    {
+        $testModel = Test::find($testID);
+        $questions = Question::where('testID', $testID)->get();
+        $questionCount = Question::where('testID', $testID)->count();
+        
+        $choices = [];
+        foreach($questions as $question) {
+            $choices[$question->id] = Choice::where('qid', $question->id)->get();
+        }
+
+        $result = [
+            'questions' => $questions,
+            'questionCount' => $questionCount,
+            'choices' => $choices,
+        ];
+
+        return view('quiz.editQuestion',
+        [
+            'testID' => $testID,
+            'testModel' => $testModel,
+            'items' => $result,
+
+        ]);
+    }
+
+    // 시험 생성 
     public function store(Request $request)
     {
         $testModel = new Test();
@@ -46,7 +74,7 @@ class QuizCore extends Controller
         
     }
 
-    // 문제 생성
+    // 문제 생성 (Ajax)
 	public function ajax_QuestionStore(Request $request)
 	{
         $testID = $request->input('testID');
@@ -96,7 +124,7 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
-    // 문제&선택지 업데이트 updateQuestion() & save()
+    // 문제&선택지 업데이트 updateQuestion() & save() (Ajax)
 	public function ajax_QuestionUpdate(Request $request)
 	{
         $questionID = $request->input('questionID');
@@ -133,7 +161,7 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
-    // 선택지 생성
+    // 선택지 생성 (Ajax)
 	public function ajax_ChoiceStore(Request $request)
 	{
 	
@@ -162,7 +190,7 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
-    // 선택지 삭제
+    // 선택지 삭제 (Ajax)
 	public function ajax_ChoiceDestroy(Request $request)
 	{
 	
@@ -195,7 +223,7 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}    
 
-    // 문제&선택지 초기화
+    // 문제&선택지 초기화 (Ajax)
     public function ajax_reset(Request $request)
     {
 		if ($request->input('testID')) {
@@ -226,25 +254,5 @@ class QuizCore extends Controller
 		}
 
 		return response()->json($response);
-    }
-
-    public function show($id)
-    {
-        //
-    }
-
-    public function edit($id)
-    {
-        //
-    }
-
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    public function destroy($id)
-    {
-        //
     }
 }

@@ -24,16 +24,19 @@ Route::get('/', function () {
 Route::get('main', [MainController::class, 'index'])->name('main.index');
 
 Route::get('quiz', [QuizCore::class, 'index'])->name('quiz.index');
-Route::get('quiz/create', [QuizCore::class, 'create'])->name('quiz.create');
+Route::get('quiz/create', [QuizCore::class, 'create'])->name('quiz.create'); // 시험 생성 뷰
 Route::post('quiz/store', [QuizCore::class, 'store'])->name('quiz.store');
 
-Route::get('quiz/{testID}/create', [QuizCore::class, 'createQuestion'])->name('quiz.createQuestion');
+Route::get('quiz/{testID}/create', [QuizCore::class, 'createQuestion'])->name('quiz.createQuestion'); // 문제 생성 뷰
 Route::post('quiz/storeQuestion', [QuizCore::class, 'ajax_QuestionStore'])->name('ajax.QuestionStore');
 Route::patch('quiz/updateQuestion', [QuizCore::class, 'ajax_QuestionUpdate'])->name('ajax.QuestionUpdate');
 Route::post('quiz/storeChoice', [QuizCore::class, 'ajax_ChoiceStore'])->name('ajax.ChoiceStore');
 
 Route::delete('quiz/destroyChoice', [QuizCore::class, 'ajax_ChoiceDestroy'])->name('ajax.ChoiceDestroy');
 Route::delete('quiz/reset', [QuizCore::class, 'ajax_reset'])->name('ajax.QuestionReset');
+
+Route::get('quiz/{testID}/edit', [QuizCore::class, 'editQuestion'])->name('quiz.editQuestion'); // 문제 수정 뷰
+
 
 
 Route::get('register', [Account::class, 'index'])->name('register');
