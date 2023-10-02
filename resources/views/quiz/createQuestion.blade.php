@@ -139,7 +139,7 @@
     });
 
     // 문제 타입 선택
-    function showHideDiv(cardCount) {
+    function showHideDiv(cardCount, questionID) {
         var selectBox = document.getElementById("largeSelect"+cardCount);
         var hiddenDiv = document.getElementById("hiddenDiv"+cardCount);
         
@@ -149,6 +149,13 @@
         // 값이 1(객관식)일 경우
         if (selectedValue === "1") {
             hiddenDiv.style.display = "block";
+            
+            if (!usedValues[cardCount] || usedValues[cardCount].length === 0) {
+                for (i = 0; i < maxInputs; i++) {
+                    addInput(cardCount, questionID);
+                }
+            }
+
         } else {
             hiddenDiv.style.display = "none";
         }
@@ -187,7 +194,7 @@
             data: { questionID: questionID, number: choiceValue }, // ex) $request->input('id') == var movieID
             dataType: "json",
             success: function(data) {
-                alert('Choice Store Complete! : ' + data.choiceID);
+                // alert('Choice Store Complete! : ' + data.choiceID);
 
                 // 내용 text input
                 var newTextInput = document.createElement("input");
@@ -213,17 +220,41 @@
 
                 // 인풋 태그와 삭제 버튼을 감싸는 div를 생성
                 var inputDiv = document.createElement("div");
+                var divID = "Q" + cardCount + "_choice" + choiceValue;
+                inputDiv.id = divID;
                 inputDiv.appendChild(newTextInput);
                 inputDiv.appendChild(newHiddenInput);
                 inputDiv.appendChild(deleteButton);
 
                 // 생성한 div를 inputContainer에 추가
                 var inputContainer = document.getElementById("inputContainer" + cardCount);
-                inputContainer.appendChild(inputDiv);                
+                inputContainer.appendChild(inputDiv);
+
+                sortAndRenderChoices(cardCount)
+                   
             },
             error: function() {
                 alert('fail..');
             }
+        });
+    }
+
+    // 선택지 정렬 및 화면에 다시 렌더링하는 함수
+    function sortAndRenderChoices(cardCount) {
+        // 선택지가 들어갈 컨테이너
+        var inputContainer = document.getElementById("inputContainer" + cardCount);
+
+        // 컨테이너의 자식 요소들을 선택지 ID에 따라 정렬
+        var sortedChoices = Array.from(inputContainer.children).sort((a, b) => {
+            var idA = a.id; // 선택지 ID 추출
+            var idB = b.id;
+            return idA.localeCompare(idB); // 문자열 비교로 정렬
+        });
+
+        // 정렬된 선택지로 컨테이너를 갱신
+        inputContainer.innerHTML = ''; // 기존 내용 비우기
+        sortedChoices.forEach((choiceDiv) => {
+            inputContainer.appendChild(choiceDiv);
         });
     }
 
@@ -245,21 +276,11 @@
                     var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
                     inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
 
-                    console.log('usedValues[cardCount]:', usedValues[cardCount]);
-                    console.log('hiddenInputValue:', hiddenInputValue);
-                    console.log('Index of hiddenInputValue:', index);
-
                     var index = usedValues[cardCount].indexOf(hiddenInputValue);
                     if (index !== -1) {
                         usedValues[cardCount].splice(index, 1);
                     }                    
 
-                    alert('콘솔');
-
-                    console.log('usedValues[cardCount]:', usedValues[cardCount]);
-                    console.log('hiddenInputValue:', hiddenInputValue);
-                    console.log('Index of hiddenInputValue:', index);
-                    
                     // 각 인풋 태그의 placeholder 업데이트
                     var inputElements = inputContainer.querySelectorAll("input[type='text']");
                     for (var i = 0; i < inputElements.length; i++) {
@@ -349,7 +370,7 @@
                     </div>
                     <div class="mt-2 mb-3">
                         <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
-                        <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount})">
+                        <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount}, ${questionID})">
                             <option>선택하세요.</option>
                             <option value="1">선택형</option>
                             <option value="2">서술형</option>
@@ -358,6 +379,7 @@
                     </div>
                     <div id="hiddenDiv${cardCount}" style="display: none;">
                         <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
+                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="sortAndRenderChoices(${cardCount})">정렬</button>
                         <div id="inputContainer${cardCount}"></div>
                     </div>
                     <div class="text-end mt-5 mb-3">
@@ -379,7 +401,7 @@
         selectElement.addEventListener("change", function() {
             showHideDiv(cardCount)
         });
-        
+
         cardCount++;
     }
 
