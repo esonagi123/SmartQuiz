@@ -72,9 +72,9 @@
                             <div id="inputContainer{{ $question->number }}">
                                 @foreach ($items['choices'][$question->id] as $choice)
                                     <div>
-                                        <input type="hidden" name="choiceNumber{{ $choice->number }}" value="{{ $choice->number }}" id="{{ $question->number}}_{{ $choice->number }}">
-                                        <input type="text" class="form-control" name="choice{{ $choice->number }}" value="{{ $choice->content }}" placeholder="보기 {{ $choice->number }} 번" id="{{ $question->number}}_{{ $choice->number }}">
-                                        <button id="{{ $question->number}}_{{ $choice->number }}" type="button" class="btn btn-icon btn-danger" onclick="removeChoice('{{ $choice->number }}', '{{ $choice->id }}', '{{ $question->id }}')""><i class='bx bxs-trash-alt'></i></button>
+                                        <input type="hidden" name="choiceNumber{{ $choice->number }}" value="{{ $choice->number }}" id="Q{{ $question->number}}C{{ $choice->number }}_hidden">
+                                        <input type="text" class="form-control" name="choice{{ $choice->number }}" value="{{ $choice->content }}" placeholder="보기 {{ $choice->number }} 번" id="Q{{ $question->number}}C{{ $choice->number }}_text">
+                                        <button id="Q{{ $question->number}}C{{ $choice->number }}_button" type="button" class="btn btn-icon btn-danger" onclick="removeChoice('{{ $choice->number }}', '{{ $choice->id }}', '{{ $question->id }}', '{{ $question->number}}')""><i class='bx bxs-trash-alt'></i></button>
                                     </div>
                                 @endforeach
                             </div>
@@ -136,8 +136,8 @@
     //var usedValues = {}; // 초기화
     var usedValues = {};
 
-    @foreach($value as $questionID => $choiceNumbers)
-        usedValues[{{ $questionID }}] = {!! json_encode($choiceNumbers) !!}.map(function(number) {
+    @foreach($value as $questionNumber => $choiceNumbers)
+        usedValues[{{ $questionNumber }}] = {!! json_encode($choiceNumbers) !!}.map(function(number) {
             return parseInt(number, 10);
         });
     @endforeach
@@ -277,34 +277,50 @@
     }
 
     // 선택지 삭제 2 (서버에서 불러온 문제들 전용)
-    function removeChoice(choiceNumber, choiceID, questionID) {
+    function removeChoice(choiceNumber, choiceID, questionID, questionNumber) {
         var confirmation = confirm(choiceNumber + "번을 삭제합니다..");
         if (confirmation) {
             $.ajax({
                 headers: {'X-CSRF-TOKEN': csrfToken},
                 url: "{{ url('quiz/destroyChoice') }}",
                 type: "DELETE",
-                data: { choiceID: choiceID, questionID: questionID },
+                data: { choiceID: choiceNumber, questionID: questionID },
                 dataType: "json",
                 success: function(data) {
-                    alert('!Delete Complete!');
-                    // 선택한 보기 번호에 해당하는 input 태그들을 삭제
-                    var choiceNumberInput = document.getElementById(questionID + '_' + choiceNumber);
-                    var choiceInput = document.getElementById(questionID + '_' + choiceNumber);
 
-                    // 삭제 버튼도 가져오기
-                    var deleteButton = document.getElementById(questionID + '_' + choiceNumber);
+                    var choiceNumberInput = document.getElementById('Q' + questionNumber + 'C' + choiceNumber + "_hidden");
+                    var choiceInput = document.getElementById('Q' + questionNumber + 'C' + choiceNumber + '_text');
+                    var deleteButton = document.getElementById('Q' + questionNumber + 'C' + choiceNumber + '_button');
 
                     // 각 input 태그와 삭제 버튼이 존재하면 삭제
-                    if (choiceNumberInput) {
+                    if (choiceNumberInput && choiceNumberInput.parentNode) {
                         choiceNumberInput.parentNode.removeChild(choiceNumberInput);
                     }
-                    if (choiceInput) {
+                    if (choiceInput && choiceInput.parentNode) {
                         choiceInput.parentNode.removeChild(choiceInput);
                     }
-                    if (deleteButton) {
+                    if (deleteButton && deleteButton.parentNode) {
                         deleteButton.parentNode.removeChild(deleteButton);
                     }
+
+                    // var newValue = findUnusedValue(questionNumber);
+                    choiceNumber = parseInt(choiceNumber, 10);
+                    var index = usedValues[questionNumber].indexOf(choiceNumber);
+
+                    if (index !== -1) {
+                        usedValues[questionNumber].splice(index, 1);
+                    }
+                    var inputContainer = document.getElementById('inputContainer' + questionNumber);
+                    // // 각 인풋 태그의 placeholder 업데이트
+                    // var inputContainer = document.getElementById('inputContainer' + questionNumber);
+                    // var inputElements = inputContainer.querySelectorAll("input[type='text']");
+                    // for (var i = 0; i < inputElements.length; i++) {
+                    //     var newValue = usedValues[questionNumber][i];
+                    //     inputElements[i].name = "choice" + newValue;
+                    //     inputElements[i].placeholder = "보기 " + (newValue) + "번!";
+                    // }
+
+                    alert('!Delete Complete!');
                 },
                 error: function() {
                     alert('fail..');
@@ -347,7 +363,7 @@
     // 문제 추가 버튼을 누르면
     function addCard2() {
         updateQuestion();
-
+        cardCount++;
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
             url: "{{ url('quiz/storeQuestion') }}",

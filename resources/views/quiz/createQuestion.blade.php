@@ -245,11 +245,21 @@
                     var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
                     inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
 
+                    console.log('usedValues[cardCount]:', usedValues[cardCount]);
+                    console.log('hiddenInputValue:', hiddenInputValue);
+                    console.log('Index of hiddenInputValue:', index);
+
                     var index = usedValues[cardCount].indexOf(hiddenInputValue);
                     if (index !== -1) {
                         usedValues[cardCount].splice(index, 1);
                     }                    
 
+                    alert('콘솔');
+
+                    console.log('usedValues[cardCount]:', usedValues[cardCount]);
+                    console.log('hiddenInputValue:', hiddenInputValue);
+                    console.log('Index of hiddenInputValue:', index);
+                    
                     // 각 인풋 태그의 placeholder 업데이트
                     var inputElements = inputContainer.querySelectorAll("input[type='text']");
                     for (var i = 0; i < inputElements.length; i++) {
@@ -400,9 +410,10 @@
 
     // 전체 저장
     function save() {
+        cardCount--
         alert('현재 cardCount : ' + cardCount);
-
-        for (var i = 1; i < cardCount; i++) {
+        
+        for (var i = 1; i <= cardCount; i++) {
             alert(i + "번 문제를 저장합니다..");
             var formData = $("#question" + i).serialize();
             
@@ -421,7 +432,7 @@
             }); 
         }
         alert('i 초기화..');
-        i = 0;
+        i = 1;
     }
 </script>
 
