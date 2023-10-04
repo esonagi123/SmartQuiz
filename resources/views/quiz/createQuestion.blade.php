@@ -29,8 +29,8 @@
 
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-3 mb-4">문제 만들기 📝</h4>
-    <div class="col-md-12">
-
+    <div id="questionContainer" class="col-md-12">
+    
         {{-- <form method="patch" action="">
             @csrf
             <div class="card mb-4">
@@ -76,7 +76,7 @@
     <button type="button" class="btn rounded-pill btn-icon btn-warning" onclick="save()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>저장</span>"><box-icon name='save' type='solid' animation='tada' flip='horizontal' color='#ffffff' ></box-icon></button>
     <button type="button" class="btn rounded-pill btn-icon btn-primary" onclick="exit()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>나가기</span>"><box-icon name='exit' color='#ffffff' ></box-icon></button>
     <button type="button" class="btn rounded-pill btn-icon btn-danger" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>초기화</span>"><box-icon name='reset' flip='horizontal' color='#ffffff' ></box-icon></button>
-    <button type="button" class="btn rounded-pill btn-icon btn-secondary" onclick="test()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>테스트</span>"><box-icon name='exit' color='#ffffff' ></box-icon></button>
+    <button type="button" class="btn rounded-pill btn-icon btn-secondary" onclick="sortAndRender()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>테스트</span>"><box-icon name='exit' color='#ffffff' ></box-icon></button>
 </div>
 
 <!-- Modal -->
@@ -305,6 +305,25 @@
         });
     }
 
+    // 문제 정렬 및 화면에 다시 렌더링
+    function sortAndRender() {
+        // 문제 카드 컨테이너
+    var cardContainer = document.getElementById("cardContainer");
+
+    // 카드 컨테이너의 자식 FORM들을 ID를 기준으로 오름차순 정렬
+    var sortedForms = Array.from(cardContainer.children).sort((a, b) => {
+        var idA = a.id; // ID 추출
+        var idB = b.id;
+        return idA.localeCompare(idB); // 문자열 비교로 정렬
+    });
+
+    // 정렬된 FORM으로 카드 컨테이너를 갱신
+    cardContainer.innerHTML = ''; // 기존 내용 비우기
+    sortedForms.forEach((form) => {
+        cardContainer.appendChild(form);
+    });
+    }
+
     // 선택지 삭제
     function removeInput(textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
         var confirmation = confirm(questionID + "(" + cardCount + ") 의 보기" + hiddenInputValue + "번을 삭제합니다..");
@@ -452,6 +471,7 @@
         // 새로운 카드를 cardContainer에 추가
         var cardContainer = document.getElementById("cardContainer");
         var newCard = document.createElement("div");
+        newCard.id = `question${cardCount}`;
         newCard.innerHTML = cardHtml;
         cardContainer.appendChild(newCard);
 
@@ -463,7 +483,7 @@
         // cardCount++;
     }
 
-    // 문제 삭제 : 구현 중..😥
+    // 문제 삭제 
     function removeQuestion(cardCount) {
         shouldShowWarning = false;
 
