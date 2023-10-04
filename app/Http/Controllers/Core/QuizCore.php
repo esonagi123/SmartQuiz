@@ -41,7 +41,7 @@ class QuizCore extends Controller
         $value = [];
         
         foreach ($questions as $question) {
-            $choices[$question->id] = Choice::where('qid', $question->id)->get();
+            $choices[$question->id] = Choice::where('qid', $question->id)->orderby('number', 'asc')->get();
             
             // 질문에 대한 선택지 번호 배열을 초기화
             $value[$question->number] = [];
@@ -93,8 +93,7 @@ class QuizCore extends Controller
         $testID = $request->input('testID');
         $number = $request->input('number');
         
-        if ($number == 1)
-        {
+        if ($number == 1) {
             // cardCount(number)가 1일 경우
             // DB 조회
             $check = Question::where('number', '1')->where('testID', $testID)->first();
@@ -173,6 +172,34 @@ class QuizCore extends Controller
 
 		return response()->json($response);
 	}
+
+    // 문제 삭제 후 선택지도 삭제
+    public function ajax_QuestionDestroy(Request $request)
+    {
+        $testID = $request->input('testID');
+        $number = $request->input('number');
+
+        // 문제 삭제
+        $question = Question::where('testID', $testID)->where('number', $number)->first();
+        if ($question) {
+            $question->delete();
+        }
+
+        // 선택지가 있으면 삭제
+        $choices = Choice::where('qid', $question->id)->get();
+        if ($choices) {
+            foreach ($choices as $choice) {
+                $choice->delete();
+            }
+        }
+
+        $response = [
+            'success' => true,
+        ];
+
+        return response()->json($response);
+
+    }
 
     // 선택지 생성 (Ajax)
 	public function ajax_ChoiceStore(Request $request)

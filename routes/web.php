@@ -33,6 +33,7 @@ Route::patch('quiz/updateQuestion', [QuizCore::class, 'ajax_QuestionUpdate'])->n
 Route::post('quiz/storeChoice', [QuizCore::class, 'ajax_ChoiceStore'])->name('ajax.ChoiceStore');
 
 Route::delete('quiz/destroyChoice', [QuizCore::class, 'ajax_ChoiceDestroy'])->name('ajax.ChoiceDestroy');
+Route::delete('quiz/destroyQuestion', [QuizCore::class, 'ajax_QuestionDestroy'])->name('ajax.QuestionDestroy');
 Route::delete('quiz/reset', [QuizCore::class, 'ajax_reset'])->name('ajax.QuestionReset');
 
 Route::get('quiz/{testID}/edit', [QuizCore::class, 'editQuestion'])->name('quiz.editQuestion'); // 문제 수정 뷰

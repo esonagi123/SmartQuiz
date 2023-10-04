@@ -74,47 +74,93 @@
 <div class="button-bar text-center">
     <button type="button" id="newQuestion" class="btn rounded-pill btn-icon btn-success" onclick="addCard2()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>문제 추가</span>"><box-icon name='plus' flip='horizontal' color='#ffffff' ></box-icon></button>
     <button type="button" class="btn rounded-pill btn-icon btn-warning" onclick="save()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>저장</span>"><box-icon name='save' type='solid' animation='tada' flip='horizontal' color='#ffffff' ></box-icon></button>
+    <button type="button" class="btn rounded-pill btn-icon btn-primary" onclick="exit()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>나가기</span>"><box-icon name='exit' color='#ffffff' ></box-icon></button>
     <button type="button" class="btn rounded-pill btn-icon btn-danger" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>초기화</span>"><box-icon name='reset' flip='horizontal' color='#ffffff' ></box-icon></button>
+    <button type="button" class="btn rounded-pill btn-icon btn-secondary" onclick="test()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>테스트</span>"><box-icon name='exit' color='#ffffff' ></box-icon></button>
 </div>
 
 <!-- Modal -->
 <div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-        {{-- <div class="modal-header">
-            <h5 class="modal-title" id="modalCenterTitle"></h5>
-        </div> --}}
-        <div class="modal-body mt-3">
-            <div class="mb-4">
-                <h5><strong>❗만들고 있던 문제가 있어요 🧐</strong></h5>
-                <p><strong>이어서 만들까요?</strong></p>
+            {{-- <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle"></h5>
+            </div> --}}
+            <div class="modal-body mt-3">
+                <div class="mb-4">
+                    <h5><strong>❗만들고 있던 문제가 있어요 🧐</strong></h5>
+                    <p><strong>이어서 만들까요?</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="reset()">초기화</button>
+                <a class="btn btn-primary" href="{{ url('quiz/' . $testID . '/edit' ) }}">이어서 만들기</a>
+            </div>
+            </div>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-danger" onclick="reset()">초기화</button>
-            <a class="btn btn-primary" href="{{ url('quiz/' . $testID . '/edit' ) }}">이어서 만들기</a>
-        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modal2" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                {{-- <h5 class="modal-title" id="modalCenterTitle">나가기</h5> --}}
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>  
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <h5><strong>그만 만들까요?</strong></h5>
+                    <p><strong>❗저장되지 않은 항목은 사라져요 🤯</strong></p>
+            </div>
+            <div class="modal-footer">          
+                <button type="button" class="btn btn-warning" onclick="save()">저장</button>
+                <a class="btn btn-danger" href="#">나가기</a>
+            </div>
+            </div>
         </div>
     </div>
 </div>
 
 
 <script>
+    var shouldShowWarning = true;
+    window.addEventListener('beforeunload', function (event) {
+            if (shouldShowWarning) {
+            // 이벤트의 기본 동작을 취소하여 브라우저의 기본 경고 메시지를 표시하지 않습니다.
+            event.preventDefault();
+
+            // 사용자에게 표시할 경고 메시지
+            var message = "변경 사항을 저장하시겠습니까?";
+            event.returnValue = message; // 표준
+            return message; // 일부 브라우저에서도 동작합니다.
+        }
+    });
 
     var testID = @json($testID); // Laravel PHP 변수를 JavaScript 변수로 변환
-    // var questionID = 1; // 테스트를 위한 임시 전역 변수
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
-    var cardCount = 0; // 문제 수
-    var maxInputs = 5; // 최대 보기 개수 
-    var inputCount = 0; // 보기 추가 횟수
-    var usedValues = {}; // 초기화    
+    
+    var cardCount; // 문제 수
+    var cardArray = [];
 
+    var maxInputs = 5; // 최대 보기 개수 
+    var usedValues = {}; // 초기화
+    
     window.addEventListener('load', function() {
         // 페이지 로딩 시 자동 실행
         
         const fadeElement = document.querySelector('.fade-element'); // JavaScript를 사용하여 페이드 효과를 적용
         fadeElement.style.opacity = 1; // 투명도를 1로 설정하여 나타나게 함
         
-        cardCount++;
+        // cardCount++;
+        cardCount = findUnusedQuestion();
+        cardArray.push(cardCount);
+
+        // 모달이 닫힐 경우
+        // $('#modal2').on('hidden.bs.modal', function () {
+        //     shouldShowWarning = true;
+        // });
 
         // Question 생성
         $.ajax({
@@ -130,6 +176,7 @@
                     alert('문제 생성 완료 QID : ' + questionID);
                 } else {
                     $('#modalCenter').modal('show');
+                    shouldShowWarning = false;
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -239,14 +286,14 @@
         });
     }
 
-    // 선택지 정렬 및 화면에 다시 렌더링하는 함수
+    // 선택지 정렬 및 화면에 다시 렌더링
     function sortAndRenderChoices(cardCount) {
-        // 선택지가 들어갈 컨테이너
+        // 선택지 컨테이너
         var inputContainer = document.getElementById("inputContainer" + cardCount);
 
-        // 컨테이너의 자식 요소들을 선택지 ID에 따라 정렬
+        // 컨테이너의 자식 DIV들의 ID를 기준으로 오름차순 정렬
         var sortedChoices = Array.from(inputContainer.children).sort((a, b) => {
-            var idA = a.id; // 선택지 ID 추출
+            var idA = a.id; // ID 추출
             var idB = b.id;
             return idA.localeCompare(idB); // 문자열 비교로 정렬
         });
@@ -306,9 +353,19 @@
         return null; // 모든 값이 사용 중인 경우
     }
 
+    // 문제의 사용 가능한 가장 작은 Value 값을 찾아서 반환
+    function findUnusedQuestion() {
+        for (var value = 1; ; value++) {
+            if (!cardArray.includes(value)) {
+                return value;
+                // 배열에 값이 없을 경우 1을 반환
+            }
+        }
+    }
+
     // 문제 추가 시 Question + Choice 업데이트 
     function updateQuestion() {
-        var formData = $("#question" + (cardCount-1)).serialize();
+        var formData = $("#question" + cardCount).serialize();
         // var form = document.getElementById("question" + cardCount);
         // var formData = new FormData(form);
         console.log(formData);
@@ -329,7 +386,10 @@
 
     // 문제 추가 버튼을 누르면
     function addCard2() {
-        updateQuestion();
+        //updateQuestion();
+        cardCount = findUnusedQuestion();
+        // cardCount = cardArray.length + 1;
+        cardArray.push(cardCount);    
 
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
@@ -354,17 +414,15 @@
 
     // 문제 카드 생성
     function addCard(questionID) {
-
-        inputCount = 0;
-        // usedValues = [];
         
         var cardHtml = `
         <form id="question${cardCount}">
             <input type="hidden" name="questionID" value="${questionID}">
             <div class="card mb-4">
+                <h5 class="card-header">${cardCount}번 문제</h5>
                 <input type="hidden" class="card-header form-control" name="number" value="${cardCount}">
-                <div class="mt-4 card-body">
-                    <div class="mt-2 mb-3">
+                <div class="card-body">
+                    <div class="mb-3">
                         <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
                         <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}" placeholder="" rows="5"></textarea>
                     </div>
@@ -383,7 +441,7 @@
                         <div id="inputContainer${cardCount}"></div>
                     </div>
                     <div class="text-end mt-5 mb-3">
-                        <button class="btn rounded-pill btn-danger" onclick="removeCard(this)">카드 삭제</button>
+                        <button type="button" class="btn rounded-pill btn-danger" onclick="removeQuestion(${cardCount})">카드 삭제</button>
                     </div>
                 </div>
             </div>
@@ -402,7 +460,56 @@
             showHideDiv(cardCount)
         });
 
-        cardCount++;
+        // cardCount++;
+    }
+
+    // 문제 삭제 : 구현 중..😥
+    function removeQuestion(cardCount) {
+        shouldShowWarning = false;
+
+        var confirmation = confirm(cardCount + '번 문제를 삭제합니다.');
+
+        if (confirmation) {
+            var formID = "question" + cardCount; // 특정 form의 id
+
+            if (formID === "question1") {
+                alert('첫 번째 문제는 삭제할 수 없어요.')
+                return;
+            } else {
+                $.ajax({
+                    headers: {'X-CSRF-TOKEN': csrfToken},
+                    url: "{{ url('quiz/destroyQuestion') }}",
+                    type: "DELETE",
+                    data: { testID: testID, number: cardCount },
+                    dataType: "json",
+                    success: function(data) {
+                        if (data.success === true) {
+                            var question = document.getElementById(formID);
+                            if (question) {
+                                question.remove();
+                                alert('문제를 삭제했습니다.');
+
+                                // 배열에서 cardCount 제거
+                                var indexToRemove = cardArray.indexOf(cardCount);
+                                if (indexToRemove !== -1) {
+                                    cardArray.splice(indexToRemove, 1);
+                                    // cardCount = findUnusedQuestion();
+                                }
+
+                            } else {
+                                alert('삭제할 문제를 찾을 수 없습니다.');
+                            }
+                        } else {
+                            alert('문제 삭제 실패!');
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+                    }
+                });
+            }
+        }
+        shouldShowWarning = true;
     }
 
     // 이 시험의 모든 문제+선택지 삭제
@@ -432,13 +539,19 @@
 
     // 전체 저장
     function save() {
-        cardCount--
-        alert('현재 cardCount : ' + cardCount);
-        
-        for (var i = 1; i <= cardCount; i++) {
-            alert(i + "번 문제를 저장합니다..");
-            var formData = $("#question" + i).serialize();
-            
+        count = cardArray.length;
+        alert('현재 cardCount : ' + count);
+
+        unUsedNumber = findUnusedQuestion();
+        if (!cardArray.includes(unUsedNumber)) {
+            alert('오류!\n' + unUsedNumber + '번 문제가 없습니다.\n문제 생성을 눌러 문제를 만들어주세요.');
+            return;
+        }
+
+        for (var i = 1; i <= count; i++) {
+            alert(cardArray[i-1] + "번 문제를 저장합니다..");
+            var formData = $("#question" + cardArray[i-1]).serialize();
+
             $.ajax({
                 headers: {'X-CSRF-TOKEN': csrfToken},
                 url: "{{ url('quiz/updateQuestion') }}",
@@ -455,6 +568,20 @@
         }
         alert('i 초기화..');
         i = 1;
+    }
+
+    function exit() {
+        $('#modal2').modal('show');
+    }
+
+    function toList() {
+        shouldShowWarning = false;
+        window.location.href = "#";
+    }
+
+    function test() {
+        console.log(cardCount);
+        console.log(cardArray);
     }
 </script>
 
