@@ -26,13 +26,13 @@
 </style>
 
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4">문제 만들기 📝</h4>
+    <h4 class="fw-bold py-3 mb-4">문제 수정 📝</h4>
     <div class="col-md-12">
     @foreach($items['questions'] as $question)
         <form id="question{{ $question->number }}">
             <input type="hidden" name="questionID" value="{{ $question->id }}">
             <div class="card mb-4">
-                <input type="text" class="card-header form-control" name="number" value="{{ $question->number }}">
+                <input type="text" class="card-header form-control" name="number" value="{{ $question->number }}번 문제">
                 <div class="mt-4 card-body">
                     <div class="mt-2 mb-3">
                         <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
@@ -66,7 +66,7 @@
                         </select>
                         
                     </div>
-                    @if ($items['choices'][$question->id] && $question->gubun == 1)
+                    @if ($items['choices'][$question->id])
                         <div id="hiddenDiv{{ $question->number }}" style="display: block;">
                             <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput({{ $question->number }}, {{ $question->id }})">보기 추가</button>
                             <div id="inputContainer{{ $question->number }}">
