@@ -63,6 +63,7 @@
 
 <script src="https://cdn.tiny.cloud/1/tjtgh1g19ijslhffx1hwfpcnu729wk7cmytgbnp8nxepksjn/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
+
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-3 mb-4">문제 만들기 📝</h4>
     <div id="questionContainer" class="col-md-12">
@@ -285,6 +286,13 @@
             success: function(data) {
                 // alert('Choice Store Complete! : ' + data.choiceID);
 
+                // 정답 체크 checkBox
+                var newCheckBox = document.createElement('input');
+                newCheckBox.classList.add("form-check-input", "mt-0");
+                newCheckBox.type = "checkbox";
+                newCheckBox.name = "correctAnswer" + choiceValue;
+                newCheckBox.value = choiceValue;
+
                 // 내용 text input
                 var newTextInput = document.createElement("input");
                 newTextInput.type = "text";
@@ -304,8 +312,21 @@
                 deleteButton.classList.add("flex-end", "btn", "btn-icon", "btn-danger", "choice-delete-btn");
                 deleteButton.innerHTML = "<i class='bx bxs-trash-alt' ></i>";
                 deleteButton.onclick = function() {
-                    removeInput(newTextInput, newHiddenInput, choiceValue, questionID, cardCount);
+                    removeInput(newInputGroup, newTextInput, newHiddenInput, choiceValue, questionID, cardCount);
                 };             
+
+
+                // input Group text
+                var newInputGroupText = document.createElement('div');
+                newInputGroupText.classList.add("input-group-text");  
+                newInputGroupText.appendChild(newCheckBox);
+
+                // input Group
+                var newInputGroup = document.createElement('div');
+                newInputGroup.classList.add("input-group");
+                newInputGroup.appendChild(newInputGroupText);
+                newInputGroup.appendChild(newTextInput);
+
 
                 // 인풋 태그와 삭제 버튼을 감싸는 div를 생성
                 var inputDiv = document.createElement("div");
@@ -313,7 +334,8 @@
                 inputDiv.id = divID;
                 inputDiv.style.display = "flex";
                 inputDiv.classList.add("mb-3")
-                inputDiv.appendChild(newTextInput);
+                // inputDiv.appendChild(newTextInput);
+                inputDiv.appendChild(newInputGroup);
                 inputDiv.appendChild(newHiddenInput);
                 inputDiv.appendChild(deleteButton);
 
@@ -369,7 +391,7 @@
     }
 
     // 선택지 삭제
-    function removeInput(textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
+    function removeInput(inputGroup, textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
         var confirmation = confirm(questionID + "(" + cardCount + ") 의 보기" + hiddenInputValue + "번을 삭제합니다..");
         
         if (confirmation) {
@@ -383,7 +405,7 @@
                 success: function(data) {
                     alert('Delete Complete!');
                     var inputContainer = document.getElementById("inputContainer" + cardCount);
-                    var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
+                    var parentDiv = inputGroup.parentElement; // 부모 div 요소 가져오기
                     inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
 
                     var index = usedValues[cardCount].indexOf(hiddenInputValue);
@@ -511,7 +533,7 @@
                     </div>
                     <div id="hiddenDiv${cardCount}" style="display: none;">
                         <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
-                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="sortAndRenderChoices(${cardCount})">정렬</button>
+                        <br>&nbsp;&nbsp;&nbsp;&nbsp;<label class="form-label">⬇️ 정답에 체크하세요.</label>
                         <div id="inputContainer${cardCount}"></div>
                     </div>
                     <div class="text-end mt-5 mb-3">
@@ -555,6 +577,7 @@
                 { value: 'Email', title: 'Email' },
             ],
             height: 250,
+            language: 'ko_KR',
         });
 
         var selectElement = newCard.querySelector(`#largeSelect${cardCount}`);
