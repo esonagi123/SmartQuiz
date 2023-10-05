@@ -114,7 +114,6 @@
     <button type="button" class="btn rounded-pill btn-icon btn-warning fixed-btn" onclick="save()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>저장</span>"><box-icon name='save' type='solid' animation='tada' flip='horizontal' color='#ffffff' ></box-icon></button>
     <button type="button" class="btn rounded-pill btn-icon btn-primary fixed-btn" onclick="exit()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>나가기</span>"><box-icon name='exit' color='#ffffff' ></box-icon></button>
     <button type="button" class="btn rounded-pill btn-icon btn-danger fixed-btn" onclick="reset()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>초기화</span>"><box-icon name='reset' flip='horizontal' color='#ffffff' ></box-icon></button>
-    
 </div>
 
 <!-- Modal -->
@@ -243,6 +242,7 @@
             if (!usedValues[cardCount] || usedValues[cardCount].length === 0) {
                 for (i = 0; i < maxInputs; i++) {
                     addInput(cardCount, questionID);
+                    window.location.href = `#Q${cardCount}`;
                 }
             }
 
@@ -501,46 +501,48 @@
     function addCard(questionID) {
         
         var cardHtml = `
-        <form id="question${cardCount}">
+        <form id="question${cardCount}" enctype="multipart/form-data">
             <input type="hidden" name="questionID" value="${questionID}">
-            <div class="card mb-4">
-                <h5 class="card-header"><strong>${cardCount}</strong>번 문제</h5>
-                <input type="hidden" class="card-header form-control" name="number" value="${cardCount}">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
-                        <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}" placeholder="" rows="3"></textarea>
-                    </div>
-
-                    <div class="mb-4">	
-                        <label for="file" class="form-label">이미지 업로드</label>
-                        <input type="file" class="form-control" onchange="addFile(this);" multiple />
-                        <div class="file-list">
-                            <!-- 업로드한 이미지 목록이 여기에 동적으로 추가 -->
+            <section id="Q${cardCount}">
+                <div class="card mb-4">
+                    <h5 class="card-header">⭐ <strong>${cardCount}</strong>번 문제</h5>
+                    <input type="hidden" class="card-header form-control" name="number" value="${cardCount}">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
+                            <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}"></textarea>
                         </div>
-                        <!-- 응답 결과를 표시 -->
-                        <div id="imgPreview"></div>
-                    </div>
 
-                    <div class="mt-2 mb-3">
-                        <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
-                        <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount}, ${questionID})">
-                            <option>선택하세요.</option>
-                            <option value="1">선택형</option>
-                            <option value="2">서술형</option>
-                            <option value="3">O/X</option>
-                        </select>
-                    </div>
-                    <div id="hiddenDiv${cardCount}" style="display: none;">
-                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
-                        <br>&nbsp;&nbsp;&nbsp;&nbsp;<label class="form-label">⬇️ 정답에 체크하세요.</label>
-                        <div id="inputContainer${cardCount}"></div>
-                    </div>
-                    <div class="text-end mt-5 mb-3">
-                        <button type="button" class="btn rounded-pill btn-danger" onclick="removeQuestion(${cardCount})">삭제</button>
+                        <div class="mb-4">	
+                            <label for="file" class="form-label">이미지 업로드 🖼️</label>
+                            <input type="file" class="form-control" onchange="addFile(this);" multiple />
+                            <div class="file-list">
+                                <!-- 업로드한 이미지 목록이 여기에 동적으로 추가 -->
+                            </div>
+                            <!-- 응답 결과를 표시 -->
+                            <div id="imgPreview"></div>
+                        </div>
+
+                        <div class="mt-2 mb-3">
+                            <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
+                            <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount}, ${questionID})">
+                                <option>선택하세요.</option>
+                                <option value="1">선택형</option>
+                                <option value="2">서술형</option>
+                                <option value="3">O/X</option>
+                            </select>
+                        </div>
+                        <div id="hiddenDiv${cardCount}" style="display: none;">
+                            <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
+                            <br>&nbsp;&nbsp;&nbsp;&nbsp;<label class="form-label">⬇️ 정답에 체크하세요.</label>
+                            <div id="inputContainer${cardCount}"></div>
+                        </div>
+                        <div class="text-end mt-5 mb-3">
+                            <button type="button" class="btn rounded-pill btn-danger" onclick="removeQuestion(${cardCount})">삭제</button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </form>
         `;
 
@@ -548,7 +550,7 @@
         // 새로운 카드를 cardContainer에 추가
         var cardContainer = document.getElementById("cardContainer");
         var newCard = document.createElement("div");
-        newCard.id = `question${cardCount}`;
+        newCard.id = `Q${cardCount}`;
         newCard.innerHTML = cardHtml;
         cardContainer.appendChild(newCard);
 
@@ -586,6 +588,8 @@
         });
 
         // cardCount++;
+
+        window.location.href = `#Q${cardCount}`;
     }
 
     // 문제 삭제 
@@ -641,6 +645,7 @@
     function reset() {
         var confirmation = confirm("❗이 시험에서 생성된 모든 문제를 삭제합니다.");
         if (confirmation) {
+            shouldShowWarning = false;
             $.ajax({
                 headers: {'X-CSRF-TOKEN': csrfToken},
                 url: "{{ url('quiz/reset') }}",
@@ -668,15 +673,24 @@
         alert('현재 cardCount : ' + count);
 
         unUsedNumber = findUnusedQuestion();
-        if (!cardArray.includes(unUsedNumber)) {
-            alert('오류!\n' + unUsedNumber + '번 문제가 없습니다.\n문제 생성을 눌러 문제를 만들어주세요.');
-            return;
+        if ((count + 1) == unUsedNumber) {
+
+        } else {
+            if (!cardArray.includes(unUsedNumber)) {
+                alert('오류!\n' + unUsedNumber + '번 문제가 없습니다.\n문제 생성을 눌러 문제를 만들어주세요.');
+                return;
+            }
         }
+
 
         for (var i = 1; i <= count; i++) {
             alert(cardArray[i-1] + "번 문제를 저장합니다..");
-            var formData = $("#question" + cardArray[i-1]).serialize();
 
+            // 폼 제출 전에 tinyMCE 내용을 업데이트
+            tinymce.get('largeInput' + cardArray[i-1]).save(); // 에디터의 내용을 textarea에 적용
+            
+            var formData = $("#question" + cardArray[i-1]).serialize();
+            
             $.ajax({
                 headers: {'X-CSRF-TOKEN': csrfToken},
                 url: "{{ url('quiz/updateQuestion') }}",
