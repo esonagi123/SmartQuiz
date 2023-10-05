@@ -23,9 +23,45 @@
     text-align: center;
     }
 
+    /* 선택지 삭제 버튼 */
+    .choice-delete-btn {
+        margin-left: 6px;
+    }
+
+    .fixed-btn {
+        margin-right: 8px;
+    }
+
+    .insert {
+    padding: 20px 30px;
+    display: block;
+    width: 600px;
+    margin: 5vh auto;
+    height: 90vh;
+    border: 1px solid #dbdbdb;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    }
+    .insert .file-list {
+    height: 200px;
+    overflow: auto;
+    border: 1px solid #989898;
+    padding: 10px;
+    }
+    .insert .file-list .filebox p {
+    font-size: 14px;
+    margin-top: 10px;
+    display: inline-block;
+    }
+    .insert .file-list .filebox .delete i{
+    color: #ff5353;
+    margin-left: 5px;
+    }
+
 </style>
 
-
+<script src="https://cdn.tiny.cloud/1/tjtgh1g19ijslhffx1hwfpcnu729wk7cmytgbnp8nxepksjn/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-3 mb-4">문제 만들기 📝</h4>
@@ -72,11 +108,12 @@
 
 <!-- Fixed Button Bar -->
 <div class="button-bar text-center">
-    <button type="button" id="newQuestion" class="btn rounded-pill btn-icon btn-success" onclick="addCard2()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>문제 추가</span>"><box-icon name='plus' flip='horizontal' color='#ffffff' ></box-icon></button>
-    <button type="button" class="btn rounded-pill btn-icon btn-warning" onclick="save()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>저장</span>"><box-icon name='save' type='solid' animation='tada' flip='horizontal' color='#ffffff' ></box-icon></button>
-    <button type="button" class="btn rounded-pill btn-icon btn-primary" onclick="exit()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>나가기</span>"><box-icon name='exit' color='#ffffff' ></box-icon></button>
-    <button type="button" class="btn rounded-pill btn-icon btn-danger" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>초기화</span>"><box-icon name='reset' flip='horizontal' color='#ffffff' ></box-icon></button>
-    <button type="button" class="btn rounded-pill btn-icon btn-secondary" onclick="sortAndRender()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>테스트</span>"><box-icon name='exit' color='#ffffff' ></box-icon></button>
+    <button type="button" id="newQuestion" class="btn rounded-pill btn-icon btn-success fixed-btn" onclick="addCard2()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>문제 추가</span>"><box-icon name='plus' flip='horizontal' color='#ffffff' ></box-icon></button>
+    <button type="button" class="btn rounded-pill btn-icon btn-secondary fixed-btn" onclick="sortAndRender()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>문제 정렬</span>"><box-icon name='sort-up' color='#ffffff' ></box-icon></button>
+    <button type="button" class="btn rounded-pill btn-icon btn-warning fixed-btn" onclick="save()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>저장</span>"><box-icon name='save' type='solid' animation='tada' flip='horizontal' color='#ffffff' ></box-icon></button>
+    <button type="button" class="btn rounded-pill btn-icon btn-primary fixed-btn" onclick="exit()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>나가기</span>"><box-icon name='exit' color='#ffffff' ></box-icon></button>
+    <button type="button" class="btn rounded-pill btn-icon btn-danger fixed-btn" onclick="reset()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>초기화</span>"><box-icon name='reset' flip='horizontal' color='#ffffff' ></box-icon></button>
+    
 </div>
 
 <!-- Modal -->
@@ -100,7 +137,6 @@
     </div>
 </div>
 
-
 <!-- Modal -->
 <div class="modal fade" id="modal2" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -122,7 +158,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
     var shouldShowWarning = true;
@@ -147,9 +182,11 @@
     var maxInputs = 5; // 최대 보기 개수 
     var usedValues = {}; // 초기화
     
+    var fileNo = [];
+    var filesArr = {};
+
+    // 페이지 로딩 시 자동 실행
     window.addEventListener('load', function() {
-        // 페이지 로딩 시 자동 실행
-        
         const fadeElement = document.querySelector('.fade-element'); // JavaScript를 사용하여 페이드 효과를 적용
         fadeElement.style.opacity = 1; // 투명도를 1로 설정하여 나타나게 함
         
@@ -161,6 +198,11 @@
         // $('#modal2').on('hidden.bs.modal', function () {
         //     shouldShowWarning = true;
         // });
+
+        // 모달이 닫힐 경우
+        $('#modalCenter').on('hidden.bs.modal', function () {
+            $('#modalCenter').modal('show');
+        });        
 
         // Question 생성
         $.ajax({
@@ -259,16 +301,18 @@
                 // 삭제 버튼을 생성
                 var deleteButton = document.createElement("button");
                 deleteButton.type = "button";
-                deleteButton.classList.add("btn", "btn-icon", "btn-danger");
+                deleteButton.classList.add("flex-end", "btn", "btn-icon", "btn-danger", "choice-delete-btn");
                 deleteButton.innerHTML = "<i class='bx bxs-trash-alt' ></i>";
                 deleteButton.onclick = function() {
                     removeInput(newTextInput, newHiddenInput, choiceValue, questionID, cardCount);
-                };
+                };             
 
                 // 인풋 태그와 삭제 버튼을 감싸는 div를 생성
                 var inputDiv = document.createElement("div");
                 var divID = "Q" + cardCount + "_choice" + choiceValue;
                 inputDiv.id = divID;
+                inputDiv.style.display = "flex";
+                inputDiv.classList.add("mb-3")
                 inputDiv.appendChild(newTextInput);
                 inputDiv.appendChild(newHiddenInput);
                 inputDiv.appendChild(deleteButton);
@@ -298,7 +342,7 @@
             return idA.localeCompare(idB); // 문자열 비교로 정렬
         });
 
-        // 정렬된 선택지로 컨테이너를 갱신
+        // 정렬 후 Input 컨테이너를 갱신
         inputContainer.innerHTML = ''; // 기존 내용 비우기
         sortedChoices.forEach((choiceDiv) => {
             inputContainer.appendChild(choiceDiv);
@@ -308,20 +352,20 @@
     // 문제 정렬 및 화면에 다시 렌더링
     function sortAndRender() {
         // 문제 카드 컨테이너
-    var cardContainer = document.getElementById("cardContainer");
+        var cardContainer = document.getElementById("cardContainer");
 
-    // 카드 컨테이너의 자식 FORM들을 ID를 기준으로 오름차순 정렬
-    var sortedForms = Array.from(cardContainer.children).sort((a, b) => {
-        var idA = a.id; // ID 추출
-        var idB = b.id;
-        return idA.localeCompare(idB); // 문자열 비교로 정렬
-    });
+        // 컨테이너의 자식 DIV들의 ID를 기준으로 오름차순 정렬
+        var sortedForms = Array.from(cardContainer.children).sort((a, b) => {
+            var idA = a.id; // ID 추출
+            var idB = b.id;
+            return idA.localeCompare(idB); // 문자열 비교로 정렬
+        });
 
-    // 정렬된 FORM으로 카드 컨테이너를 갱신
-    cardContainer.innerHTML = ''; // 기존 내용 비우기
-    sortedForms.forEach((form) => {
-        cardContainer.appendChild(form);
-    });
+        // 정렬 후 Card 컨테이너를 갱신
+        cardContainer.innerHTML = ''; // 기존 내용 비우기
+        sortedForms.forEach((form) => {
+            cardContainer.appendChild(form);
+        });
     }
 
     // 선택지 삭제
@@ -438,13 +482,24 @@
         <form id="question${cardCount}">
             <input type="hidden" name="questionID" value="${questionID}">
             <div class="card mb-4">
-                <h5 class="card-header">${cardCount}번 문제</h5>
+                <h5 class="card-header"><strong>${cardCount}</strong>번 문제</h5>
                 <input type="hidden" class="card-header form-control" name="number" value="${cardCount}">
                 <div class="card-body">
                     <div class="mb-3">
                         <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
-                        <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}" placeholder="" rows="5"></textarea>
+                        <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}" placeholder="" rows="3"></textarea>
                     </div>
+
+                    <div class="mb-4">	
+                        <label for="file" class="form-label">이미지 업로드</label>
+                        <input type="file" class="form-control" onchange="addFile(this);" multiple />
+                        <div class="file-list">
+                            <!-- 업로드한 이미지 목록이 여기에 동적으로 추가 -->
+                        </div>
+                        <!-- 응답 결과를 표시 -->
+                        <div id="imgPreview"></div>
+                    </div>
+
                     <div class="mt-2 mb-3">
                         <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
                         <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount}, ${questionID})">
@@ -460,7 +515,7 @@
                         <div id="inputContainer${cardCount}"></div>
                     </div>
                     <div class="text-end mt-5 mb-3">
-                        <button type="button" class="btn rounded-pill btn-danger" onclick="removeQuestion(${cardCount})">카드 삭제</button>
+                        <button type="button" class="btn rounded-pill btn-danger" onclick="removeQuestion(${cardCount})">삭제</button>
                     </div>
                 </div>
             </div>
@@ -474,6 +529,33 @@
         newCard.id = `question${cardCount}`;
         newCard.innerHTML = cardHtml;
         cardContainer.appendChild(newCard);
+
+        // 동적으로 추가된 textarea에 대해 TinyMCE 초기화
+        tinymce.init({
+            selector: `#largeInput${cardCount}`,
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            menubar: 'edit insert format table tools help',
+            menu: {
+                file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
+                edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall | searchreplace' },
+                view: { title: 'View', items: 'code | visualaid visualchars visualblocks | spellchecker | preview fullscreen | showcomments' },
+                insert: { title: 'Insert', items: 'image link media addcomment pageembed template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents | insertdatetime' },
+                format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat' },
+                tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code wordcount' },
+                table: { title: 'Table', items: 'inserttable | cell row column | advtablesort | tableprops deletetable' },
+                help: { title: 'Help', items: 'help' }
+            },
+            toolbar: 'fontsize bold italic underline strikethrough forecolor backcolor | table charmap | align lineheight | numlist bullist | emoticons | removeformat',
+            tinycomments_mode: 'embedded',
+            tinycomments_author: 'Author name',
+            relative_urls: false,
+            remove_script_host: false,
+            mergetags_list: [
+                { value: 'First.Name', title: 'First Name' },
+                { value: 'Email', title: 'Email' },
+            ],
+            height: 250,
+        });
 
         var selectElement = newCard.querySelector(`#largeSelect${cardCount}`);
         selectElement.addEventListener("change", function() {
@@ -534,7 +616,7 @@
 
     // 이 시험의 모든 문제+선택지 삭제
     function reset() {
-        var confirmation = confirm("이 시험에서 생성된 모든 문제를 삭제합니다.");
+        var confirmation = confirm("❗이 시험에서 생성된 모든 문제를 삭제합니다.");
         if (confirmation) {
             $.ajax({
                 headers: {'X-CSRF-TOKEN': csrfToken},
@@ -603,6 +685,24 @@
         console.log(cardCount);
         console.log(cardArray);
     }
+
+	// // TinyMCE ↓
+    // tinymce.init({
+    //   selector: 'textarea',
+    //   plugins: 'tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',
+    //   toolbar: 'undo redo | fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+    //   tinycomments_mode: 'embedded',
+    //   tinycomments_author: 'Author name',
+	//   relative_urls: false,
+	//   remove_script_host: false,
+    //   mergetags_list: [
+    //     { value: 'First.Name', title: 'First Name' },
+    //     { value: 'Email', title: 'Email' },
+    //   ],
+    //   ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")), 
+	// });
+	// // TinyMCE ↑
+
 </script>
 
 @endsection()
