@@ -34,7 +34,7 @@ class QuizCore extends Controller
     public function editQuestion($testID)
     {
         $testModel = Test::find($testID);
-        $questions = Question::where('testID', $testID)->get();
+        $questions = Question::where('testID', $testID)->orderby('number', 'asc')->get();
         $questionCount = Question::where('testID', $testID)->count();
         
         $choices = [];
@@ -51,9 +51,6 @@ class QuizCore extends Controller
             }
         }
         
-
-
-
         $result = [
             'questions' => $questions,
             'questionCount' => $questionCount,
@@ -162,7 +159,11 @@ class QuizCore extends Controller
             // $choiceModel = Choice::where('qid', $questionID)->where('number', $cNumber)->first();
             
             $inputValue = 'choice' . $choice->number;
+            $answer = 'answer' . $choice->number;
+
             $choice->content = $request->input($inputValue);
+            $choice->answer = $request->input($answer);
+
             $choice->save();
         }
 

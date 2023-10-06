@@ -290,7 +290,7 @@
                 var newCheckBox = document.createElement('input');
                 newCheckBox.classList.add("form-check-input", "mt-0");
                 newCheckBox.type = "checkbox";
-                newCheckBox.name = "correctAnswer" + choiceValue;
+                newCheckBox.name = "answer" + choiceValue;
                 newCheckBox.value = choiceValue;
 
                 // 내용 text input
