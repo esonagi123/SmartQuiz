@@ -116,8 +116,8 @@
     <button type="button" class="btn rounded-pill btn-icon btn-danger fixed-btn" onclick="reset()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>초기화</span>"><box-icon name='reset' flip='horizontal' color='#ffffff' ></box-icon></button>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true">
+<!-- Modal (data-bs-backdrop="static" : 안사라지게)-->
+<div class="modal fade" id="modalCenter" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             {{-- <div class="modal-header">

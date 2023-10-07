@@ -52,14 +52,24 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+    <script src="https://kit.fontawesome.com/649102945e.js" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   </head>
 
+	@if (\Session::has('already_login'))
+	<script>
+		window.onload = function() {
+			alert("{!! \Session::get('already_login') !!}");
+		};
+	</script>
+  @endif
+  
   <body>
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
       <div class="layout-container">
         <!-- Menu -->
-
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
           <div class="app-brand demo">
             <a href={{ url('/') }}  class="app-brand-link">
@@ -129,43 +139,55 @@
           <div class="menu-inner-shadow"></div>
 
           <ul class="menu-inner py-1">
-            <!-- Dashboard -->
-            <li class="menu-item active">
-              <a href={{ url('/') }} class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                <div data-i18n="Analytics">Dashboard</div>
-              </a>
+
+            <li class="menu-header small text-uppercase">
+              <span class="menu-header-text">⭐ Quiz</span>
             </li>
-
-
             <li class="menu-item">
-              <a href="{{ url('login') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-lock-open-alt"></i>
-                <div data-i18n="Authentications">로그인</div>
+              <a href="{{ url('quiz') }}" class="menu-link">
+                <div>🏠 퀴즈 홈</div>
+              </a>
+            </li>
+            @if (Auth::check()) <!-- 로그인이 되어있으면 -->
+              <li class="menu-item">
+                <a href="{{ url('quiz') }}" class="menu-link">
+                  <div>✏️ 만들기</div>
+                </a>
+              </li>
+            @endif
+            <li class="menu-item">
+              <a href="{{ url('quiz') }}" class="menu-link">
+                <div>📖 공개 퀴즈 목록</div>
               </a>
             </li>
 
 
-            <li class="menu-item">
-              <a
-                href="{{ url('quiz') }}"
-                class="menu-link"
-              >
-                <i class="menu-icon tf-icons bx bx-collection"></i>
-                <div data-i18n="Basic">문제 풀기</div>
-              </a>
+            <li class="menu-header small text-uppercase">
+              <i class="fa-solid fa-user"></i>&nbsp;
+              <span class="menu-header-text">Profile</span>
             </li>
-         
-            <li class="menu-item">
-              <a
-                href="#"
-                class="menu-link"
-              >
-                <i class="menu-icon tf-icons bx bx-file"></i>
-                <div data-i18n="Documentation">문제 만들기</div>
-              </a>
-            </li>
-          </ul>
+            @if (!Auth::check()) <!-- 로그인이 안되어 있으면 -->
+              <li class="menu-item">
+                <a href="{{ url('login') }}" class="menu-link">
+                  <i class="fa-solid fa-right-to-bracket"></i>&nbsp;&nbsp;&nbsp;
+                  <div>로그인</div>
+                </a>
+              </li> 
+            @else <!-- 로그인이 되어 있으면 -->  
+              <li class="menu-item">
+                <a href="{{ url('quiz') }}" class="menu-link">
+                  <i class="fa-solid fa-user"></i>&nbsp;&nbsp;&nbsp;
+                  <div>나의 프로필</div>
+                </a>
+              </li>
+              <li class="menu-item">
+                <a href="{{ url('logout') }}" class="menu-link">
+                  <i class="fa-solid fa-right-from-bracket"></i>&nbsp;&nbsp;&nbsp;
+                  <div>로그아웃</div>
+                </a>
+              </li>
+            @endif       
+          </ul>  
         </aside>
         <!-- / Menu -->
 
@@ -191,7 +213,7 @@
                   <input
                     type="text"
                     class="form-control border-0 shadow-none"
-                    placeholder="Search..."
+                    placeholder="퀴즈 검색"
                     aria-label="Search..."
                   />
                 </div>
