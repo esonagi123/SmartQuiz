@@ -21,6 +21,7 @@
     background-color: #333;
     padding: 10px;
     text-align: center;
+    z-index: 100;
     }
 
     /* 선택지 삭제 버튼 */
@@ -63,50 +64,6 @@
 
 <script src="https://cdn.tiny.cloud/1/tjtgh1g19ijslhffx1hwfpcnu729wk7cmytgbnp8nxepksjn/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
-
-<div class="fade-element container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4">문제 만들기 📝</h4>
-    <div id="questionContainer" class="col-md-12">
-    
-        {{-- <form method="patch" action="">
-            @csrf
-            <div class="card mb-4">
-                <input type="hidden" class="card-header form-control" name="number" value="0">
-                <div class="mt-4 card-body">
-                    <div class="mt-2 mb-3">
-                            <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
-                            <textarea id="largeInput" class="form-control form-control-lg" name="name" placeholder="" rows="5"></textarea>
-                    </div>
-                    <div class="mt-2 mb-3">
-                        <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
-                        <select id="largeSelect" class="form-select form-select-lg" onchange="showHideDiv()">
-                          <option>선택하세요.</option>
-                          <option value="1">선택형</option>
-                          <option value="2">서술형</option>
-                          <option value="3">O/X</option>
-                        </select>
-                    </div>
-
-                    <div id="hiddenDiv" style="display: none;">
-                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput()">보기 추가</button>
-                    </div>
-                    <div id="inputContainer"></div>
-
-                    <div class="text-end mt-5 mb-3">
-                        <button type="button" class="btn rounded-pill btn-primary" onclick="addCard()">문제 추가</button>
-                    </div>
-                    <div class="text-end">
-                        <button type="button" class="btn rounded-pill btn-primary">저장하고 끝내기</button>
-                    </div>                    
-                </div>
-            </div>
-        </form> --}}
-
-        <div id="cardContainer"></div>
-        
-    </div>
-</div>
-
 <!-- Fixed Button Bar -->
 <div class="button-bar text-center">
     <button type="button" id="newQuestion" class="btn rounded-pill btn-icon btn-success fixed-btn" onclick="addCard2()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>문제 추가</span>"><box-icon name='plus' flip='horizontal' color='#ffffff' ></box-icon></button>
@@ -114,27 +71,6 @@
     <button type="button" class="btn rounded-pill btn-icon btn-warning fixed-btn" onclick="save()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>저장</span>"><box-icon name='save' type='solid' animation='tada' flip='horizontal' color='#ffffff' ></box-icon></button>
     <button type="button" class="btn rounded-pill btn-icon btn-primary fixed-btn" onclick="exit()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>나가기</span>"><box-icon name='exit' color='#ffffff' ></box-icon></button>
     <button type="button" class="btn rounded-pill btn-icon btn-danger fixed-btn" onclick="reset()" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>초기화</span>"><box-icon name='reset' flip='horizontal' color='#ffffff' ></box-icon></button>
-</div>
-
-<!-- Modal (data-bs-backdrop="static" : 안사라지게)-->
-<div class="modal fade" id="modalCenter" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            {{-- <div class="modal-header">
-                <h5 class="modal-title" id="modalCenterTitle"></h5>
-            </div> --}}
-            <div class="modal-body mt-3">
-                <div class="mb-4">
-                    <h5><strong>❗만들고 있던 문제가 있어요 🧐</strong></h5>
-                    <p><strong>이어서 만들까요?</strong></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" onclick="reset()">초기화</button>
-                <a class="btn btn-primary" href="{{ url('quiz/' . $testID . '/edit' ) }}">이어서 만들기</a>
-            </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Modal -->
@@ -159,6 +95,93 @@
     </div>
 </div>
 
+<div class="fade-element container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4">문제 수정 📝</h4>
+    <div class="col-md-12">
+        <div id="cardContainer">
+            @foreach($items['questions'] as $question)
+            <div id="Q{{ $question->number }}">
+                <form id="question{{ $question->number }}" enctype="multipart/form-data">
+                    <section id="Q{{ $question->number }}">
+                        <input type="hidden" name="questionID" value="{{ $question->id }}">
+                        <input type="hidden" name="number" value="{{ $question->number }}">
+                        <div class="card mb-4">
+                            <h5 class="card-header"><strong>{{ $question->number }}</strong>번 문제</h5>
+                            <div class="card-body">
+                                <div class="mt-2 mb-3">
+                                    <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
+                                    <textarea id="largeInput{{ $question->number }}" class="form-control form-control-lg" name="name{{ $question->number }}" placeholder="" rows="5">{{ $question->question }}</textarea>
+                                </div>
+                                <div class="mt-2 mb-3">
+                                    <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
+                                    
+                                    <select id="largeSelect{{ $question->number }}" class="form-select form-select-lg" name="gubun{{ $question->number }}" onchange="showHideDiv({{ $question->number }}, {{ $question->id }})">
+                                        @if ($question->gubun == 1)
+                                            <option>선택하세요.</option>
+                                            <option value="1" selected>선택형</option>
+                                            <option value="2">서술형</option>
+                                            <option value="3">O/X</option>
+                                        @elseif ($question->gubun == 2)
+                                            <option>선택하세요.</option>
+                                            <option value="1">선택형</option>
+                                            <option value="2" selected>서술형</option>
+                                            <option value="3">O/X</option>
+                                        @elseif ($question->gubun == 3)
+                                            <option>선택하세요.</option>
+                                            <option value="1">선택형</option>
+                                            <option value="2">서술형</option>
+                                            <option value="3" selected>O/X</option>
+                                        @else
+                                        <option>선택하세요.</option>
+                                        <option value="1">선택형</option>
+                                        <option value="2">서술형</option>
+                                        <option value="3">O/X</option>                            
+                                        @endif
+                                    </select>
+                                    
+                                </div>
+                                @if ($items['choices'][$question->id] && $question->gubun == "1")
+                                    <div id="hiddenDiv{{ $question->number }}" style="display: block;">
+                                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput({{ $question->number }}, {{ $question->id }})">보기 추가</button>
+                                        <div id="inputContainer{{ $question->number }}">
+                                            @foreach ($items['choices'][$question->id] as $choice)
+                                                <div id="Q{{ $question->number }}_choice{{ $choice->number }}" class="mb-3" style="display: flex;">
+                                                    <div class="input-group">
+                                                        <div class="input-group-text">
+                                                            @if ($choice->answer)
+                                                                <input id="Q{{ $question->number}}C{{ $choice->number }}_checkbox" class="form-check-input mt-0" type="checkbox" name="answer{{ $choice->number }}" value="{{ $choice->answer }}" checked>
+                                                            @else
+                                                                <input id="Q{{ $question->number}}C{{ $choice->number }}_checkbox" class="form-check-input mt-0" type="checkbox" name="answer{{ $choice->number }}" value="{{ $choice->answer }}">
+                                                            @endif
+                                                        </div>
+                                                        <input type="text" class="form-control" name="choice{{ $choice->number }}" value="{{ $choice->content }}" placeholder="보기 {{ $choice->number }} 번" id="Q{{ $question->number}}C{{ $choice->number }}_text">
+                                                    </div>
+                                                    <input type="hidden" name="choiceNumber{{ $choice->number }}" value="{{ $choice->number }}" id="Q{{ $question->number}}C{{ $choice->number }}_hidden">
+                                                    
+                                                    <button id="Q{{ $question->number}}C{{ $choice->number }}_button" type="button" class="flex-end btn btn-icon btn-danger choice-delete-btn" onclick="removeChoice('{{ $choice->number }}', '{{ $choice->id }}', '{{ $question->id }}', '{{ $question->number}}')""><i class='bx bxs-trash-alt'></i></button>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>                          
+                                @else
+                                    <div id="hiddenDiv{{ $question->number }}" style="display: none;">
+                                        <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput({{ $question->number }}, {{ $question->id }})">보기 추가</button>
+                                        <div id="inputContainer{{ $question->number }}"></div>
+                                    </div>                            
+                                @endif
+                                <div class="text-end mt-5 mb-3">
+                                    <button type="button" class="btn rounded-pill btn-danger" onclick="removeQuestion({{ $question->number }})">삭제</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </form>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+
 <script>
     var shouldShowWarning = true;
     window.addEventListener('beforeunload', function (event) {
@@ -174,57 +197,64 @@
     });
 
     var testID = @json($testID); // Laravel PHP 변수를 JavaScript 변수로 변환
+    var questionCount = @json($items['questionCount']);
+
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
-    
-    var cardCount; // 문제 수
+
     var cardArray = [];
 
-    var maxInputs = 5; // 최대 보기 개수 
-    var usedValues = {}; // 초기화
-    
-    var fileNo = [];
-    var filesArr = {};
+    // cardArray 배열에 생성된 문제 번호들을 추가
+    @foreach($items['questions'] as $question)
+        cardArray.push(parseInt({!! json_encode($question->number) !!}, 10));
 
-    // 페이지 로딩 시 자동 실행
+        tinymce.init({
+        selector: '#largeInput' + {{ $question->number }},
+        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+        menubar: 'edit insert format table tools help',
+        menu: {
+            file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
+            edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall | searchreplace' },
+            view: { title: 'View', items: 'code | visualaid visualchars visualblocks | spellchecker | preview fullscreen | showcomments' },
+            insert: { title: 'Insert', items: 'image link media addcomment pageembed template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents | insertdatetime' },
+            format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat' },
+            tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code wordcount' },
+            table: { title: 'Table', items: 'inserttable | cell row column | advtablesort | tableprops deletetable' },
+            help: { title: 'Help', items: 'help' }
+        },
+        toolbar: 'fontsize bold italic underline strikethrough forecolor backcolor | table charmap | align lineheight | numlist bullist | emoticons | removeformat',
+        tinycomments_mode: 'embedded',
+        tinycomments_author: 'Author name',
+        relative_urls: false,
+        remove_script_host: false,
+        mergetags_list: [
+            { value: 'First.Name', title: 'First Name' },
+            { value: 'Email', title: 'Email' },
+        ],
+        height: 250,
+        language: 'ko_KR',
+    });
+
+    @endforeach
+
+    var cardCount = findUnusedQuestion(); // 만들어진 문제 수
+
+    var maxInputs = 5; // 최대 보기 개수 
+    var usedValues = {};
+
+    @foreach($value as $questionNumber => $choiceNumbers)
+        usedValues[{{ $questionNumber }}] = {!! json_encode($choiceNumbers) !!}.map(function(number) {
+            return parseInt(number, 10);
+        });
+    @endforeach
+
+
+
+
     window.addEventListener('load', function() {
+        // 페이지 로딩 시 자동 실행
         const fadeElement = document.querySelector('.fade-element'); // JavaScript를 사용하여 페이드 효과를 적용
         fadeElement.style.opacity = 1; // 투명도를 1로 설정하여 나타나게 함
-        
-        // cardCount++;
-        cardCount = findUnusedQuestion();
-        cardArray.push(cardCount);
-
-        // 모달이 닫힐 경우
-        // $('#modal2').on('hidden.bs.modal', function () {
-        //     shouldShowWarning = true;
-        // });
-
-        // 모달이 닫힐 경우
-        $('#modalCenter').on('hidden.bs.modal', function () {
-            $('#modalCenter').modal('show');
-        });        
-
-        // Question 생성
-        $.ajax({
-            headers: {'X-CSRF-TOKEN': csrfToken},
-            url: "{{ url('quiz/storeQuestion') }}",
-            type: "POST",
-            data: { testID: testID, number: cardCount },
-            dataType: "json",
-            success: function(data) {
-                if (data.success === true) {
-                    var questionID = data.questionID;
-                    addCard(questionID);
-                    alert('문제 생성 완료 QID : ' + questionID);
-                } else {
-                    $('#modalCenter').modal('show');
-                    shouldShowWarning = false;
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert("AJAX 오류: " + textStatus + " - " + errorThrown);
-            }
-        });
+        alert("문제 수 : " + cardArray);
     });
 
     // 문제 타입 선택
@@ -249,7 +279,7 @@
         } else {
             hiddenDiv.style.display = "none";
         }
-    }    
+    }   
 
     // 선택지 만들기
     function addInput(cardCount, questionID) {
@@ -257,7 +287,6 @@
             usedValues[cardCount] = [];
         }
         console.log(usedValues[cardCount]);
-        
         // 최대 인풋 개수에 도달하면 더 이상 인풋을 추가하지 않음.
         if (usedValues[cardCount].length >= maxInputs) {
             alert("최대 " + maxInputs + "개만 만들 수 있어요.");
@@ -270,9 +299,9 @@
         // 사용한 Value 값을 usedValues 배열에 추가
         usedValues[cardCount].push(newValue);
         
+
         // Ajax로 선택지 정보를 저장할 수 있도록 코드 추가
         saveChoiceToServer(cardCount, newValue, questionID);
-        
     }
 
     // 선택지 정보를 서버에 저장 후 input 생성
@@ -344,13 +373,106 @@
                 inputContainer.appendChild(inputDiv);
 
                 sortAndRenderChoices(cardCount)
-                   
             },
             error: function() {
                 alert('fail..');
             }
         });
     }
+
+    // 선택지 삭제
+    function removeInput(textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
+        var confirmation = confirm(questionID + "(" + cardCount + ") 의 보기" + hiddenInputValue + "번을 삭제합니다..");
+        
+        if (confirmation) {
+            // 삭제 시 동작할 ajax
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                url: "{{ url('quiz/destroyChoice') }}",
+                type: "DELETE",
+                data: { choiceID: hiddenInputValue, questionID: questionID },
+                dataType: "json",
+                success: function(data) {
+                    alert('Delete Complete!');
+                    var inputContainer = document.getElementById("inputContainer" + cardCount);
+                    var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
+                    inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
+
+                    var index = usedValues[cardCount].indexOf(hiddenInputValue);
+                    if (index !== -1) {
+                        usedValues[cardCount].splice(index, 1);
+                    }                    
+
+                    // 각 인풋 태그의 placeholder 업데이트
+                    var inputElements = inputContainer.querySelectorAll("input[type='text']");
+                    for (var i = 0; i < inputElements.length; i++) {
+                        var newValue = usedValues[cardCount][i];
+                        inputElements[i].name = "choice" + newValue;
+                        inputElements[i].placeholder = "보기 " + (newValue) + "번";
+                    }
+                },
+                error: function() {
+                    alert('fail..');
+                }
+            });
+        }
+    }
+
+    // 선택지 삭제 2 (서버에서 불러온 문제들 전용)
+    function removeChoice(choiceNumber, choiceID, questionID, questionNumber) {
+        var confirmation = confirm(choiceNumber + "번을 삭제합니다..");
+        if (confirmation) {
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                url: "{{ url('quiz/destroyChoice') }}",
+                type: "DELETE",
+                data: { choiceID: choiceNumber, questionID: questionID },
+                dataType: "json",
+                success: function(data) {
+                    
+                    var elementToRemove = document.getElementById("Q" + questionNumber + "_choice" + choiceNumber);
+                    if (elementToRemove) {
+                        elementToRemove.parentElement.removeChild(elementToRemove);
+                    } else {
+                        console.error("ID를 찾을 수 없음");
+                    }
+
+                    choiceNumber = parseInt(choiceNumber, 10);
+                    var index = usedValues[questionNumber].indexOf(choiceNumber);
+
+                    if (index !== -1) {
+                        usedValues[questionNumber].splice(index, 1);
+                    }
+                    var inputContainer = document.getElementById('inputContainer' + questionNumber);
+
+                    alert('!Delete Complete!');
+                },
+                error: function() {
+                    alert('fail..');
+                }
+            });
+        }
+    }
+
+    // 보기의 사용 가능한 가장 작은 Value 값을 찾아서 반환
+    function findUnusedValue(cardCount) {
+        for (var value = 1; value <= maxInputs; value++) {
+            if (!usedValues[cardCount].includes(value)) {
+                return value;
+            }
+        }
+        return null; // 모든 값이 사용 중인 경우
+    }
+
+    // 문제의 사용 가능한 가장 작은 Value 값을 찾아서 반환
+    function findUnusedQuestion() {
+        for (var value = 1; ; value++) {
+            if (!cardArray.includes(value)) {
+                return value;
+                // 배열에 값이 없을 경우 1을 반환
+            }
+        }
+    }    
 
     // 선택지 정렬 및 화면에 다시 렌더링
     function sortAndRenderChoices(cardCount) {
@@ -388,69 +510,11 @@
         sortedForms.forEach((form) => {
             cardContainer.appendChild(form);
         });
-    }
-
-    // 선택지 삭제
-    function removeInput(inputGroup, textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
-        var confirmation = confirm(questionID + "(" + cardCount + ") 의 보기" + hiddenInputValue + "번을 삭제합니다..");
-        
-        if (confirmation) {
-            // 삭제 시 동작할 ajax
-            $.ajax({
-                headers: {'X-CSRF-TOKEN': csrfToken},
-                url: "{{ url('quiz/destroyChoice') }}",
-                type: "DELETE",
-                data: { choiceID: hiddenInputValue, questionID: questionID },
-                dataType: "json",
-                success: function(data) {
-                    alert('Delete Complete!');
-                    var inputContainer = document.getElementById("inputContainer" + cardCount);
-                    var parentDiv = inputGroup.parentElement; // 부모 div 요소 가져오기
-                    inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
-
-                    var index = usedValues[cardCount].indexOf(hiddenInputValue);
-                    if (index !== -1) {
-                        usedValues[cardCount].splice(index, 1);
-                    }                    
-
-                    // 각 인풋 태그의 placeholder 업데이트
-                    var inputElements = inputContainer.querySelectorAll("input[type='text']");
-                    for (var i = 0; i < inputElements.length; i++) {
-                        var newValue = usedValues[cardCount][i];
-                        inputElements[i].name = "choice" + newValue;
-                        inputElements[i].placeholder = "보기 " + (newValue) + "번";
-                    }
-                },
-                error: function() {
-                    alert('fail..');
-                }
-            });
-        }
-    }
-
-    // 보기의 사용 가능한 가장 작은 Value 값을 찾아서 반환
-    function findUnusedValue(cardCount) {
-        for (var value = 1; value <= maxInputs; value++) {
-            if (!usedValues[cardCount].includes(value)) {
-                return value;
-            }
-        }
-        return null; // 모든 값이 사용 중인 경우
-    }
-
-    // 문제의 사용 가능한 가장 작은 Value 값을 찾아서 반환
-    function findUnusedQuestion() {
-        for (var value = 1; ; value++) {
-            if (!cardArray.includes(value)) {
-                return value;
-                // 배열에 값이 없을 경우 1을 반환
-            }
-        }
-    }
+    }    
 
     // 문제 추가 시 Question + Choice 업데이트 
     function updateQuestion() {
-        var formData = $("#question" + cardCount).serialize();
+        var formData = $("#question" + (cardCount-1)).serialize();
         // var form = document.getElementById("question" + cardCount);
         // var formData = new FormData(form);
         console.log(formData);
@@ -471,10 +535,10 @@
 
     // 문제 추가 버튼을 누르면
     function addCard2() {
-        //updateQuestion();
+        // updateQuestion();
+        // cardCount++;
         cardCount = findUnusedQuestion();
-        // cardCount = cardArray.length + 1;
-        cardArray.push(cardCount);    
+        cardArray.push(cardCount);  
 
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
@@ -624,6 +688,7 @@
                                     cardArray.splice(indexToRemove, 1);
                                     // cardCount = findUnusedQuestion();
                                 }
+                                alert(cardArray);
 
                             } else {
                                 alert('삭제할 문제를 찾을 수 없습니다.');
@@ -655,7 +720,7 @@
                 success: function(data) {
                     if (data.success === true) {
                         alert('모든 문제를 삭제했어요.')
-                        location.reload()
+                        window.location.replace("create");
                     } else {
                         alert('초기화 실패!')
                     }
@@ -672,7 +737,7 @@
         count = cardArray.length;
         alert('현재 cardCount : ' + count);
 
-        unUsedNumber = findUnusedQuestion();
+        var unUsedNumber = findUnusedQuestion();
         if ((count + 1) == unUsedNumber) {
 
         } else {
@@ -682,7 +747,6 @@
             }
         }
 
-
         for (var i = 1; i <= count; i++) {
             alert(cardArray[i-1] + "번 문제를 저장합니다..");
 
@@ -690,6 +754,7 @@
             tinymce.get('largeInput' + cardArray[i-1]).save(); // 에디터의 내용을 textarea에 적용
             
             var formData = $("#question" + cardArray[i-1]).serialize();
+            console.log(formData);
             
             $.ajax({
                 headers: {'X-CSRF-TOKEN': csrfToken},
@@ -718,26 +783,9 @@
         window.location.href = "#";
     }
 
-    function test() {
-        console.log(cardCount);
-        console.log(cardArray);
-    }
 
 	// // TinyMCE ↓
-    // tinymce.init({
-    //   selector: 'textarea',
-    //   plugins: 'tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',
-    //   toolbar: 'undo redo | fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-    //   tinycomments_mode: 'embedded',
-    //   tinycomments_author: 'Author name',
-	//   relative_urls: false,
-	//   remove_script_host: false,
-    //   mergetags_list: [
-    //     { value: 'First.Name', title: 'First Name' },
-    //     { value: 'Email', title: 'Email' },
-    //   ],
-    //   ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")), 
-	// });
+
 	// // TinyMCE ↑
 
 </script>

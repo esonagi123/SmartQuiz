@@ -18,7 +18,7 @@ class CreateChoicesTable extends Migration
             $table->string('qid')->nullable();
             $table->string('number')->nullable();
             $table->string('content')->nullable();
-            $table->string('corAns')->nullable();
+            $table->string('answer')->nullable();
             $table->tinyInteger('valid')->nullable();
             $table->timestamps();
         });

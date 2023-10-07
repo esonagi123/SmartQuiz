@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Core;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 use App\Models\User;
 use App\Models\Test;
@@ -16,7 +17,10 @@ class QuizCore extends Controller
 
     public function index()
     {
+        $uid = session()->get("user_id");
+
         return view('quiz.index');
+
     }
 
     public function create()
@@ -24,11 +28,50 @@ class QuizCore extends Controller
         return view('quiz.create');
     }
 
+    // 문제 생성 뷰
     public function createQuestion($testID)
     {
         return view('quiz.createQuestion', ['testID' => $testID]);
     }
 
+    // 문제 수정 뷰
+    public function editQuestion($testID)
+    {
+        $testModel = Test::find($testID);
+        $questions = Question::where('testID', $testID)->orderby('number', 'asc')->get();
+        $questionCount = Question::where('testID', $testID)->count();
+        
+        $choices = [];
+        $value = [];
+        
+        foreach ($questions as $question) {
+            $choices[$question->id] = Choice::where('qid', $question->id)->orderby('number', 'asc')->get();
+            
+            // 질문에 대한 선택지 번호 배열을 초기화
+            $value[$question->number] = [];
+            
+            foreach ($choices[$question->id] as $choice) {
+                $value[$question->number][] = $choice->number;
+            }
+        }
+        
+        $result = [
+            'questions' => $questions,
+            'questionCount' => $questionCount,
+            'choices' => $choices,
+        ];
+
+        return view('quiz.editQuestion',
+        [
+            'testID' => $testID,
+            'testModel' => $testModel,
+            'items' => $result,
+            'value' => $value,
+
+        ]);
+    }
+
+    // 시험 생성 
     public function store(Request $request)
     {
         $testModel = new Test();
@@ -45,14 +88,13 @@ class QuizCore extends Controller
         
     }
 
-    // 문제 생성
+    // 문제 생성 (Ajax)
 	public function ajax_QuestionStore(Request $request)
 	{
         $testID = $request->input('testID');
         $number = $request->input('number');
         
-        if ($number == 1)
-        {
+        if ($number == 1) {
             // cardCount(number)가 1일 경우
             // DB 조회
             $check = Question::where('number', '1')->where('testID', $testID)->first();
@@ -95,30 +137,76 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
-
-    // 문제 업데이트
+    // 문제&선택지 업데이트 updateQuestion() & save() (Ajax)
 	public function ajax_QuestionUpdate(Request $request)
 	{
-        $testID = $request->input('testID');
+        $questionID = $request->input('questionID');
+        $number = $request->input('number');
 
-            //$check = Question::where('number', '1')->where('testID', $testID)->first();
+        // 동적 생성된 input name을 위한 코드
+        $name = 'name' . $number; // 문제명
+        $gubun = 'gubun' . $number; // 문제 유형
 
-        $questionModel = new Question();
-        $questionModel->testID = $request->input('testID');
-        $questionModel->number = $request->input('number');
+        // 문제 정보 Update
+        $questionModel = Question::find($questionID);
+        $questionModel->question = $request->input($name);
+        $questionModel->gubun = $request->input($gubun);
+        
         $questionModel->save();
 
-        $questionID = $questionModel->id;
+        // 선택지 정보 Update
+        // $choiceCount = Choice::where('qid', $questionID)->select('number')->count();
+
+        $choices = Choice::where('qid', $questionID)->orderBy('number', 'asc')->get();
+        foreach($choices as $choice) {
+
+            // $choiceModel = Choice::where('qid', $questionID)->where('number', $cNumber)->first();
+            
+            $inputValue = 'choice' . $choice->number;
+            $answer = 'answer' . $choice->number;
+
+            $choice->content = $request->input($inputValue);
+            $choice->answer = $request->input($answer);
+
+            $choice->save();
+        }
 
         $response = [
             'success' => true,
-            'questionID' => $questionID,
         ];
 
 		return response()->json($response);
 	}
 
-    // 선택지 생성
+    // 문제 삭제 후 선택지도 삭제
+    public function ajax_QuestionDestroy(Request $request)
+    {
+        $testID = $request->input('testID');
+        $number = $request->input('number');
+
+        // 문제 삭제
+        $question = Question::where('testID', $testID)->where('number', $number)->first();
+        if ($question) {
+            $question->delete();
+        }
+
+        // 선택지가 있으면 삭제
+        $choices = Choice::where('qid', $question->id)->get();
+        if ($choices) {
+            foreach ($choices as $choice) {
+                $choice->delete();
+            }
+        }
+
+        $response = [
+            'success' => true,
+        ];
+
+        return response()->json($response);
+
+    }
+
+    // 선택지 생성 (Ajax)
 	public function ajax_ChoiceStore(Request $request)
 	{
 	
@@ -147,6 +235,7 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
+    // 선택지 삭제 (Ajax)
 	public function ajax_ChoiceDestroy(Request $request)
 	{
 	
@@ -179,23 +268,36 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}    
 
-    public function show($id)
+    // 문제&선택지 초기화 (Ajax)
+    public function ajax_reset(Request $request)
     {
-        //
-    }
+		if ($request->input('testID')) {
+            $testID = $request->input('testID');
+            
+            $questions = Question::where('testID', $testID)->get();
+            $choices = Choice::leftJoin('questions', 'choices.qid', '=', 'questions.id')
+            ->select('choices.*', 'questions.testID')
+            ->where('questions.testID', $testID)
+            ->get();
+            
+            foreach ($choices as $choice) {
+                $choice->delete();
+            }
 
-    public function edit($id)
-    {
-        //
-    }
+            foreach ($questions as $question) {
+                $question->delete();
+            }
 
-    public function update(Request $request, $id)
-    {
-        //
-    }
+            $response = [
+                'success' => true,
+            ];
+		} else {
+			$response = [
+				'success' => false,
+				'message' => '초기화 실패',
+			];
+		}
 
-    public function destroy($id)
-    {
-        //
+		return response()->json($response);
     }
 }

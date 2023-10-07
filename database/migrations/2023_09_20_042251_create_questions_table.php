@@ -18,7 +18,7 @@ class CreateQuestionsTable extends Migration
             $table->string('testID')->nullable();
             $table->string('number')->nullable();
             $table->string('gubun')->nullable(); //
-            $table->string('title')->nullable(); // 문제 제목
+            $table->longText('question')->nullable(); // 문제 제목
             $table->string('answer')->nullable();
             $table->string('valid')->nullable();
             $table->timestamps();

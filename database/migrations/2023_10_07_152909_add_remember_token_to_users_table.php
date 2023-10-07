@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMembersTable extends Migration
+class AddRememberTokenToUsersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,8 @@ class CreateMembersTable extends Migration
      */
     public function up()
     {
-        Schema::create('members', function (Blueprint $table) {
-            $table->id();
-            $table->string('uid');
-            $table->string('nickname');
-            $table->string('email');
-            $table->string('password');
-            $table->timestamps();
+        Schema::table('members', function (Blueprint $table) {
+            $table->rememberToken();
         });
     }
 
@@ -30,6 +25,8 @@ class CreateMembersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('members');
+        Schema::table('members', function (Blueprint $table) {
+            //
+        });
     }
 }

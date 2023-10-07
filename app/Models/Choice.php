@@ -11,6 +11,6 @@ class Choice extends Model
 	protected $table = 'choices';
 	protected $primaryKey = 'id';
     protected $fillable = [
-        'qid', 'number', 'content', 'corAns', 'valid'
+        'qid', 'number', 'content', 'answer', 'valid'
     ];
 }
