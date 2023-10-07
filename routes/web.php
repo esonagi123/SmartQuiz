@@ -12,11 +12,9 @@ Route::get('/', function () {
     return redirect('/quiz');
 });
 
-// Route::get('main', [MainController::class, 'index'])->name('main.index');
-Route::prefix('quiz')->group(function () {
+Route::get('/quiz', [QuizCore::class, 'index'])->name('quiz.index');
 
-    Route::get('/', [QuizCore::class, 'index'])->name('quiz.index');
-
+Route::prefix('quiz')->middleware(['quiz'])->group(function () {
     Route::get('/create', [QuizCore::class, 'create'])->name('quiz.create');
     Route::post('/store', [QuizCore::class, 'store'])->name('quiz.store');
 
@@ -30,7 +28,6 @@ Route::prefix('quiz')->group(function () {
     Route::delete('/reset', [QuizCore::class, 'ajax_reset'])->name('ajax.QuestionReset');
 
     Route::get('/{testID}/edit', [QuizCore::class, 'editQuestion'])->name('quiz.editQuestion');
-
 });
 
 Route::get('register', [Account::class, 'index'])->name('register');
