@@ -17,10 +17,26 @@ class QuizCore extends Controller
 
     public function index()
     {
-        $uid = session()->get("user_id");
+        $nickname = null;
+        $tests = null;
 
-        return view('quiz.index');
+        if (Auth::check()) {
+            // 로그인 했을 경우
+            $user = Auth::user();
+            $nickname = $user->nickname;
 
+            $tests = Test::where('uid', $user->uid)->orderby('date', 'desc')->get();
+
+            if ($tests->isEmpty()) {
+                // 결과가 없는 경우
+                $tests = null;
+            }
+        }
+
+        return view('quiz.index', [
+            'nickname'=> $nickname,
+            'tests' => $tests,
+        ]);
     }
 
     public function create()
@@ -74,9 +90,17 @@ class QuizCore extends Controller
     // 시험 생성 
     public function store(Request $request)
     {
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user) {
+                $uid = $user->uid;
+            }
+        }
+
         $testModel = new Test();
         $serverTime = now();
 
+        $testModel->uid = $uid;
         $testModel->name = $request->input('name');
         $testModel->subject = $request->input('subject');
         $testModel->date = $serverTime;
