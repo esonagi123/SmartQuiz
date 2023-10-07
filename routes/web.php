@@ -7,23 +7,12 @@ use App\Http\Controllers\Account\Login;
 use App\Http\Controllers\MainController;
 use Illuminate\Support\Facades\Auth;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
 
 Route::get('/', function () {
-    return view('quiz.index');
+    return redirect('/quiz');
 });
 
 // Route::get('main', [MainController::class, 'index'])->name('main.index');
-
 Route::prefix('quiz')->group(function () {
 
     Route::get('/', [QuizCore::class, 'index'])->name('quiz.index');
@@ -49,11 +38,3 @@ Route::post('register/join', [Account::class, 'store'])->name('register.join');
 Route::get('login', [Login::class, 'index'])->name('login');
 Route::post('login/check', [Login::class, 'check'])->name('login.check');
 Route::get('logout', [Login::class, 'logout'])->name('logout');
-
-
-
-Route::get('register', [Account::class, 'index'])->name('register');
-
-Route::get('/quiz', function () {
-    return view('quiz.index');
-});
