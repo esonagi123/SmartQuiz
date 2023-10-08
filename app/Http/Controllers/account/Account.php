@@ -65,6 +65,7 @@ class Account extends Controller
         $user = new User;
         $user->uid = $request->input('uid');
         $user->nickname = $request->input('nickname');
+        $user->avatar = "0";
         $user->email = $request->input('email');
     
         // 비밀번호를 해시화하여 저장
