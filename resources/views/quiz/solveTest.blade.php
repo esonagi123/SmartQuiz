@@ -19,7 +19,7 @@
     width: 100%;
     background-color: #333;
     padding: 10px;
-    text-align: center;
+    text-align: right;
     z-index: 100;
     }
 
@@ -28,7 +28,7 @@
     }
 </style>
 
-<div class="button-bar text-center">
+<div class="button-bar">
     <button type="button" class="btn btn-danger fixed-btn" onclick="">나가기</button>
     <button type="button" class="btn btn-warning fixed-btn" onclick="submitForm()">제출</button>
 </div>

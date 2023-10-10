@@ -38,14 +38,14 @@ class Account extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'uid' => 'required|unique:users|regex:/^[a-z0-9_-]{5,20}$/',
-            'email' => 'required|unique:users|email|max:255',
+            'uid' => 'required|unique:users,uid|regex:/^[a-z0-9_-]{5,20}$/',
+            'email' => 'required|unique:users,email|email|max:255',
             'password' => [
                 'required',
                 'confirmed',
                 'regex:/^(?=.*[a-z\d])[a-z\d@$!%*?&]{8,16}$/i', // 최소 8자 이상, 최대 16자 이하의 문자열, 적어도 하나의 소문자 (a-z) 또는 숫자 (\d)
             ],
-            'nickname' => 'required|unique:users|regex:/^[\p{L}a-zA-Z0-9]{2,8}$/u',
+            'nickname' => 'required|unique:users,nickname|regex:/^[\p{L}a-zA-Z0-9]{2,8}$/u',
         ], [
             'nickname.required' => '닉네임을 입력하세요.',
             'nickname.unique' => '사용 중인 닉네임 입니다.',

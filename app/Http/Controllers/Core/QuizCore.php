@@ -49,6 +49,7 @@ class QuizCore extends Controller
     {
         $maximumScore = 100;
         $score = 0;
+        
 
         $test = Test::find($testID);
         $questions = Question::where('testID', $test->id)->orderby('number', 'asc')->get();
@@ -64,6 +65,8 @@ class QuizCore extends Controller
             $choices = Choice::where('qid', $question->id)->orderby('number', 'asc')->get(); // 각 문제에 대한 선택지들
             $count = Choice::where('qid', $question->id)->count(); // 각 문제에 대한 선택지 갯수
 
+            $wrongQuestion = [];
+
             // 각 문제에 대한 선택지 가져오기
             foreach ($choices as $choice) {
 
@@ -76,22 +79,25 @@ class QuizCore extends Controller
             }
 
             if ($inputAnswers == $answer) {
-                // 모든 정답이 완벽히 일치하는 경우에만 점수 부여
+                // 정답이 일치하면 점수 부여
                 $score += $allocation;
+            } else {
+                // 틀리면
+                $wrongQuestion[] = $question->number;
             }
-
-            \Log::info("input: " . json_encode($inputAnswers));
-            \Log::info("DB: " . json_encode($answer));
+             \Log::info("input: " . json_encode($wrongQuestion));
+            // \Log::info("input: " . json_encode($inputAnswers));
+            // \Log::info("DB: " . json_encode($answer));
             
             // 배열 초기화 (안하면 1 : ... , 2 : ... 이런식으로 문제를 순회할 때마다 늘어나 버린다.)
             $inputAnswers = [];
             $answer = [];
-
         }
 
         return view('quiz.result', [
             'testID' => $testID,
             'score' => $score,
+            'wrongQuestions' => $wrongQuestion,
         ]);
     }
 

@@ -14,7 +14,9 @@ Route::get('/', function () {
 
 
 Route::middleware(['app'])->group(function () {
+
     Route::prefix('quiz')->group(function () {
+
         Route::get('/', [QuizCore::class, 'index'])->name('quiz.index');
         
         Route::middleware(['quiz'])->group(function () {
@@ -25,6 +27,7 @@ Route::middleware(['app'])->group(function () {
             Route::get('/{testID}/create', [QuizCore::class, 'createQuestion'])->name('quiz.createQuestion');
             Route::post('/storeQuestion', [QuizCore::class, 'ajax_QuestionStore'])->name('ajax.QuestionStore');
             Route::patch('/updateQuestion', [QuizCore::class, 'ajax_QuestionUpdate'])->name('ajax.QuestionUpdate');
+            Route::post('/updateGubun', [QuizCore::class, 'ajax_GubunUpdate'])->name('ajax.QuestionUpdate');
             Route::post('/storeChoice', [QuizCore::class, 'ajax_ChoiceStore'])->name('ajax.ChoiceStore');
 
             Route::delete('/destroyChoice', [QuizCore::class, 'ajax_ChoiceDestroy'])->name('ajax.ChoiceDestroy');
@@ -32,6 +35,9 @@ Route::middleware(['app'])->group(function () {
             Route::delete('/reset', [QuizCore::class, 'ajax_reset'])->name('ajax.QuestionReset');
 
             Route::get('/{testID}/edit', [QuizCore::class, 'editQuestion'])->name('quiz.editQuestion');
+
+            Route::get('/solve/{testID}/type{type}', [QuizCore::class, 'solve'])->name('quiz.solve');
+            Route::post('/result/{testID}', [QuizCore::class, 'result'])->name('quiz.result');
 
         });
     });

@@ -19,7 +19,8 @@ class CreateTestsTable extends Migration
             $table->string('name')->nullable(); // 테스트 이름
             $table->string('subject')->nullable(); // 주제
             $table->datetime('date')->nullable(); // 생성 날짜
-            $table->string('count')->nullable(); // 응시 횟수
+            $table->integer('viewCount')->nullable(); // 조회 수
+            $table->integer('solveCount')->nullable(); // 응시 수
             $table->string('avg')->nullable(); // 평균 점수
             $table->string('secret')->nullable(); // 공개 여부
             $table->timestamps();
