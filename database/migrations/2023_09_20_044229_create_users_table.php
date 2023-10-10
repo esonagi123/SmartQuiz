@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMembersTable extends Migration
+class CreateUsersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -17,15 +17,18 @@ class CreateMembersTable extends Migration
             $table->id();
             $table->string('uid');
             $table->string('nickname');
+            $table->string('avatar');
             $table->string('email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->timestamps();
         });
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->rememberToken();
-        });
+        // Schema::table('users', function (Blueprint $table) {
+        //     $table->string('avatar');
+        //     // $table->rememberToken();
+        //     $table->timestamp('email_verified_at')->nullable();
+        // });
     }
 
     /**

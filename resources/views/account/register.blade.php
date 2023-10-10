@@ -116,7 +116,7 @@
 
                             <div class="mb-3 form-password-toggle">
                                 <label class="form-label" for="password">❗ 비밀번호</label>&nbsp;&nbsp;
-                                <span class="badge bg-label-success">안심하세요! 암호화 되어 안전하게 저장됩니다.</span>
+                                <span class="badge bg-label-primary">암호화 되어 안전하게 저장됩니다.</span>
                                 <div class="input-group input-group-merge">
                                     <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
                                     <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>

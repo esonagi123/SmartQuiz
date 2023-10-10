@@ -58,14 +58,42 @@
   </head>
 
 	@if (\Session::has('already_login'))
-	<script>
-		window.onload = function() {
-			alert("{!! \Session::get('already_login') !!}");
-		};
-	</script>
+    <script>
+      window.onload = function() {
+        alert("{!! \Session::get('already_login') !!}");
+      };
+    </script>
+  @elseif (\Session::has('not_auth'))
+    <script>
+      $(document).ready(function() {
+        $('#need_login').modal('show');
+      });
+    </script>
   @endif
-  
+
   <body>
+
+    <!-- Modal (data-bs-backdrop="static" : 안사라지게)-->
+    <div class="modal fade" id="need_login" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+              {{-- <div class="modal-header">
+                  <h5 class="modal-title" id="modalCenterTitle"></h5>
+              </div> --}}
+              <div class="modal-body mt-3">
+                  <div class="mb-4">
+                      <h5><strong>❗로그인이 필요한 기능이에요.</strong></h5>
+                      <p><strong>로그인 페이지로 이동할까요?</strong></p>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                  <a class="btn btn-primary" href="{{ url('login') }}">로그인</a>
+              </div>
+              </div>
+          </div>
+      </div>
+    </div>
+
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
       <div class="layout-container">
@@ -143,17 +171,22 @@
             <li class="menu-header small text-uppercase">
               <span class="menu-header-text">⭐ Quiz</span>
             </li>
-            <li class="menu-item">
+            <li class="menu-item {{ Request::is('quiz') ? 'active' : '' }}">
               <a href="{{ url('quiz') }}" class="menu-link">
                 <div>🏠 퀴즈 홈</div>
               </a>
             </li>
             @if (Auth::check()) <!-- 로그인이 되어있으면 -->
-              <li class="menu-item">
-                <a href="{{ url('quiz') }}" class="menu-link">
+              <li class="menu-item {{ Request::is('quiz/create') ? 'active' : '' }}">
+                <a href="{{ url('quiz/create') }}" class="menu-link">
                   <div>✏️ 만들기</div>
                 </a>
               </li>
+              <li class="menu-item {{ Request::is('quiz/create/hh') ? 'active' : '' }}">
+                <a href="#" class="menu-link">
+                  <div>📒 나의 퀴즈</div>
+                </a>
+              </li>              
             @endif
             <li class="menu-item">
               <a href="{{ url('quiz') }}" class="menu-link">
@@ -223,61 +256,59 @@
               <ul class="navbar-nav flex-row align-items-center ms-auto">
                 <!-- User -->
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                  <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                    <div class="avatar avatar-online">
-                      <img src="{{ asset('/assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle" />
-                    </div>
-                  </a>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        <div class="d-flex">
-                          <div class="flex-shrink-0 me-3">
-                            <div class="avatar avatar-online">
-                              <img src="{{ asset('/assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle" />
+                  @if (Auth::check())
+                    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                      <div class="avatar avatar-online">
+                        <img src="{{ asset('/assets/img/avatars/avatar0.png') }}" alt class="w-px-40 h-auto rounded-circle" />
+                      </div>
+                    </a>
+                  @else
+                    <a class="btn btn-primary" href="{{ url('login') }}">로그인</a>
+                  @endif
+                  
+                  @if (Auth::check())
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      <li>
+                        <a class="dropdown-item" href="#">
+                          <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                              <div class="avatar avatar-online">
+                                <img src="{{ asset('/assets/img/avatars/avatar0.png') }}" alt class="w-px-40 h-auto rounded-circle" />
+                              </div>
+                            </div>
+                            <div class="flex-grow-1">
+                              <span class="fw-semibold d-block">{{ $userData['nickname'] }}</span>
+                              <small class="text-muted">관리자 or 회원</small>
                             </div>
                           </div>
-                          <div class="flex-grow-1">
-                            <span class="fw-semibold d-block">John Doe</span>
-                            <small class="text-muted">Admin</small>
-                          </div>
-                        </div>
-                      </a>
-                    </li>
-                    <li>
-                      <div class="dropdown-divider"></div>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        <i class="bx bx-user me-2"></i>
-                        <span class="align-middle">My Profile</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        <i class="bx bx-cog me-2"></i>
-                        <span class="align-middle">Settings</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        <span class="d-flex align-items-center align-middle">
-                          <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
-                          <span class="flex-grow-1 align-middle">Billing</span>
-                          <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
-                        </span>
-                      </a>
-                    </li>
-                    <li>
-                      <div class="dropdown-divider"></div>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="auth-login-basic.html">
-                        <i class="bx bx-power-off me-2"></i>
-                        <span class="align-middle">Log Out</span>
-                      </a>
-                    </li>
-                  </ul>
+                        </a>
+                      </li>
+                      <li>
+                        <div class="dropdown-divider"></div>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="#">
+                          <i class="bx bx-user me-2"></i>
+                          <span class="align-middle">My Profile</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="#">
+                          <i class="bx bx-cog me-2"></i>
+                          <span class="align-middle">Settings</span>
+                        </a>
+                      </li>
+                      <li>
+                        <div class="dropdown-divider"></div>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="{{ url('logout') }}">
+                          <i class="bx bx-power-off me-2"></i>
+                          <span class="align-middle">로그아웃</span>
+                        </a>
+                      </li>
+                    </ul>
+                  @endif
                 </li>
                 <!--/ User -->
               </ul>
@@ -292,7 +323,7 @@
             @yield('content')
             <!-- / Content -->
             <!-- Footer -->
-            <footer class="content-footer footer bg-footer-theme">
+            {{-- <footer class="content-footer footer bg-footer-theme">
                 <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                   <div class="mb-2 mb-md-0">
                     ©
@@ -321,7 +352,7 @@
                     >
                   </div>
                 </div>
-              </footer>
+              </footer> --}}
               <!-- / Footer -->
             <div class="content-backdrop fade"></div>
           </div>

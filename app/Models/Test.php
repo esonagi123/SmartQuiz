@@ -11,6 +11,6 @@ class Test extends Model
 	protected $table = 'tests';
 	protected $primaryKey = 'id';
     protected $fillable = [
-        'uid', 'name', 'subject', 'date', 'count', 'avg', 'secret'
+        'uid', 'name', 'subject', 'date', 'viewCount', 'solveCount', 'avg', 'secret'
     ];
 }

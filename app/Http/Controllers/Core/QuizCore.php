@@ -17,10 +17,88 @@ class QuizCore extends Controller
 
     public function index()
     {
-        $uid = session()->get("user_id");
+        $nickname = null;
+        $tests = null;
 
-        return view('quiz.index');
+        if (Auth::check()) {
+            // 로그인 했을 경우
+            $user = Auth::user();
+            $nickname = $user->nickname;
 
+            $tests = Test::where('uid', $user->uid)->orderby('date', 'desc')->get();
+
+            if ($tests->isEmpty()) {
+                // 결과가 없는 경우
+                $tests = null;
+            }
+        }
+        return view('quiz.index', [
+            'nickname'=> $nickname,
+            'tests' => $tests,
+        ]);
+    }
+
+    // 시험 체점
+    public function calc(Request $request)
+    {
+
+    }
+
+    // 시험 결과
+    public function result($testID, Request $request)
+    {
+        $maximumScore = 100;
+        $score = 0;
+        
+
+        $test = Test::find($testID);
+        $questions = Question::where('testID', $test->id)->orderby('number', 'asc')->get();
+        $questionCount = Question::where('testID', $test->id)->count();
+
+        // 각 문제당 배점 계산
+        if ($questionCount > 0) {
+            $allocation = $maximumScore / $questionCount;
+        }
+
+        // 각 문제 가져오기
+        foreach ($questions as $question) {
+            $choices = Choice::where('qid', $question->id)->orderby('number', 'asc')->get(); // 각 문제에 대한 선택지들
+            $count = Choice::where('qid', $question->id)->count(); // 각 문제에 대한 선택지 갯수
+
+            $wrongQuestion = [];
+
+            // 각 문제에 대한 선택지 가져오기
+            foreach ($choices as $choice) {
+
+                // $question->number를 이름으로 갖는 다차원 배열 생성
+                // 동적으로 form에서 받은 input 값을 inputAnswers[$question->number] 배열에 추가
+                $inputAnswers[$question->number][] = $request->input('Q'. $question->number . 'answer' . $choice->number);
+
+                // answer[$question->number] 배열에 정답을 추가 ( 1번 문제에 정답이 5번일 경우 ex. { 1 : null, null, null, null, 5 } )
+                $answer[$question->number][] = $choice->answer;
+            }
+
+            if ($inputAnswers == $answer) {
+                // 정답이 일치하면 점수 부여
+                $score += $allocation;
+            } else {
+                // 틀리면
+                $wrongQuestion[] = $question->number;
+            }
+             \Log::info("input: " . json_encode($wrongQuestion));
+            // \Log::info("input: " . json_encode($inputAnswers));
+            // \Log::info("DB: " . json_encode($answer));
+            
+            // 배열 초기화 (안하면 1 : ... , 2 : ... 이런식으로 문제를 순회할 때마다 늘어나 버린다.)
+            $inputAnswers = [];
+            $answer = [];
+        }
+
+        return view('quiz.result', [
+            'testID' => $testID,
+            'score' => $score,
+            'wrongQuestions' => $wrongQuestion,
+        ]);
     }
 
     public function create()
@@ -74,9 +152,17 @@ class QuizCore extends Controller
     // 시험 생성 
     public function store(Request $request)
     {
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user) {
+                $uid = $user->uid;
+            }
+        }
+
         $testModel = new Test();
         $serverTime = now();
 
+        $testModel->uid = $uid;
         $testModel->name = $request->input('name');
         $testModel->subject = $request->input('subject');
         $testModel->date = $serverTime;
@@ -137,7 +223,7 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
-    // 문제&선택지 업데이트 updateQuestion() & save() (Ajax)
+    // 전체 저장
 	public function ajax_QuestionUpdate(Request $request)
 	{
         $questionID = $request->input('questionID');
@@ -177,6 +263,25 @@ class QuizCore extends Controller
 
 		return response()->json($response);
 	}
+
+    // 문제유형 자동 업데이트 (select onchange 발생 시)
+    public function ajax_GubunUpdate(Request $request)
+    {
+        $questionID = $request->input('questionID');
+        $gubun = $request->input('gubun');
+
+        $questionModel = Question::find($questionID);
+
+        $questionModel->gubun = $gubun;
+
+        $questionModel->save();
+
+        $response = [
+            'success' => true,
+        ];
+
+		return response()->json($response);        
+    }
 
     // 문제 삭제 후 선택지도 삭제
     public function ajax_QuestionDestroy(Request $request)
@@ -299,5 +404,45 @@ class QuizCore extends Controller
 		}
 
 		return response()->json($response);
+    }
+
+    public function solve($testID, $type)
+    {
+        $testModel = Test::find($testID);
+        $questions = Question::where('testID', $testID)->orderby('number', 'asc')->get();
+        $questionCount = Question::where('testID', $testID)->count();
+        
+        $choices = [];
+        $value = [];
+        
+        
+        foreach ($questions as $question) {
+            // 문제 수 만큼 순회하면서 동적으로 choices 배열을 생성
+            $choices[$question->id] = Choice::where('qid', $question->id)->orderby('number', 'asc')->get();
+            
+            // 선택지들을 담을 배열을 동적으로 만들고 초기화
+            $value[$question->number] = [];
+            
+            foreach ($choices[$question->id] as $choice) {
+                // 동적으로 만들어진 choices 배열을 순회
+
+                $value[$question->number][] = $choice->number;
+            }
+        }
+        
+        $result = [
+            'questions' => $questions,
+            'questionCount' => $questionCount,
+            'choices' => $choices,
+        ];
+
+        return view('quiz.solveTest',
+        [
+            'testID' => $testID,
+            'testModel' => $testModel,
+            'items' => $result,
+            'value' => $value,
+
+        ]);
     }
 }

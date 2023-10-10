@@ -14,12 +14,12 @@ class User extends Model implements Authenticatable
     protected $table = 'users'; // 테이블 이름을 'users'로 변경
     protected $primaryKey = 'id';
     protected $fillable = [
-        'uid', 'nickname', 'email', 'password', 'remember_token'
+        'uid', 'nickname', 'avatar', 'email', 'password', 'remember_token'
     ];
 
     // Authenticatable 인터페이스의 메소드를 오버라이드
     public function getAuthIdentifierName()
     {
-        return 'uid';
+        return 'id';
     }
 }

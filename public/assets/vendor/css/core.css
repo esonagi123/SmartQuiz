@@ -63,10 +63,16 @@
     scroll-behavior: smooth;
   }
 }
+@font-face {
+  font-family: 'pretendard';
+  src: url('/assets/vendor/fonts/PretendardVariable.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
 
 body {
   margin: 0;
-  font-family: var(--bs-body-font-family);
+  font-family: pretendard;
   font-size: var(--bs-body-font-size);
   font-weight: var(--bs-body-font-weight);
   line-height: var(--bs-body-line-height);
@@ -9907,7 +9913,7 @@ button.list-group-item-gray.active {
 }
 
 .fw-bolder {
-  font-weight: 900 !important;
+  font-weight: 700 !important;
 }
 
 .lh-1 {

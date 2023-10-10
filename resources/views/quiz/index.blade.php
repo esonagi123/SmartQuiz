@@ -29,30 +29,105 @@
                 </div>
             </div>
         @else <!-- 로그인이 되어있으면 -->
-            <!-- 나의 퀴즈 -->
+            <!-- #나의 퀴즈 -->
             <h5 class="mt-4 pb-1 mb-4"><i class="fa-solid fa-hashtag">&nbsp;</i>나의 퀴즈 💁‍♂️</h5>
+            @if (!$tests) <!-- 만든 퀴즈가 없으면 -->
+                <div class="col-lg-12 mb-4 order-0">
+                    <div class="card">
+                        <div class="d-flex align-items-end row">
+                        <div class="col-sm-7">
+                            <div class="card-body">
+                            <h5 class="card-title text-primary">안녕하세요, {{ $nickname }} 님! 🎉</h5>
+                            <p>만든 퀴즈가 없어요.<br>지금 바로 첫 번째 퀴즈를 만들어 보세요.</p>
+                            <a href="{{ url('quiz/create') }}" class="btn btn-outline-primary">퀴즈 만들기</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 text-center text-sm-left">
+                            <div class="card-body pb-0 px-0 px-md-4">
+                            <img src="{{ asset('/assets/img/illustrations/man-with-laptop-light.png') }}" height="140" alt="View Badge User"
+                                data-app-dark-img="illustrations/man-with-laptop-dark.png"
+                                data-app-light-img="illustrations/man-with-laptop-light.png">
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            @else <!-- 만든 퀴즈가 있으면 : 만든 퀴즈 목록 -->
             <div class="col-lg-12 mb-4 order-0">
                 <div class="card">
                     <div class="d-flex align-items-end row">
-                    <div class="col-sm-7">
-                        <div class="card-body">
-                        <h5 class="card-title text-primary">안녕하세요, 닉네임님! 🎉</h5>
-                        <p>아직 퀴즈를 만든 적이 없어요. 😥<br>지금 바로 첫 번째 퀴즈를 만들어 보세요.</p>
-                        <a href="{{ url('quiz/create') }}" class="btn btn-outline-primary">퀴즈 만들기</a>
+                        <div class="col-sm-7">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary">안녕하세요, {{ $nickname }}님! 🎉</h5>
+                                <a href="{{ url('quiz/create') }}" class="btn btn-sm btn-primary">퀴즈 만들기</a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-sm-12 text-center text-sm-left">
-                        <div class="card-body pb-0 px-0 px-md-4">
-                        <img src="{{ asset('/assets/img/illustrations/man-with-laptop-light.png') }}" height="140" alt="View Badge User"
-                            data-app-dark-img="illustrations/man-with-laptop-dark.png"
-                            data-app-light-img="illustrations/man-with-laptop-light.png">
-                        </div>
-                    </div>
                     </div>
                 </div>
             </div>
+                @foreach ($tests as $test)
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                        <div class="row g-0">
+                            <div class="col-md-12">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ $test->name }}</h5>
+                                <p class="card-text">{{ $test->subject }}</p>
+                                <p class="card-text"><small class="text-muted">{{ $test->created_at->diffForHumans() }}</small></p>
+                                <div class="text-end">
+                                    <a class="btn btn-primary" href="{{ url('quiz/solve/' . $test->id . "/type1") }}">풀기</a>
+                                    <a class="btn btn-primary" href="{{ url('quiz/' . $test->id . '/edit') }}">수정</a>
+                                    {{-- <div class="btn-group dropup">
+                                        <button type="button" class="btn btn-primary dropdown-toggle show" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                          풀기
+                                        </button>
+                                        <ul class="dropdown-menu" style="position: absolute; inset: auto auto 0px 0px; margin: 0px; transform: translate(0px, -42px);" data-popper-placement="top-start">
+                                          <li><a class="dropdown-item" onclick="solve1({{ $test->id }})">풀기</a></li>
+                                          <li><a class="dropdown-item" onclick="solve2({{ $test->id }})">한 문제씩 풀기</a></li>
+                                          <li>
+                                            <hr class="dropdown-divider">
+                                          </li>
+                                          <li><a class="dropdown-item" href="{{ url('quiz/' . $test->id . '/edit') }}">수정</a></li>
+                                          <li><a class="dropdown-item" href="javascript:void(0);">삭제</a></li>
+                                        </ul>
+                                    </div> --}}
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                @endforeach
+            @endif
         @endif
     </div>
 </div>
+
+<script>
+    function solve1(testID) {
+      // confirm 창을 띄우고 사용자의 선택을 확인합니다.
+      var isConfirmed = confirm("일반적인 시험처럼 모든 문제가 표시되고 정답과 결과는 마지막에 표시됩니다.");
+
+      // 사용자가 확인을 눌렀을 때
+      if (isConfirmed) {
+        var url = "{{ url('quiz/solve') }}/" + testID + "/type1";
+        window.location.href = url;
+      } else {
+        return;
+      }
+    }
+
+    function solve2(testID) {
+      // confirm 창을 띄우고 사용자의 선택을 확인합니다.
+      var isConfirmed = confirm("한 문제씩 표시되고 정답과 결과를 바로 확인할 수 있습니다.");
+
+      // 사용자가 확인을 눌렀을 때
+      if (isConfirmed) {
+        window.location.href = "#";
+      } else {
+        return;
+      }
+    }    
+</script>
 
 @endsection()

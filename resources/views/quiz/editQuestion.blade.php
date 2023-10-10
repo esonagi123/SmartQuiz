@@ -208,35 +208,36 @@
         cardArray.push(parseInt({!! json_encode($question->number) !!}, 10));
 
         tinymce.init({
-        selector: '#largeInput' + {{ $question->number }},
-        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-        menubar: 'edit insert format table tools help',
-        menu: {
-            file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
-            edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall | searchreplace' },
-            view: { title: 'View', items: 'code | visualaid visualchars visualblocks | spellchecker | preview fullscreen | showcomments' },
-            insert: { title: 'Insert', items: 'image link media addcomment pageembed template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents | insertdatetime' },
-            format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat' },
-            tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code wordcount' },
-            table: { title: 'Table', items: 'inserttable | cell row column | advtablesort | tableprops deletetable' },
-            help: { title: 'Help', items: 'help' }
-        },
-        toolbar: 'fontsize bold italic underline strikethrough forecolor backcolor | table charmap | align lineheight | numlist bullist | emoticons | removeformat',
-        tinycomments_mode: 'embedded',
-        tinycomments_author: 'Author name',
-        relative_urls: false,
-        remove_script_host: false,
-        mergetags_list: [
-            { value: 'First.Name', title: 'First Name' },
-            { value: 'Email', title: 'Email' },
-        ],
-        height: 250,
-        language: 'ko_KR',
-    });
+            selector: '#largeInput' + {{ $question->number }},
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            menubar: 'edit insert format table tools help',
+            menu: {
+                file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
+                edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall | searchreplace' },
+                view: { title: 'View', items: 'code | visualaid visualchars visualblocks | spellchecker | preview fullscreen | showcomments' },
+                insert: { title: 'Insert', items: 'image link media addcomment pageembed template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents | insertdatetime' },
+                format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat' },
+                tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code wordcount' },
+                table: { title: 'Table', items: 'inserttable | cell row column | advtablesort | tableprops deletetable' },
+                help: { title: 'Help', items: 'help' }
+            },
+            toolbar: 'fontsize bold italic underline strikethrough forecolor backcolor | table charmap | align lineheight | numlist bullist | emoticons | removeformat',
+            tinycomments_mode: 'embedded',
+            tinycomments_author: 'Author name',
+            relative_urls: false,
+            remove_script_host: false,
+            mergetags_list: [
+                { value: 'First.Name', title: 'First Name' },
+                { value: 'Email', title: 'Email' },
+            ],
+            height: 250,
+            language: 'ko_KR',
+        });
 
     @endforeach
 
     var cardCount = findUnusedQuestion(); // 만들어진 문제 수
+    // cardCount--;
 
     var maxInputs = 5; // 최대 보기 개수 
     var usedValues = {};
@@ -255,6 +256,7 @@
         const fadeElement = document.querySelector('.fade-element'); // JavaScript를 사용하여 페이드 효과를 적용
         fadeElement.style.opacity = 1; // 투명도를 1로 설정하여 나타나게 함
         alert("문제 수 : " + cardArray);
+        alert('cardCount :' + cardCount);
     });
 
     // 문제 타입 선택
@@ -275,6 +277,26 @@
                     window.location.href = `#Q${cardCount}`;
                 }
             }
+
+            // 문제 유형 저장
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                url: "{{ url('quiz/updateGubun') }}",
+                type: "POST",
+                data: { questionID: questionID, gubun: "1" },
+                dataType: "json",
+                success: function(data) {
+                    if (data.success === true) {
+                        alert('문제 유형 업데이트 완료');
+                    } else {
+                        alert('문제 유형 업데이트 실패');
+                    }
+
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+                }
+            });
 
         } else {
             hiddenDiv.style.display = "none";
@@ -381,7 +403,7 @@
     }
 
     // 선택지 삭제
-    function removeInput(textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
+    function removeInput(newInputGroup, textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
         var confirmation = confirm(questionID + "(" + cardCount + ") 의 보기" + hiddenInputValue + "번을 삭제합니다..");
         
         if (confirmation) {
@@ -394,22 +416,29 @@
                 dataType: "json",
                 success: function(data) {
                     alert('Delete Complete!');
-                    var inputContainer = document.getElementById("inputContainer" + cardCount);
-                    var parentDiv = textInput.parentElement; // 부모 div 요소 가져오기
-                    inputContainer.removeChild(parentDiv); // 부모 div 요소 제거
+                    // var inputContainer = document.getElementById("inputContainer" + cardCount);
+                    // var parentDiv = newInputGroup.parentElement; // 부모 div 요소 가져오기
+                    // newInputGroup.removeChild(parentDiv); // 부모 div 요소 제거
+
+                    var elementToRemove = document.getElementById("Q" + cardCount + "_choice" + hiddenInputValue);
+                    if (elementToRemove) {
+                        elementToRemove.parentElement.removeChild(elementToRemove);
+                    } else {
+                        console.error("ID를 찾을 수 없음");
+                    }                    
 
                     var index = usedValues[cardCount].indexOf(hiddenInputValue);
                     if (index !== -1) {
                         usedValues[cardCount].splice(index, 1);
                     }                    
 
-                    // 각 인풋 태그의 placeholder 업데이트
-                    var inputElements = inputContainer.querySelectorAll("input[type='text']");
-                    for (var i = 0; i < inputElements.length; i++) {
-                        var newValue = usedValues[cardCount][i];
-                        inputElements[i].name = "choice" + newValue;
-                        inputElements[i].placeholder = "보기 " + (newValue) + "번";
-                    }
+                    // // 각 인풋 태그의 placeholder 업데이트
+                    // var inputElements = inputContainer.querySelectorAll("input[type='text']");
+                    // for (var i = 0; i < inputElements.length; i++) {
+                    //     var newValue = usedValues[cardCount][i];
+                    //     inputElements[i].name = "choice" + newValue;
+                    //     inputElements[i].placeholder = "보기 " + (newValue) + "번";
+                    // }
                 },
                 error: function() {
                     alert('fail..');
@@ -680,6 +709,7 @@
                             var question = document.getElementById(formID);
                             if (question) {
                                 question.remove();
+                                tinymce.get('largeInput' + cardCount).remove();
                                 alert('문제를 삭제했습니다.');
 
                                 // 배열에서 cardCount 제거
