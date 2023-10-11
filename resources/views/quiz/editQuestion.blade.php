@@ -151,7 +151,7 @@
                                                             @if ($choice->answer)
                                                                 <input id="Q{{ $question->number}}C{{ $choice->number }}_checkbox" class="form-check-input mt-0" type="checkbox" name="answer{{ $choice->number }}" value="{{ $choice->answer }}" checked>
                                                             @else
-                                                                <input id="Q{{ $question->number}}C{{ $choice->number }}_checkbox" class="form-check-input mt-0" type="checkbox" name="answer{{ $choice->number }}" value="{{ $choice->answer }}">
+                                                                <input id="Q{{ $question->number}}C{{ $choice->number }}_checkbox" class="form-check-input mt-0" type="checkbox" name="answer{{ $choice->number }}" value="{{ $choice->number}}">
                                                             @endif
                                                         </div>
                                                         <input type="text" class="form-control" name="choice{{ $choice->number }}" value="{{ $choice->content }}" placeholder="보기 {{ $choice->number }} 번" id="Q{{ $question->number}}C{{ $choice->number }}_text">
