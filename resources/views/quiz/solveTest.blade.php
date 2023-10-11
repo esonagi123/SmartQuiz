@@ -34,8 +34,8 @@
 </div>
 
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3">{{ $testModel->name }}</h4>
-    <h6 class="pb-1 text-muted">Header and footer</h6>
+    <h4 class="fw-bold py-1">{{ $testModel->name }}</h4>
+    <h6 class="pb-1 text-muted">퀴즈 풀기</h6>
     <div id="questionContainer" class="col-md-12">
         <form id="test_{{ $testModel->id }}" method="post" action="{{ url('quiz/result/' . $testModel->id) }}">
         @csrf
