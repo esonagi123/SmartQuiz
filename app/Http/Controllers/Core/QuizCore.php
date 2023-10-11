@@ -38,10 +38,45 @@ class QuizCore extends Controller
         ]);
     }
 
-    // 시험 체점
-    public function calc(Request $request)
+    // 시험 풀기
+    public function solve($testID, $type)
     {
+        $testModel = Test::find($testID);
+        $questions = Question::where('testID', $testID)->orderby('number', 'asc')->get();
+        $questionCount = Question::where('testID', $testID)->count();
+        
+        $choices = [];
+        $value = [];
+        
+        
+        foreach ($questions as $question) {
+            // 문제 수 만큼 순회하면서 동적으로 choices 배열을 생성
+            $choices[$question->id] = Choice::where('qid', $question->id)->orderby('number', 'asc')->get();
+            
+            // 선택지들을 담을 배열을 동적으로 만들고 초기화
+            $value[$question->number] = [];
+            
+            foreach ($choices[$question->id] as $choice) {
+                // 동적으로 만들어진 choices 배열을 순회
 
+                $value[$question->number][] = $choice->number;
+            }
+        }
+        
+        $result = [
+            'questions' => $questions,
+            'questionCount' => $questionCount,
+            'choices' => $choices,
+        ];
+
+        return view('quiz.solveTest',
+        [
+            'testID' => $testID,
+            'testModel' => $testModel,
+            'items' => $result,
+            'value' => $value,
+
+        ]);
     }
 
     // 시험 결과
@@ -55,17 +90,19 @@ class QuizCore extends Controller
         $questions = Question::where('testID', $test->id)->orderby('number', 'asc')->get();
         $questionCount = Question::where('testID', $test->id)->count();
 
+        $wrongQuestion = [];
+
         // 각 문제당 배점 계산
         if ($questionCount > 0) {
             $allocation = $maximumScore / $questionCount;
         }
 
-        // 각 문제 가져오기
+        // 채점을 위해 각 문제 가져오기
         foreach ($questions as $question) {
             $choices = Choice::where('qid', $question->id)->orderby('number', 'asc')->get(); // 각 문제에 대한 선택지들
             $count = Choice::where('qid', $question->id)->count(); // 각 문제에 대한 선택지 갯수
 
-            $wrongQuestion = [];
+            
 
             // 각 문제에 대한 선택지 가져오기
             foreach ($choices as $choice) {
@@ -83,21 +120,58 @@ class QuizCore extends Controller
                 $score += $allocation;
             } else {
                 // 틀리면
-                $wrongQuestion[] = $question->number;
+                $wrongQuestion[] = [
+                    'number' => $question->number,
+                    'wrong' => $question->number,
+                ];
             }
-             \Log::info("input: " . json_encode($wrongQuestion));
+
+            $returnInputs[] = [
+                'number' => $question->number,
+                'input' => $inputAnswers[$question->number],
+            ];
+            
+            // \Log::info("input: " . json_encode($wrongQuestion));
             // \Log::info("input: " . json_encode($inputAnswers));
+            \Log::info("input: " . json_encode($returnInputs));
             // \Log::info("DB: " . json_encode($answer));
             
             // 배열 초기화 (안하면 1 : ... , 2 : ... 이런식으로 문제를 순회할 때마다 늘어나 버린다.)
             $inputAnswers = [];
             $answer = [];
+
+            // $wrongQuestion = [];
         }
+
+        // result 뷰에 뿌리기 위해 문제 불러오기
+        foreach ($questions as $question) {
+            // 문제 수 만큼 순회하면서 동적으로 choices 배열을 생성
+            $choices[$question->id] = Choice::where('qid', $question->id)->orderby('number', 'asc')->get();
+            
+            // 선택지들을 담을 배열을 동적으로 만들고 초기화
+            $value[$question->number] = [];
+            
+            foreach ($choices[$question->id] as $choice) {
+                // 동적으로 만들어진 choices 배열을 순회
+
+                $value[$question->number][] = $choice->number;
+            }
+        }
+
+        $result = [
+            'questions' => $questions,
+            'questionCount' => $questionCount,
+            'choices' => $choices,
+        ];
 
         return view('quiz.result', [
             'testID' => $testID,
             'score' => $score,
             'wrongQuestions' => $wrongQuestion,
+            'returnInputs' => $returnInputs,
+            'testModel' => $test,
+            'items' => $result,
+            'value' => $value,
         ]);
     }
 
@@ -406,43 +480,4 @@ class QuizCore extends Controller
 		return response()->json($response);
     }
 
-    public function solve($testID, $type)
-    {
-        $testModel = Test::find($testID);
-        $questions = Question::where('testID', $testID)->orderby('number', 'asc')->get();
-        $questionCount = Question::where('testID', $testID)->count();
-        
-        $choices = [];
-        $value = [];
-        
-        
-        foreach ($questions as $question) {
-            // 문제 수 만큼 순회하면서 동적으로 choices 배열을 생성
-            $choices[$question->id] = Choice::where('qid', $question->id)->orderby('number', 'asc')->get();
-            
-            // 선택지들을 담을 배열을 동적으로 만들고 초기화
-            $value[$question->number] = [];
-            
-            foreach ($choices[$question->id] as $choice) {
-                // 동적으로 만들어진 choices 배열을 순회
-
-                $value[$question->number][] = $choice->number;
-            }
-        }
-        
-        $result = [
-            'questions' => $questions,
-            'questionCount' => $questionCount,
-            'choices' => $choices,
-        ];
-
-        return view('quiz.solveTest',
-        [
-            'testID' => $testID,
-            'testModel' => $testModel,
-            'items' => $result,
-            'value' => $value,
-
-        ]);
-    }
 }
