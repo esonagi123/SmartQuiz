@@ -24,6 +24,7 @@ class AppMiddleware
                 'id' => $user->id,
                 'uid' => $user->uid,
                 'nickname' => $user->nickname,
+                'email' => $user->email,
                 'avatar' => $user->avatar,
             ];
 

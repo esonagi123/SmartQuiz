@@ -208,9 +208,9 @@
               </li> 
             @else <!-- 로그인이 되어 있으면 -->  
               <li class="menu-item">
-                <a href="{{ url('quiz') }}" class="menu-link">
+                <a href="{{ url('mypage') }}" class="menu-link">
                   <i class="fa-solid fa-user"></i>&nbsp;&nbsp;&nbsp;
-                  <div>나의 프로필</div>
+                  <div>마이페이지</div>
                 </a>
               </li>
               <li class="menu-item">
@@ -287,9 +287,9 @@
                         <div class="dropdown-divider"></div>
                       </li>
                       <li>
-                        <a class="dropdown-item" href="#">
+                        <a class="dropdown-item" href="{{ url('mypage') }}">
                           <i class="bx bx-user me-2"></i>
-                          <span class="align-middle">My Profile</span>
+                          <span class="align-middle">마이페이지</span>
                         </a>
                       </li>
                       <li>

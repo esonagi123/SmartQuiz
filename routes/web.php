@@ -1,12 +1,18 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Core\QuizCore;
-use App\Http\Controllers\Account\Account;
-use App\Http\Controllers\Account\Login;
-use App\Http\Controllers\MainController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
+
+use App\Http\Controllers\Core\QuizCore;
+
+use App\Http\Controllers\Account\Account;
+use App\Http\Controllers\Account\Login;
+use App\Http\Controllers\Account\Mypage;
+
+use App\Http\Controllers\MainController;
+
+
 
 Route::get('/', function () {
     return redirect('/quiz');
@@ -39,8 +45,12 @@ Route::middleware(['app'])->group(function () {
             Route::get('/solve/{testID}/type{type}', [QuizCore::class, 'solve'])->name('quiz.solve');
             Route::post('/result/{testID}', [QuizCore::class, 'result'])->name('quiz.result');
 
+
+            
         });
     });
+
+    Route::get('/mypage', [Mypage::class, 'index'])->name('mypage');
 });
 
 Route::get('register', [Account::class, 'index'])->name('register');
