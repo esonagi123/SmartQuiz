@@ -2,13 +2,6 @@
 
 @section('content')
 
-
-당신의 점수는 {{ $score }} 점
-
-@foreach ($returnInputs as $returnInput)
-    당신이 선택한 답은 {{ implode(', ', $returnInput['input']) }}
-@endforeach
-
 <style>
     .result-container {
         position: relative;
@@ -33,6 +26,39 @@
     
 
 </style>
+
+<!-- Modal -->
+<div class="modal fade" id="modal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                {{-- <h5 class="modal-title" id="modalCenterTitle">나가기</h5> --}}
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>  
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-4">
+                    <p>이 퀴즈의 점수는..</p>
+                    @if ($score == 100)
+                        <h2><strong>🎉 {{ number_format($score, 0, '.', '') }}점! 🎉</strong></h2>
+                        <h5>틀린 문제가 없어요 👏</h5>
+                    @else
+                        <h2><strong>{{ number_format($score, 0, '.', '') }}점!</strong></h2>
+                        틀린 문제는
+                        @foreach ($wrongQuestions as $wrongQuestion)
+                        {{ $wrongQuestion['number'] }}번
+                        @endforeach
+                        이네요.                    
+                    @endif
+
+                </div>
+                <div class="modal-footer">          
+                    <button type="button" class="btn btn-warning" onclick="">다시 풀기</button>
+                    <a class="btn btn-danger" href="{{ url('/quiz') }}">나가기</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-1">{{ $testModel->name }}</h4>
@@ -94,5 +120,11 @@
         </form>
     </div>
 </div>
+
+<script>
+    window.addEventListener('load', function() {
+        $('#modal').modal('show');
+    });
+</script>
 
 @endsection()
