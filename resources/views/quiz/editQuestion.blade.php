@@ -96,7 +96,38 @@
 </div>
 
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4">문제 수정 📝</h4>
+    <h4 class="fw-bold py-3 mb-4">Edit 📝</h4>
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <form id="quiz_info" method="post" action="{{ route('quiz.store') }}">
+                @csrf
+                <h5 class="card-header">퀴즈 정보</h5>
+                <input type="hidden" name="testID" value="{{ $testModel->id }}">
+                <div class="card-body">
+                    <div class="mt-2 mb-3">
+                        <label for="largeInput" class="form-label">퀴즈 이름</label>
+                        <input id="largeInput" class="form-control form-control-lg" type="text" name="name" value="{{ $testModel->name }}">
+                    </div>
+                    <div class="mt-2 mb-3">
+                        <label for="largeInput" class="form-label">주제</label>
+                        <input id="largeInput" class="form-control form-control-lg" type="text" name="subject" value="{{ $testModel->subject }}">
+                        <div id="floatingInputHelp" class="form-text"></div>
+                    </div>
+                    <div class="form-check form-switch mt-4 mb-2">
+                        @if ($testModel->secret == 'Y')
+                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="secret" value="Y" checked>
+                        @else
+                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="secret" value="Y">
+                        @endif
+                        <label class="form-check-label" for="flexSwitchCheckDefault">비공개</label>
+                    </div>                                 
+                    <div class="text-end">
+                        <button type="button" class="btn rounded-pill btn-primary" onclick="quizUpdate()">저장</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>    
     <div class="col-md-12">
         <div id="cardContainer">
             @foreach($items['questions'] as $question)
@@ -765,7 +796,8 @@
     // 전체 저장
     function save() {
         count = cardArray.length;
-        alert('현재 cardCount : ' + count);
+        // alert('현재 cardCount : ' + count);
+        alert('문제를 저장합니다.')
 
         var unUsedNumber = findUnusedQuestion();
         if ((count + 1) == unUsedNumber) {
@@ -778,7 +810,7 @@
         }
 
         for (var i = 1; i <= count; i++) {
-            alert(cardArray[i-1] + "번 문제를 저장합니다..");
+            // alert(cardArray[i-1] + "번 문제를 저장합니다..");
 
             // 폼 제출 전에 tinyMCE 내용을 업데이트
             tinymce.get('largeInput' + cardArray[i-1]).save(); // 에디터의 내용을 textarea에 적용
@@ -793,14 +825,14 @@
                 data: formData,
                 dataType: "json",
                 success: function(data) {
-                    alert("완료!");
+                    // alert("완료!");
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert("AJAX 오류: " + textStatus + " - " + errorThrown);
                 }
             }); 
         }
-        alert('i 초기화..');
+        alert('문제 저장이 완료되었습니다.');
         i = 1;
     }
 
@@ -811,6 +843,25 @@
     function toList() {
         shouldShowWarning = false;
         window.location.href = "#";
+    }
+
+    function quizUpdate() {
+        var formData = $("#quiz_info").serialize();
+
+        $.ajax({
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                url: "{{ url('quiz/updateQuiz') }}",
+                type: "PATCH",
+                data: formData,
+                dataType: "json",
+                success: function(data) {
+                    alert("저장되었습니다.");
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+                }
+            }); 
+
     }
 
 
