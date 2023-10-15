@@ -33,6 +33,7 @@ Route::middleware(['app'])->group(function () {
             Route::get('/{testID}/create', [QuizCore::class, 'createQuestion'])->name('quiz.createQuestion');
             Route::post('/storeQuestion', [QuizCore::class, 'ajax_QuestionStore'])->name('ajax.QuestionStore');
             Route::patch('/updateQuestion', [QuizCore::class, 'ajax_QuestionUpdate'])->name('ajax.QuestionUpdate');
+            Route::patch('/updateQuiz', [QuizCore::class, 'ajax_QuizUpdate'])->name('ajax.QuizUpdate');
             Route::post('/updateGubun', [QuizCore::class, 'ajax_GubunUpdate'])->name('ajax.QuestionUpdate');
             Route::post('/storeChoice', [QuizCore::class, 'ajax_ChoiceStore'])->name('ajax.ChoiceStore');
 
