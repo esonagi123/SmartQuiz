@@ -196,8 +196,7 @@
 
 
             <li class="menu-header small text-uppercase">
-              <i class="fa-solid fa-user"></i>&nbsp;
-              <span class="menu-header-text">Profile</span>
+              <span class="menu-header-text">⭐ Profile</span>
             </li>
             @if (!Auth::check()) <!-- 로그인이 안되어 있으면 -->
               <li class="menu-item">
