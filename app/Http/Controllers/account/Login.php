@@ -45,7 +45,7 @@ class Login extends Controller
 				];
 
 				if (Auth::attempt($credentials, $remember)) {
-					session()->put('user_id', $row->id); // user_id 세션 키 저장
+					// session()->put('user_id', $row->id); // user_id 세션 키 저장
 					return redirect('quiz'); // 퀴즈 홈으로 리다이렉트
 				} else {
 					return back()->with('PWDerror', '아이디 또는 비밀번호가 잘못되었습니다.')->withInput();
@@ -70,7 +70,7 @@ class Login extends Controller
 		Auth::logout();
 	
 		// 세션에서 user_id 삭제
-		$request->session()->forget('user_id');
+		// $request->session()->forget('user_id');
 	
 		return redirect('quiz');
 	}
