@@ -33,13 +33,15 @@
         </div>
         <hr class="my-0" />
         <div class="card-body">
-          <form id="formAccountSettings" method="POST" onsubmit="return false">
+          <form method="POST" action="">
+            @csrf
+            <input type="hidden" name="id" value="{{ $userData['id'] }}">
             <div class="row">
               <div class="mb-3">
                 <label for="uid" class="form-label">아이디</label>
                 <input type="text" class="form-control" id="uid" value="{{ $userData['uid'] }}" readonly>
                 <div id="defaultFormControlHelp" class="form-text">
-                  아이디는 변경할 수 없습니다.
+                  아이디는 변경할 수 없어요.
                 </div>
               </div>
               <div class="mb-3">
@@ -53,7 +55,7 @@
                 <label for="defaultFormControlInput" class="form-label">닉네임</label>
                 <input type="text" class="form-control" id="defaultFormControlInput" value="{{ $userData['nickname'] }}" aria-describedby="defaultFormControlHelp">
                 <div id="defaultFormControlHelp" class="form-text">
-                  We'll never share your details with anyone else.
+                  닉네임은 2~8자 이내의 한글과 영문 대/소문자만 사용 가능합니다.
                 </div>
               </div>              
             </div>
@@ -61,14 +63,13 @@
               <label for="defaultFormControlInput" class="form-label">비밀번호</label>
               <input type="password" class="form-control" id="defaultFormControlInput" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="defaultFormControlHelp">
               <div id="defaultFormControlHelp" class="form-text">
-                We'll never share your details with anyone else.
+                비밀번호는 8~16자 이내의 소문자+숫자로 구성되어야 합니다.
               </div>
             </div>
             <div class="mb-3">
               <label for="defaultFormControlInput" class="form-label">비밀번호 확인</label>
               <input type="password" class="form-control" id="defaultFormControlInput" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="defaultFormControlHelp">
               <div id="defaultFormControlHelp" class="form-text">
-                We'll never share your details with anyone else.
               </div>
             </div>                  
             <div class="mt-2 text-end">
