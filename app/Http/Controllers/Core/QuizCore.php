@@ -240,6 +240,12 @@ class QuizCore extends Controller
         $testModel->name = $request->input('name');
         $testModel->subject = $request->input('subject');
         $testModel->date = $serverTime;
+        if ($request->input('secret') == 'Y') {
+            $testModel->secret = $request->input('secret');
+        } else {
+            $testModel->secret = 'N';
+        }
+        
 
         $testModel->save();
 
@@ -297,6 +303,28 @@ class QuizCore extends Controller
 		return response()->json($response);
 	}
 
+    // 퀴즈 Update
+	public function ajax_QuizUpdate(Request $request)
+	{
+        $testModel = Test::find($request->input('testID'));
+        if ($testModel) {
+            $testModel->name = $request->input('name');
+            $testModel->subject = $request->input('subject');
+            if ($request->input('secret') == 'Y') {
+                $testModel->secret = $request->input('secret');
+            } else {
+                $testModel->secret = 'N';
+            }
+            $testModel->save();
+
+            $response = [
+                'success' => true,
+            ];
+        }
+
+		return response()->json($response);
+	}
+
     // 전체 저장
 	public function ajax_QuestionUpdate(Request $request)
 	{
@@ -310,13 +338,16 @@ class QuizCore extends Controller
         // 문제 정보 Update
         $questionModel = Question::find($questionID);
         $questionModel->question = $request->input($name);
-        $questionModel->gubun = $request->input($gubun);
+        
+        if ($request->input($gubun) == "선택하세요") {
+            $questionModel->gubun = null;
+        } else {
+            $questionModel->gubun = $request->input($gubun);
+        }
         
         $questionModel->save();
 
         // 선택지 정보 Update
-        // $choiceCount = Choice::where('qid', $questionID)->select('number')->count();
-
         $choices = Choice::where('qid', $questionID)->orderBy('number', 'asc')->get();
         foreach($choices as $choice) {
 
@@ -417,35 +448,56 @@ class QuizCore extends Controller
     // 선택지 삭제 (Ajax)
 	public function ajax_ChoiceDestroy(Request $request)
 	{
-	
-		if ($request->input('choiceID')) {
-            $choiceID = $request->input('choiceID');
-            $questionID = $request->input('questionID');
-            $choice = Choice::where('number', $choiceID)->where('qid', $questionID)->first();
+        if ($request->input('type') == "1") {
+            if ($request->input('choiceID')) {
+                $choiceID = $request->input('choiceID');
+                $questionID = $request->input('questionID');
+                $choice = Choice::where('number', $choiceID)->where('qid', $questionID)->first();
 
-			if (!$choice)
-			{
+                if (!$choice)
+                {
+                    $response = [
+                        'success' => false,
+                        'message' => '삭제할 대상을 찾을 수 없습니다.',
+                    ];				
+                    return response()->json($response);
+                }
+                
+                $choice->delete();
+
+                $response = [
+                    'success' => true,
+                ];
+                
+            } else {
                 $response = [
                     'success' => false,
-                    'message' => '삭제할 대상을 찾을 수 없습니다.',
-                ];				
-                return response()->json($response);
+                    'message' => '실패했습니다.',
+                ];
             }
-            
-            $choice->delete();
+        } elseif ($request->input('type') == "2") {
+            if ($request->input('questionID')) {
+                $questionID = $request->input('questionID');
+                $choices = Choice::where('qid', $questionID)->get();
 
-            $response = [
-                'success' => true,
-            ];
-            
-		} else {
-			$response = [
-				'success' => false,
-				'message' => '실패했습니다.',
-			];
-		}
+                foreach ($choices as $choice) {
+                    $choice->delete();
+                }
+
+                $response = [
+                    'success' => true,
+                ];
+            } else {
+                $response = [
+                    'success' => false,
+                    'message' => '실패했습니다.',
+                ];
+            }
+        }
 		return response()->json($response);
-	}    
+	}
+
+
 
     // 문제&선택지 초기화 (Ajax)
     public function ajax_reset(Request $request)
