@@ -6,9 +6,9 @@ use Illuminate\Support\Facades\View;
 
 use App\Http\Controllers\Core\QuizCore;
 
-use App\Http\Controllers\Account\Account;
-use App\Http\Controllers\Account\Login;
-use App\Http\Controllers\Account\Mypage;
+use App\Http\Controllers\account\Account;
+use App\Http\Controllers\account\Login;
+use App\Http\Controllers\account\Mypage;
 
 use App\Http\Controllers\MainController;
 

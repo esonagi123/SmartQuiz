@@ -501,6 +501,33 @@
         });
     }
 
+    // 문제 추가 버튼을 누르면
+    function addCard2() {
+        //updateQuestion();
+        cardCount = findUnusedQuestion();
+        // cardCount = cardArray.length + 1;
+        cardArray.push(cardCount);    
+        $.ajax({
+            headers: {'X-CSRF-TOKEN': csrfToken},
+            url: "{{ url('quiz/storeQuestion') }}",
+            type: "POST",
+            data: { testID: testID, number: cardCount },
+            dataType: "json",
+            success: function(data) {
+                if (data.success === true) {
+                    var questionID = data.questionID;
+                    addCard(questionID);
+                    alert('문제 생성 완료 QID : ' + questionID);
+                } else {
+                    alert(data.message);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+            }
+        });
+    }
+
     // 문제 카드 생성
     function addCard(questionID) {
         
