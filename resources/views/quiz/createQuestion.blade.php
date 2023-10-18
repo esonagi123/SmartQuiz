@@ -181,10 +181,8 @@
 
     var maxInputs = 5; // 최대 보기 개수 
     var usedValues = {}; // 초기화
-    
-    var usedValues2 = {}; // 단답형
 
-    var fileNo = [];
+    var fileNo = 0;
     var filesArr = {};
 
     // 페이지 로딩 시 자동 실행
@@ -521,7 +519,7 @@
 
                         <div class="mb-4">	
                             <label for="file" class="form-label">이미지 업로드 🖼️</label>
-                            <input type="file" class="form-control" onchange="addFile(this);" multiple />
+                            <input type="file" class="form-control" id="file${cardCount}" onchange="addFile();" multiple />
                             <div class="file-list">
                                 <!-- 업로드한 이미지 목록이 여기에 동적으로 추가 -->
                             </div>
@@ -735,6 +733,21 @@
         console.log(cardArray);
     }
 
+    function addFile(cardCount) {
+        if (!filesArr[cardCount]) {
+            filesArr[cardCount] = [];
+        }
+
+        var selFile = document.querySelector("file" + cardCount);
+        var maxFileCnt = 2;
+        var attFileCnt = document.querySelectorAll('.filebox').length;    // 기존 추가된 첨부파일 개수
+    }
+
+	function generateUniqueFileName(fileName) {
+		var timestamp = new Date().getTime(); // 현재 시간을 밀리초로 얻기
+		var uniqueFileName = timestamp + '_' + fileName;
+		return uniqueFileName;
+	}
 </script>
 
 @endsection()
