@@ -6,9 +6,9 @@ use Illuminate\Support\Facades\View;
 
 use App\Http\Controllers\Core\QuizCore;
 
-use App\Http\Controllers\Account\Account;
-use App\Http\Controllers\Account\Login;
-use App\Http\Controllers\Account\Mypage;
+use App\Http\Controllers\account\Account;
+use App\Http\Controllers\account\Login;
+use App\Http\Controllers\account\Mypage;
 
 use App\Http\Controllers\MainController;
 
@@ -34,7 +34,7 @@ Route::middleware(['app'])->group(function () {
             Route::post('/storeQuestion', [QuizCore::class, 'ajax_QuestionStore'])->name('ajax.QuestionStore');
             Route::patch('/updateQuestion', [QuizCore::class, 'ajax_QuestionUpdate'])->name('ajax.QuestionUpdate');
             Route::patch('/updateQuiz', [QuizCore::class, 'ajax_QuizUpdate'])->name('ajax.QuizUpdate');
-            Route::post('/updateGubun', [QuizCore::class, 'ajax_GubunUpdate'])->name('ajax.QuestionUpdate');
+            Route::post('/updateGubun', [QuizCore::class, 'ajax_GubunUpdate'])->name('ajax.GubunUpdate');
             Route::post('/storeChoice', [QuizCore::class, 'ajax_ChoiceStore'])->name('ajax.ChoiceStore');
 
             Route::delete('/destroyChoice', [QuizCore::class, 'ajax_ChoiceDestroy'])->name('ajax.ChoiceDestroy');
