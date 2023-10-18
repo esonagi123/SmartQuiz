@@ -102,60 +102,97 @@ class QuizCore extends Controller
             $choices = Choice::where('qid', $question->id)->orderby('number', 'asc')->get(); // 각 문제에 대한 선택지들
             $count = Choice::where('qid', $question->id)->count(); // 각 문제에 대한 선택지 갯수
 
-            
+            if ($question->gubun == "1") {
+                
+                foreach ($choices as $choice) { // 각 문제에 대한 선택지 가져오기
 
-            // 각 문제에 대한 선택지 가져오기
-            foreach ($choices as $choice) {
+                    // $question->number를 이름으로 갖는 다차원 배열 생성
+                    // 동적으로 form에서 받은 input 값을 inputAnswers[$question->number] 배열에 추가
+                    $inputAnswers[$question->number][] = $request->input('Q'. $question->number . 'answer' . $choice->number);
 
-                // $question->number를 이름으로 갖는 다차원 배열 생성
-                // 동적으로 form에서 받은 input 값을 inputAnswers[$question->number] 배열에 추가
-                $inputAnswers[$question->number][] = $request->input('Q'. $question->number . 'answer' . $choice->number);
+                    // answer[$question->number] 배열에 정답을 추가 ( 1번 문제에 정답이 5번일 경우 ex. { 1 : null, null, null, null, 5 } )
+                    $answer[$question->number][] = $choice->answer;
+                }
+                
+                if ($inputAnswers == $answer) {
+                    // 정답이 일치하면 점수 부여
+                    $score += $allocation;
+                } else {
+                    // 틀리면
+                    $wrongQuestion[] = [
+                        'number' => $question->number,
+                        'wrong' => $question->number,
+                    ];
+                }
 
-                // answer[$question->number] 배열에 정답을 추가 ( 1번 문제에 정답이 5번일 경우 ex. { 1 : null, null, null, null, 5 } )
-                $answer[$question->number][] = $choice->answer;
-            }
-
-            if ($inputAnswers == $answer) {
-                // 정답이 일치하면 점수 부여
-                $score += $allocation;
-            } else {
-                // 틀리면
-                $wrongQuestion[] = [
+                $returnInputs[] = [
                     'number' => $question->number,
-                    'wrong' => $question->number,
+                    'input' => $inputAnswers[$question->number],
                 ];
+                
+                // \Log::info("input: " . json_encode($wrongQuestion));
+                // \Log::info("input: " . json_encode($inputAnswers));
+                // \Log::info("input: " . json_encode($returnInputs));
+                // \Log::info("DB: " . json_encode($answer));
+                
+                // 배열 초기화 (안하면 1 : ... , 2 : ... 이런식으로 문제를 순회할 때마다 늘어나 버린다.)
+                $inputAnswers = [];
+                $answer = [];
+
+                // $wrongQuestion = [];
+            } elseif ($question->gubun == "2") {
+                $shortAnswer = $question->answer;
+                $userAnswer = $request->input('shortAnswer' . $question->number);
+
+                
+                $correctAnswers = explode(',', str_replace(' ', '', $shortAnswer));
+                $userAnswers = explode(',', str_replace(' ', '', $userAnswer));
+
+                // 각각의 배열의 문자열을 소문자로 변환
+                $correctAnswers = array_map('strtolower', $correctAnswers);
+                $userAnswers = array_map('strtolower', $userAnswers);
+
+                // 정답 중 하나라도 사용자의 답변과 일치하는지 확인
+                if (count(array_intersect($correctAnswers, $userAnswers)) > 0) {
+                    // 하나라도 일치하는 경우
+                    $score += $allocation;
+                } else {
+                    // 일치하는 것이 없는 경우
+                    $wrongQuestion[] = [
+                        'number' => $question->number,
+                        'wrong' => $question->number,
+                    ];
+                }
+                
+                // $questionNumber = $question->number;
+                // $returnAnswers = [
+                //     $questionNumber => $userAnswer
+                // ];
+
+                $returnAnswers[$question->number] = [
+                    // 'number' => $question->number,
+                    'value' => $userAnswer
+                ];
+
+                // \Log::info("return: " . json_encode($returnAnswers));
+                // $returnAnswers[$question->number] = [];
+                // $returnAnswers[$question->number][] = $request->input('shortAnswer');
             }
-
-            $returnInputs[] = [
-                'number' => $question->number,
-                'input' => $inputAnswers[$question->number],
-            ];
-            
-            // \Log::info("input: " . json_encode($wrongQuestion));
-            // \Log::info("input: " . json_encode($inputAnswers));
-            \Log::info("input: " . json_encode($returnInputs));
-            // \Log::info("DB: " . json_encode($answer));
-            
-            // 배열 초기화 (안하면 1 : ... , 2 : ... 이런식으로 문제를 순회할 때마다 늘어나 버린다.)
-            $inputAnswers = [];
-            $answer = [];
-
-            // $wrongQuestion = [];
         }
 
         // result 뷰에 뿌리기 위해 문제 불러오기
         foreach ($questions as $question) {
-            // 문제 수 만큼 순회하면서 동적으로 choices 배열을 생성
-            $choices[$question->id] = Choice::where('qid', $question->id)->orderby('number', 'asc')->get();
-            
-            // 선택지들을 담을 배열을 동적으로 만들고 초기화
-            $value[$question->number] = [];
-            
-            foreach ($choices[$question->id] as $choice) {
-                // 동적으로 만들어진 choices 배열을 순회
+                // 문제 수 만큼 순회하면서 동적으로 choices 배열을 생성
+                $choices[$question->id] = Choice::where('qid', $question->id)->orderby('number', 'asc')->get();
+                
+                // 선택지들을 담을 배열을 동적으로 만들고 초기화
+                $value[$question->number] = [];
+                
+                foreach ($choices[$question->id] as $choice) {
+                    // 동적으로 만들어진 choices 배열을 순회
 
-                $value[$question->number][] = $choice->number;
-            }
+                    $value[$question->number][] = $choice->number;
+                }
         }
 
         $result = [
@@ -169,6 +206,7 @@ class QuizCore extends Controller
             'score' => $score,
             'wrongQuestions' => $wrongQuestion,
             'returnInputs' => $returnInputs,
+            'returnAnswers' => $returnAnswers,
             'testModel' => $test,
             'items' => $result,
             'value' => $value,
@@ -308,13 +346,14 @@ class QuizCore extends Controller
 	{
         $testModel = Test::find($request->input('testID'));
         if ($testModel) {
-            $testModel->name = $request->input('name');
+            $testModel->name = $request->input('quiz_name');
             $testModel->subject = $request->input('subject');
             if ($request->input('secret') == 'Y') {
                 $testModel->secret = $request->input('secret');
             } else {
                 $testModel->secret = 'N';
             }
+
             $testModel->save();
 
             $response = [
@@ -334,10 +373,25 @@ class QuizCore extends Controller
         // 동적 생성된 input name을 위한 코드
         $name = 'name' . $number; // 문제명
         $gubun = 'gubun' . $number; // 문제 유형
+        $shortAnswer = 'shortAnswer' . $number;
+
+        // 퀴즈 Update
+        $testID = $request->input('testID');
+        $testModel = Test::find($testID);
+        $testModel->name = $request->input('quiz_name');
+        $testModel->subject = $request->input('subject');
+        if ($request->input('secret') == 'Y') {
+            $testModel->secret = $request->input('secret');
+        } else {
+            $testModel->secret = 'N';
+        }
+
+        $testModel->save();
 
         // 문제 정보 Update
         $questionModel = Question::find($questionID);
         $questionModel->question = $request->input($name);
+        $questionModel->answer = $request->input($shortAnswer);
         
         if ($request->input($gubun) == "선택하세요") {
             $questionModel->gubun = null;
