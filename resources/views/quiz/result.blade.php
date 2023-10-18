@@ -24,7 +24,20 @@
         height: 70px;
     }    
     
+    .button-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    padding: 10px;
+    text-align: right;
+    z-index: 100;
+    }
 
+    .fixed-btn {
+        margin-right: 8px;
+    }
 </style>
 
 <!-- Modal -->
@@ -49,15 +62,19 @@
                         @endforeach
                         이네요.                    
                     @endif
-
                 </div>
                 <div class="modal-footer">          
-                    <button type="button" class="btn btn-warning" onclick="">다시 풀기</button>
+                    <a class="btn btn-warning" href="{{ url('/quiz/solve/'. $testID . '/type1')}}" >다시 풀기</a>
                     <a class="btn btn-danger" href="{{ url('/quiz') }}">나가기</a>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<div class="button-bar">
+    <a class="btn btn-warning fixed-btn" href="{{ url('/quiz/solve/'. $testID . '/type1')}}">다시 풀기</a>
+    <a class="btn btn-danger fixed-btn" href="{{ url('/quiz') }}">나가기</a>
 </div>
 
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
@@ -110,9 +127,19 @@
                                     @endforeach
                                     </div>
                                 </div>
+                            @elseif ($question->gubun == "2")
+                                <div id="shortAnswerDiv{{ $question->number}}" style="display: block;">
+                                    <input type="text" class="form-control" name="shortAnswer{{ $question->number }}" value="{{ $returnAnswers[$question->number]['value'] }}" readonly>
+                                    <br><label class="form-label">- 복수 정답이 있을 경우 콤마(,)로 구분합니다.</label>
+                                    <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
+                                    <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
+                                </div>
                             @else
-                                <p>객관식이 아님</p>
+                                <p>문제가 올바르지 않습니다.</p>
                             @endif
+                            <div class="mt-3 text-end">
+                                <button type="button" class="btn btn-primary">정답 확인</button>
+                            </div>
                         </div>
                     </div>
                 </section>
