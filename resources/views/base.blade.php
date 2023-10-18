@@ -189,7 +189,7 @@
               </li>              
             @endif
             <li class="menu-item">
-              <a href="{{ url('quiz') }}" class="menu-link">
+              <a href="{{ url('quiz/public') }}" class="menu-link">
                 <div>📖 공개 퀴즈 목록</div>
               </a>
             </li>

@@ -46,7 +46,7 @@ Route::middleware(['app'])->group(function () {
             Route::get('/solve/{testID}/type{type}', [QuizCore::class, 'solve'])->name('quiz.solve');
             Route::post('/result/{testID}', [QuizCore::class, 'result'])->name('quiz.result');
 
-
+            Route::get('/public', [QuizCore::class, 'publicQuizIndex'])->name('quiz.public');
             
         });
     });

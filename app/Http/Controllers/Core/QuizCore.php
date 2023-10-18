@@ -38,6 +38,16 @@ class QuizCore extends Controller
         ]);
     }
 
+    public function publicQuizIndex()
+    {
+        $quizs = Test::where('secret', 'N')->get();
+
+        return view('quiz.publicQuiz', [
+            'quizs' => $quizs,
+        ]);
+
+    }
+
     // 시험 풀기
     public function solve($testID, $type)
     {
