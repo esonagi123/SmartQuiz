@@ -106,7 +106,7 @@
                 <div class="card-body">
                     <div class="mt-2 mb-3">
                         <label for="largeInput" class="form-label">퀴즈 이름</label>
-                        <input id="largeInput" class="form-control form-control-lg" type="text" name="name" value="{{ $testModel->name }}">
+                        <input id="largeInput" class="form-control form-control-lg" type="text" name="quiz_name" value="{{ $testModel->name }}">
                     </div>
                     <div class="mt-2 mb-3">
                         <label for="largeInput" class="form-label">주제</label>
@@ -150,28 +150,29 @@
                                         @if ($question->gubun == 1)
                                             <option>선택하세요.</option>
                                             <option value="1" selected>선택형</option>
-                                            <option value="2">서술형</option>
-                                            <option value="3">O/X</option>
+                                            <option value="2">단답형</option>
+                                            
                                         @elseif ($question->gubun == 2)
                                             <option>선택하세요.</option>
                                             <option value="1">선택형</option>
-                                            <option value="2" selected>서술형</option>
-                                            <option value="3">O/X</option>
+                                            <option value="2" selected>단답형</option>
+                                            
                                         @elseif ($question->gubun == 3)
                                             <option>선택하세요.</option>
                                             <option value="1">선택형</option>
-                                            <option value="2">서술형</option>
-                                            <option value="3" selected>O/X</option>
+                                            <option value="2">단답형</option>
+                                            
                                         @else
                                         <option>선택하세요.</option>
                                         <option value="1">선택형</option>
-                                        <option value="2">서술형</option>
-                                        <option value="3">O/X</option>                            
+                                        <option value="2">단답형</option>
+                                                                 
                                         @endif
                                     </select>
                                     
                                 </div>
                                 @if ($items['choices'][$question->id] && $question->gubun == "1")
+                                {{-- 문제 유형이 선택형일 경우 --}}
                                     <div id="hiddenDiv{{ $question->number }}" style="display: block;">
                                         <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput({{ $question->number }}, {{ $question->id }})">보기 추가</button>
                                         <div id="inputContainer{{ $question->number }}">
@@ -193,7 +194,15 @@
                                                 </div>
                                             @endforeach
                                         </div>
-                                    </div>                          
+                                    </div>
+                                @elseif ($question->gubun == "2")
+                                    <div id="shortAnswerDiv{{ $question->number}}" style="display: block;">
+                                        <input type="text" class="form-control" name="shortAnswer{{ $question->number}}" placeholder="정답" value="{{ $question->answer }}">
+                                        <br><label class="form-label">- 복수 정답(예비 정답)이 있을 경우 콤마(,)로 구분합니다.</label>
+                                        <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
+                                        <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
+                                        <div id="shortAnswerInputContainer{{ $question->number}}"></div>
+                                    </div>
                                 @else
                                     <div id="hiddenDiv{{ $question->number }}" style="display: none;">
                                         <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput({{ $question->number }}, {{ $question->id }})">보기 추가</button>
@@ -294,12 +303,14 @@
     function showHideDiv(cardCount, questionID) {
         var selectBox = document.getElementById("largeSelect"+cardCount);
         var hiddenDiv = document.getElementById("hiddenDiv"+cardCount);
+        var shortAnswerDiv = document.getElementById("shortAnswerDiv"+cardCount);
         
         // 선택된 옵션의 값을 가져옵니다.
         var selectedValue = selectBox.options[selectBox.selectedIndex].value;
     
         // 값이 1(객관식)일 경우
         if (selectedValue === "1") {
+            shortAnswerDiv.style.display = "none";
             hiddenDiv.style.display = "block";
             
             if (!usedValues[cardCount] || usedValues[cardCount].length === 0) {
@@ -309,30 +320,41 @@
                 }
             }
 
-            // 문제 유형 저장
-            $.ajax({
-                headers: {'X-CSRF-TOKEN': csrfToken},
-                url: "{{ url('quiz/updateGubun') }}",
-                type: "POST",
-                data: { questionID: questionID, gubun: "1" },
-                dataType: "json",
-                success: function(data) {
-                    if (data.success === true) {
-                        alert('문제 유형 업데이트 완료');
-                    } else {
-                        alert('문제 유형 업데이트 실패');
+        } else if (selectedValue === "2") {
+            // 단답형일 경우
+            if (usedValues[cardCount]) {
+                $.ajax({
+                    headers: {'X-CSRF-TOKEN': csrfToken},
+                    url: "{{ url('quiz/destroyChoice') }}",
+                    type: "DELETE",
+                    data: { type: "2", questionID: questionID },
+                    dataType: "json",
+                    success: function(data) {
+                        // alert('Delete Complete!');
+                        hiddenDiv.style.display = "none";
+
+                        var inputContainer = document.getElementById("inputContainer" + cardCount);
+                        inputContainer.innerHTML = '';
+
+                        usedValues[cardCount] = [];
+
+                        shortAnswerDiv.style.display = "block";
+
+                    },
+                    error: function() {
+                        alert('fail..');
                     }
+                });
+            } else {
+                shortAnswerDiv.style.display = "block";
+            }
 
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert("AJAX 오류: " + textStatus + " - " + errorThrown);
-                }
-            });
-
+        } else if (selectedValue === "3") {
+            // OX일 경우
         } else {
             hiddenDiv.style.display = "none";
         }
-    }   
+    }  
 
     // 선택지 만들기
     function addInput(cardCount, questionID) {
@@ -652,14 +674,21 @@
                             <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount}, ${questionID})">
                                 <option>선택하세요.</option>
                                 <option value="1">선택형</option>
-                                <option value="2">서술형</option>
-                                <option value="3">O/X</option>
+                                <option value="2">단답형</option>
+                                
                             </select>
                         </div>
                         <div id="hiddenDiv${cardCount}" style="display: none;">
                             <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
                             <br>&nbsp;&nbsp;&nbsp;&nbsp;<label class="form-label">⬇️ 정답에 체크하세요.</label>
                             <div id="inputContainer${cardCount}"></div>
+                        </div>
+                        <div id="shortAnswerDiv${cardCount}" style="display: none;">
+                            <input type="text" class="form-control" name="shortAnswer${cardCount}" placeholder="정답">
+                            <br><label class="form-label">- 복수 정답이 있을 경우 콤마(,)로 구분합니다.</label>
+                            <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
+                            <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
+                            <div id="shortAnswerInputContainer${cardCount}"></div>
                         </div>
                         <div class="text-end mt-5 mb-3">
                             <button type="button" class="btn rounded-pill btn-danger" onclick="removeQuestion(${cardCount})">삭제</button>
@@ -816,13 +845,13 @@
             tinymce.get('largeInput' + cardArray[i-1]).save(); // 에디터의 내용을 textarea에 적용
             
             var formData = $("#question" + cardArray[i-1]).serialize();
-            console.log(formData);
+            var quizInfo = $("#quiz_info").serialize();
             
             $.ajax({
                 headers: {'X-CSRF-TOKEN': csrfToken},
                 url: "{{ url('quiz/updateQuestion') }}",
                 type: "PATCH",
-                data: formData,
+                data: formData + '&' + quizInfo,
                 dataType: "json",
                 success: function(data) {
                     // alert("완료!");

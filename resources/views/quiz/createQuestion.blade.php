@@ -453,88 +453,6 @@
         return null; // 모든 값이 사용 중인 경우
     }
 
-    // 단답형 답안 만들기
-    function addInput_2(cardCount, questionID) {
-        if (!usedValues2[cardCount]) {
-            usedValues2[cardCount] = [];
-        }
-        
-        // 사용 가능한 Value 값을 찾아서 할당
-        var newValue2 = findUnusedValue(cardCount);
-
-        // 사용한 Value 값을 usedValues 배열에 추가
-        usedValues2[cardCount].push(newValue2);
-        
-        // Ajax로 단답형 레코드 생성
-        saveChoiceToServer(cardCount, newValue2, questionID);
-        
-    }
-
-    // 객관식 선택지 정보를 서버에 저장 후 input 생성
-    function saveChoiceToServer2(cardCount, newValue2, questionID) {
-        $.ajax({
-            headers: {'X-CSRF-TOKEN': csrfToken},
-            url: "{{ url('quiz/storeShortAnswer') }}",
-            type: "POST",
-            data: { questionID: questionID },
-            dataType: "json",
-            success: function(data) {
-                // alert('Choice Store Complete! : ' + data.choiceID);
-
-
-                // 내용 text input
-                var newTextInput = document.createElement("input");
-                newTextInput.type = "text";
-                newTextInput.name = "shortAnswer" + newValue2; // 각 태그마다 고유한 이름을 설정.
-                newTextInput.placeholder = "정답을 입력하세요."
-                newTextInput.classList.add("form-control");
-
-                // 삭제 버튼을 생성
-                var deleteButton = document.createElement("button");
-                deleteButton.type = "button";
-                deleteButton.classList.add("flex-end", "btn", "btn-icon", "btn-danger", "choice-delete-btn");
-                deleteButton.innerHTML = "<i class='bx bxs-trash-alt' ></i>";
-                deleteButton.onclick = function() {
-                    removeInput(newInputGroup, newTextInput, newHiddenInput, newValue2, questionID, cardCount);
-                };
-
-
-                // input Group text
-                var newInputGroupText = document.createElement('div');
-                newInputGroupText.classList.add("input-group-text");  
-                newInputGroupText.appendChild(newCheckBox);
-
-                // input Group
-                var newInputGroup = document.createElement('div');
-                newInputGroup.classList.add("input-group");
-                newInputGroup.appendChild(newInputGroupText);
-                newInputGroup.appendChild(newTextInput);
-
-
-                // 인풋 태그와 삭제 버튼을 감싸는 div를 생성
-                var inputDiv = document.createElement("div");
-                var divID = "Q" + cardCount + "_choice" + choiceValue;
-                inputDiv.id = divID;
-                inputDiv.style.display = "flex";
-                inputDiv.classList.add("mb-3")
-                // inputDiv.appendChild(newTextInput);
-                inputDiv.appendChild(newInputGroup);
-                inputDiv.appendChild(newHiddenInput);
-                inputDiv.appendChild(deleteButton);
-
-                // 생성한 div를 inputContainer에 추가
-                var inputContainer = document.getElementById("inputContainer" + cardCount);
-                inputContainer.appendChild(inputDiv);
-
-                sortAndRenderChoices(cardCount)
-                   
-            },
-            error: function() {
-                alert('fail..');
-            }
-        });
-    }
-
     // 문제 정렬 및 화면에 다시 렌더링
     function sortAndRender() {
         // 문제 카드 컨테이너
@@ -585,34 +503,6 @@
         });
     }
 
-    // 문제 추가 버튼을 누르면
-    function addCard2() {
-        //updateQuestion();
-        cardCount = findUnusedQuestion();
-        // cardCount = cardArray.length + 1;
-        cardArray.push(cardCount);    
-
-        $.ajax({
-            headers: {'X-CSRF-TOKEN': csrfToken},
-            url: "{{ url('quiz/storeQuestion') }}",
-            type: "POST",
-            data: { testID: testID, number: cardCount },
-            dataType: "json",
-            success: function(data) {
-                if (data.success === true) {
-                    var questionID = data.questionID;
-                    addCard(questionID);
-                    alert('문제 생성 완료 QID : ' + questionID);
-                } else {
-                    alert(data.message);
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert("AJAX 오류: " + textStatus + " - " + errorThrown);
-            }
-        });
-    }
-
     // 문제 카드 생성
     function addCard(questionID) {
         
@@ -645,7 +535,6 @@
                                 <option>선택하세요.</option>
                                 <option value="1">선택형</option>
                                 <option value="2">단답형</option>
-                                <option value="3">O/X</option>
                             </select>
                         </div>
                         <div id="hiddenDiv${cardCount}" style="display: none;">
@@ -764,7 +653,7 @@
         shouldShowWarning = true;
     }
 
-    // 이 시험의 모든 문제+선택지 삭제
+    // 이 시험의 모든 문제+선택지+답 삭제
     function reset() {
         var confirmation = confirm("❗이 시험에서 생성된 모든 문제를 삭제합니다.");
         if (confirmation) {
