@@ -196,8 +196,7 @@
 
 
             <li class="menu-header small text-uppercase">
-              <i class="fa-solid fa-user"></i>&nbsp;
-              <span class="menu-header-text">Profile</span>
+              <span class="menu-header-text">⭐ Profile</span>
             </li>
             @if (!Auth::check()) <!-- 로그인이 안되어 있으면 -->
               <li class="menu-item">
@@ -208,9 +207,9 @@
               </li> 
             @else <!-- 로그인이 되어 있으면 -->  
               <li class="menu-item">
-                <a href="{{ url('quiz') }}" class="menu-link">
+                <a href="{{ url('mypage') }}" class="menu-link">
                   <i class="fa-solid fa-user"></i>&nbsp;&nbsp;&nbsp;
-                  <div>나의 프로필</div>
+                  <div>마이페이지</div>
                 </a>
               </li>
               <li class="menu-item">
@@ -259,7 +258,7 @@
                   @if (Auth::check())
                     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                       <div class="avatar avatar-online">
-                        <img src="{{ asset('/assets/img/avatars/avatar0.png') }}" alt class="w-px-40 h-auto rounded-circle" />
+                        <img src="{{ asset('/assets/img/avatars/avatar' .  $userData['avatar'] .'.png') }}" alt class="w-px-40 h-auto rounded-circle" />
                       </div>
                     </a>
                   @else
@@ -273,7 +272,7 @@
                           <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
                               <div class="avatar avatar-online">
-                                <img src="{{ asset('/assets/img/avatars/avatar0.png') }}" alt class="w-px-40 h-auto rounded-circle" />
+                                <img src="{{ asset('/assets/img/avatars/avatar' .  $userData['avatar'] .'.png') }}" alt class="w-px-40 h-auto rounded-circle" />
                               </div>
                             </div>
                             <div class="flex-grow-1">
@@ -287,9 +286,9 @@
                         <div class="dropdown-divider"></div>
                       </li>
                       <li>
-                        <a class="dropdown-item" href="#">
+                        <a class="dropdown-item" href="{{ url('mypage') }}">
                           <i class="bx bx-user me-2"></i>
-                          <span class="align-middle">My Profile</span>
+                          <span class="align-middle">마이페이지</span>
                         </a>
                       </li>
                       <li>

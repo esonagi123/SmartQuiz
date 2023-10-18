@@ -37,6 +37,43 @@
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{{ asset('/assets/js/config.js') }}"></script>
+
+    <style>
+        table {
+        width: 100%;
+        overflow-x: auto;
+        border-collapse: collapse;
+        margin: 0 auto;
+        }
+
+        table td {
+        position: relative;
+        }
+
+        input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        }
+
+        .avatar-label {
+        display: block;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        border: 5px solid transparent;
+        box-sizing: border-box;
+        }
+
+        img {
+        width: 70px;
+        height: 70px;
+        padding : 3px;
+        object-fit: cover;
+        }
+        input[type="radio"]:checked + label {
+        border-color: #007bff; /* 선택되었을 때의 테두리 색상 */
+        }
+    </style>
 </head>
 
 <body>
@@ -91,10 +128,10 @@
 
                         @if ($errors->any())
                         @foreach ($errors->all() as $error)
-                        <div class="alert alert-danger alert-dismissible" role="alert">
-                            {{ $error }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
+                            <div class="alert alert-danger alert-dismissible" role="alert">
+                                {{ $error }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
                         @endforeach
                         @endif
 
@@ -136,6 +173,79 @@
                                 <input type="text" value="{{ old('nickname') }}" class="form-control" id="nickname" name="nickname" placeholder="" autofocus />
                             </div>
 
+                            <div class="mb-4" style="overflow-x: auto;">
+                                <label for="" class="form-label">프로필 아바타</label>
+                                <table class="text-center">
+                                    <tr>
+                                      <td>
+                                        <input type="radio" name="avatar" id="avatar0" value="0" @if (!old('avatar')) checked @endif>
+                                        <label class="avatar-label" for="avatar0"><img src="{{ url('assets/img/avatars/avatar0.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="1" id="avatar1" @if (old('avatar') == 1) checked @endif>
+                                        <label class="avatar-label" for="avatar1"><img src="{{ url('assets/img/avatars/avatar1.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="2" id="avatar2" @if (old('avatar') == 2) checked @endif>
+                                        <label class="avatar-label" for="avatar2"><img src="{{ url('assets/img/avatars/avatar2.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="3" id="avatar3" @if (old('avatar') == 3) checked @endif>
+                                        <label class="avatar-label" for="avatar3"><img src="{{ url('assets/img/avatars/avatar3.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="4" id="avatar4" @if (old('avatar') == 4) checked @endif>
+                                        <label class="avatar-label" for="avatar4"><img src="{{ url('assets/img/avatars/avatar4.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="5" id="avatar5" @if (old('avatar') == 5) checked @endif>
+                                        <label class="avatar-label" for="avatar5"><img src="{{ url('assets/img/avatars/avatar5.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="6" id="avatar6" @if (old('avatar') == 6) checked @endif>
+                                        <label class="avatar-label" for="avatar6"><img src="{{ url('assets/img/avatars/avatar6.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="7" id="avatar7" @if (old('avatar') == 7) checked @endif>
+                                        <label class="avatar-label" for="avatar7"><img src="{{ url('assets/img/avatars/avatar7.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="8" id="avatar8" @if (old('avatar') == 8) checked @endif>
+                                        <label class="avatar-label" for="avatar8"><img src="{{ url('assets/img/avatars/avatar8.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="9" id="avatar9" @if (old('avatar') == 9) checked @endif>
+                                        <label class="avatar-label" for="avatar9"><img src="{{ url('assets/img/avatars/avatar9.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="10" id="avatar10" @if (old('avatar') == 10) checked @endif>
+                                        <label class="avatar-label" for="avatar10"><img src="{{ url('assets/img/avatars/avatar10.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="11" id="avatar11" @if (old('avatar') == 11) checked @endif>
+                                        <label class="avatar-label" for="avatar11"><img src="{{ url('assets/img/avatars/avatar11.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="12" id="avatar12" @if (old('avatar') == 12) checked @endif>
+                                        <label class="avatar-label" for="avatar12"><img src="{{ url('assets/img/avatars/avatar12.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="13" id="avatar13" @if (old('avatar') == 13) checked @endif>
+                                        <label class="avatar-label" for="avatar13"><img src="{{ url('assets/img/avatars/avatar13.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="14" id="avatar14" @if (old('avatar') == 14) checked @endif>
+                                        <label class="avatar-label" for="avatar14"><img src="{{ url('assets/img/avatars/avatar14.png') }}"></label>
+                                      </td>
+                                      <td>
+                                        <input type="radio" name="avatar" value="15" id="avatar15" @if (old('avatar') == 15) checked @endif>
+                                        <label class="avatar-label" for="avatar15"><img src="{{ url('assets/img/avatars/avatar15.png') }}"></label>
+                                      </td>                                      
+                                    </tr>
+                                    <!-- Repeat the structure for additional rows -->
+                                  </table>                               
+                            </div>
+
                             <div class="mb-3">
                               <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="terms-conditions" name="terms" />
@@ -143,7 +253,7 @@
                                   <a href="javascript:void(0);">개인정보 보호정책 및 이용약관</a>에 동의합니다.
                                 </label>
                               </div>
-                            </div> 
+                            </div>
 
                             <button class="btn btn-primary d-grid w-100" type="submit">회원가입</button>
                         </form>
@@ -180,6 +290,27 @@
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('label').forEach(function(label) {
+            label.addEventListener('click', function() {
+                this.previousElementSibling.click();
+            });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[name="avatar"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                    console.log('라디오가 체크되었습니다:', this.id);
+                    }
+                });
+            });
+        });
+    </script>
+
 </body>
 
 </html>

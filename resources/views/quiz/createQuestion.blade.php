@@ -181,8 +181,8 @@
 
     var maxInputs = 5; // 최대 보기 개수 
     var usedValues = {}; // 초기화
-    
-    var fileNo = [];
+
+    var fileNo = 0;
     var filesArr = {};
 
     // 페이지 로딩 시 자동 실행
@@ -202,7 +202,7 @@
         // 모달이 닫힐 경우
         $('#modalCenter').on('hidden.bs.modal', function () {
             $('#modalCenter').modal('show');
-        });        
+        });
 
         // Question 생성
         $.ajax({
@@ -231,12 +231,14 @@
     function showHideDiv(cardCount, questionID) {
         var selectBox = document.getElementById("largeSelect"+cardCount);
         var hiddenDiv = document.getElementById("hiddenDiv"+cardCount);
+        var shortAnswerDiv = document.getElementById("shortAnswerDiv"+cardCount);
         
         // 선택된 옵션의 값을 가져옵니다.
         var selectedValue = selectBox.options[selectBox.selectedIndex].value;
     
         // 값이 1(객관식)일 경우
         if (selectedValue === "1") {
+            shortAnswerDiv.style.display = "none";
             hiddenDiv.style.display = "block";
             
             if (!usedValues[cardCount] || usedValues[cardCount].length === 0) {
@@ -246,17 +248,47 @@
                 }
             }
 
+        } else if (selectedValue === "2") {
+            // 단답형일 경우
+            if (usedValues[cardCount]) {
+                $.ajax({
+                    headers: {'X-CSRF-TOKEN': csrfToken},
+                    url: "{{ url('quiz/destroyChoice') }}",
+                    type: "DELETE",
+                    data: { type: "2", questionID: questionID },
+                    dataType: "json",
+                    success: function(data) {
+                        // alert('Delete Complete!');
+                        hiddenDiv.style.display = "none";
+
+                        var inputContainer = document.getElementById("inputContainer" + cardCount);
+                        inputContainer.innerHTML = '';
+
+                        usedValues[cardCount] = [];
+
+                        shortAnswerDiv.style.display = "block";
+
+                    },
+                    error: function() {
+                        alert('fail..');
+                    }
+                });
+            } else {
+                shortAnswerDiv.style.display = "block";
+            }
+
+        } else if (selectedValue === "3") {
+            // OX일 경우
         } else {
             hiddenDiv.style.display = "none";
         }
     }    
 
-    // 선택지 만들기
+    // 객관식 선택지 만들기
     function addInput(cardCount, questionID) {
         if (!usedValues[cardCount]) {
             usedValues[cardCount] = [];
         }
-        console.log(usedValues[cardCount]);
         
         // 최대 인풋 개수에 도달하면 더 이상 인풋을 추가하지 않음.
         if (usedValues[cardCount].length >= maxInputs) {
@@ -275,7 +307,7 @@
         
     }
 
-    // 선택지 정보를 서버에 저장 후 input 생성
+    // 객관식 선택지 정보를 서버에 저장 후 input 생성
     function saveChoiceToServer(cardCount, choiceValue, questionID) {
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
@@ -352,7 +384,7 @@
         });
     }
 
-    // 선택지 정렬 및 화면에 다시 렌더링
+    // 객관식 선택지 정렬 및 화면에 다시 렌더링
     function sortAndRenderChoices(cardCount) {
         // 선택지 컨테이너
         var inputContainer = document.getElementById("inputContainer" + cardCount);
@@ -371,26 +403,7 @@
         });
     }
 
-    // 문제 정렬 및 화면에 다시 렌더링
-    function sortAndRender() {
-        // 문제 카드 컨테이너
-        var cardContainer = document.getElementById("cardContainer");
-
-        // 컨테이너의 자식 DIV들의 ID를 기준으로 오름차순 정렬
-        var sortedForms = Array.from(cardContainer.children).sort((a, b) => {
-            var idA = a.id; // ID 추출
-            var idB = b.id;
-            return idA.localeCompare(idB); // 문자열 비교로 정렬
-        });
-
-        // 정렬 후 Card 컨테이너를 갱신
-        cardContainer.innerHTML = ''; // 기존 내용 비우기
-        sortedForms.forEach((form) => {
-            cardContainer.appendChild(form);
-        });
-    }
-
-    // 선택지 삭제
+    // 객관식 선택지 삭제
     function removeInput(inputGroup, textInput, hiddenInput, hiddenInputValue, questionID, cardCount) {
         var confirmation = confirm(questionID + "(" + cardCount + ") 의 보기" + hiddenInputValue + "번을 삭제합니다..");
         
@@ -400,7 +413,7 @@
                 headers: {'X-CSRF-TOKEN': csrfToken},
                 url: "{{ url('quiz/destroyChoice') }}",
                 type: "DELETE",
-                data: { choiceID: hiddenInputValue, questionID: questionID },
+                data: { type: "1", choiceID: hiddenInputValue, questionID: questionID },
                 dataType: "json",
                 success: function(data) {
                     alert('Delete Complete!');
@@ -428,7 +441,7 @@
         }
     }
 
-    // 보기의 사용 가능한 가장 작은 Value 값을 찾아서 반환
+    // 객관식 보기의 사용 가능한 가장 작은 Value 값을 찾아서 반환
     function findUnusedValue(cardCount) {
         for (var value = 1; value <= maxInputs; value++) {
             if (!usedValues[cardCount].includes(value)) {
@@ -436,6 +449,25 @@
             }
         }
         return null; // 모든 값이 사용 중인 경우
+    }
+
+    // 문제 정렬 및 화면에 다시 렌더링
+    function sortAndRender() {
+        // 문제 카드 컨테이너
+        var cardContainer = document.getElementById("cardContainer");
+
+        // 컨테이너의 자식 DIV들의 ID를 기준으로 오름차순 정렬
+        var sortedForms = Array.from(cardContainer.children).sort((a, b) => {
+            var idA = a.id; // ID 추출
+            var idB = b.id;
+            return idA.localeCompare(idB); // 문자열 비교로 정렬
+        });
+
+        // 정렬 후 Card 컨테이너를 갱신
+        cardContainer.innerHTML = ''; // 기존 내용 비우기
+        sortedForms.forEach((form) => {
+            cardContainer.appendChild(form);
+        });
     }
 
     // 문제의 사용 가능한 가장 작은 Value 값을 찾아서 반환
@@ -469,34 +501,6 @@
         });
     }
 
-    // 문제 추가 버튼을 누르면
-    function addCard2() {
-        //updateQuestion();
-        cardCount = findUnusedQuestion();
-        // cardCount = cardArray.length + 1;
-        cardArray.push(cardCount);    
-
-        $.ajax({
-            headers: {'X-CSRF-TOKEN': csrfToken},
-            url: "{{ url('quiz/storeQuestion') }}",
-            type: "POST",
-            data: { testID: testID, number: cardCount },
-            dataType: "json",
-            success: function(data) {
-                if (data.success === true) {
-                    var questionID = data.questionID;
-                    addCard(questionID);
-                    alert('문제 생성 완료 QID : ' + questionID);
-                } else {
-                    alert(data.message);
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert("AJAX 오류: " + textStatus + " - " + errorThrown);
-            }
-        });
-    }
-
     // 문제 카드 생성
     function addCard(questionID) {
         
@@ -515,7 +519,7 @@
 
                         <div class="mb-4">	
                             <label for="file" class="form-label">이미지 업로드 🖼️</label>
-                            <input type="file" class="form-control" onchange="addFile(this);" multiple />
+                            <input type="file" class="form-control" id="file${cardCount}" onchange="addFile();" multiple />
                             <div class="file-list">
                                 <!-- 업로드한 이미지 목록이 여기에 동적으로 추가 -->
                             </div>
@@ -528,14 +532,20 @@
                             <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount}, ${questionID})">
                                 <option>선택하세요.</option>
                                 <option value="1">선택형</option>
-                                <option value="2">서술형</option>
-                                <option value="3">O/X</option>
+                                <option value="2">단답형</option>
                             </select>
                         </div>
                         <div id="hiddenDiv${cardCount}" style="display: none;">
                             <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput(${cardCount}, ${questionID})">보기 추가</button>
                             <br>&nbsp;&nbsp;&nbsp;&nbsp;<label class="form-label">⬇️ 정답에 체크하세요.</label>
                             <div id="inputContainer${cardCount}"></div>
+                        </div>
+                        <div id="shortAnswerDiv${cardCount}" style="display: none;">
+                            <input type="text" class="form-control" name="shortAnswer${cardCount}" placeholder="정답">
+                            <br><label class="form-label">- 복수 정답이 있을 경우 콤마(,)로 구분합니다.</label>
+                            <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
+                            <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
+                            <div id="shortAnswerInputContainer${cardCount}"></div>
                         </div>
                         <div class="text-end mt-5 mb-3">
                             <button type="button" class="btn rounded-pill btn-danger" onclick="removeQuestion(${cardCount})">삭제</button>
@@ -641,7 +651,7 @@
         shouldShowWarning = true;
     }
 
-    // 이 시험의 모든 문제+선택지 삭제
+    // 이 시험의 모든 문제+선택지+답 삭제
     function reset() {
         var confirmation = confirm("❗이 시험에서 생성된 모든 문제를 삭제합니다.");
         if (confirmation) {
@@ -723,6 +733,21 @@
         console.log(cardArray);
     }
 
+    function addFile(cardCount) {
+        if (!filesArr[cardCount]) {
+            filesArr[cardCount] = [];
+        }
+
+        var selFile = document.querySelector("file" + cardCount);
+        var maxFileCnt = 2;
+        var attFileCnt = document.querySelectorAll('.filebox').length;    // 기존 추가된 첨부파일 개수
+    }
+
+	function generateUniqueFileName(fileName) {
+		var timestamp = new Date().getTime(); // 현재 시간을 밀리초로 얻기
+		var uniqueFileName = timestamp + '_' + fileName;
+		return uniqueFileName;
+	}
 </script>
 
 @endsection()

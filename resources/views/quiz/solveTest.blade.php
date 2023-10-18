@@ -34,8 +34,8 @@
 </div>
 
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3">{{ $testModel->name }}</h4>
-    <h6 class="pb-1 text-muted">Header and footer</h6>
+    <h4 class="fw-bold py-1">{{ $testModel->name }}</h4>
+    <h6 class="pb-1 text-muted">퀴즈 풀기</h6>
     <div id="questionContainer" class="col-md-12">
         <form id="test_{{ $testModel->id }}" method="post" action="{{ url('quiz/result/' . $testModel->id) }}">
         @csrf
@@ -61,8 +61,15 @@
                                     @endforeach
                                     </div>
                                 </div>
+                            @elseif ($question->gubun == "2")
+                                <div id="shortAnswerDiv{{ $question->number}}" style="display: block;">
+                                    <input type="text" class="form-control" name="shortAnswer{{ $question->number }}" placeholder="{{ $question->answer }}" value="">
+                                    <br><label class="form-label">- 복수 정답이 있을 경우 콤마(,)로 구분합니다.</label>
+                                    <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
+                                    <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
+                                </div>
                             @else
-                                <p>객관식이 아님</p>
+                            <p>미완성인 문제입니다.</p>
                             @endif
                         </div>
                     </div>

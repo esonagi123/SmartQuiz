@@ -71,6 +71,11 @@
                         <div class="row g-0">
                             <div class="col-md-12">
                             <div class="card-body">
+                                @if ($test->secret == "N")
+                                    <p class="badge bg-label-primary">공개</p>
+                                @elseif ($test->secret == "Y")
+                                    <p class="badge bg-label-warning">비공개</p>
+                                @endif
                                 <h5 class="card-title">{{ $test->name }}</h5>
                                 <p class="card-text">{{ $test->subject }}</p>
                                 <p class="card-text"><small class="text-muted">{{ $test->created_at->diffForHumans() }}</small></p>
