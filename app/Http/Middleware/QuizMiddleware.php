@@ -13,7 +13,9 @@ class QuizMiddleware
     {
         if (!Auth::check()) {
             session()->flash('not_auth', '로그인이 필요합니다.');
-            return redirect('quiz');
+            return back();
+            // return redirect('quiz');
+            // return redirect('login');
             
         }
         

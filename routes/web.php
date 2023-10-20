@@ -26,7 +26,7 @@ Route::middleware(['app'])->group(function () {
         Route::get('/', [QuizCore::class, 'index'])->name('quiz.index');
         
         Route::middleware(['quiz'])->group(function () {
-            
+            // 로그인 안하면 접근 불가 ↓
             Route::get('/create', [QuizCore::class, 'create'])->name('quiz.create');
             Route::post('/store', [QuizCore::class, 'store'])->name('quiz.store');
 
@@ -42,15 +42,13 @@ Route::middleware(['app'])->group(function () {
             Route::delete('/reset', [QuizCore::class, 'ajax_reset'])->name('ajax.QuestionReset');
 
             Route::get('/{testID}/edit', [QuizCore::class, 'editQuestion'])->name('quiz.editQuestion');
-
-            Route::get('/solve/{testID}/type{type}', [QuizCore::class, 'solve'])->name('quiz.solve');
-            Route::post('/result/{testID}', [QuizCore::class, 'result'])->name('quiz.result');
-
-            Route::get('/public', [QuizCore::class, 'publicQuizIndex'])->name('quiz.public');
-            
+            // 로그인 안하면 접근 불가 ↑
         });
+        Route::get('/solve/{testID}/type{type}', [QuizCore::class, 'solve'])->name('quiz.solve');
+        Route::post('/result/{testID}', [QuizCore::class, 'result'])->name('quiz.result');
+        Route::get('/public', [QuizCore::class, 'publicQuizIndex'])->name('quiz.public');
     });
-
+    
     Route::get('/mypage', [Mypage::class, 'index'])->name('mypage');
 });
 

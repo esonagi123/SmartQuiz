@@ -88,7 +88,7 @@
             </div>
             <div class="modal-footer">          
                 <button type="button" class="btn btn-warning" onclick="save()">저장</button>
-                <a class="btn btn-danger" href="#">나가기</a>
+                <a class="btn btn-danger" href="{{ url('quiz') }}">나가기</a>
             </div>
             </div>
         </div>
@@ -195,9 +195,20 @@
                                             @endforeach
                                         </div>
                                     </div>
+                                    <div id="shortAnswerDiv{{ $question->number}}" style="display: none;">
+                                        <input type="text" class="form-control" id="shortAnswer{{ $question->number}}" name="shortAnswer{{ $question->number}}" placeholder="정답" value="">
+                                        <br><label class="form-label">- 복수 정답(예비 정답)이 있을 경우 콤마(,)로 구분합니다.</label>
+                                        <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
+                                        <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
+                                        <div id="shortAnswerInputContainer{{ $question->number}}"></div>
+                                    </div>                                     
                                 @elseif ($question->gubun == "2")
+                                <div id="hiddenDiv{{ $question->number }}" style="display: none;">
+                                    <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput({{ $question->number }}, {{ $question->id }})">보기 추가</button>
+                                    <div id="inputContainer{{ $question->number }}"></div>
+                                </div>                                
                                     <div id="shortAnswerDiv{{ $question->number}}" style="display: block;">
-                                        <input type="text" class="form-control" name="shortAnswer{{ $question->number}}" placeholder="정답" value="{{ $question->answer }}">
+                                        <input type="text" class="form-control" id="shortAnswer{{ $question->number}}" name="shortAnswer{{ $question->number}}" placeholder="정답" value="{{ $question->answer }}">
                                         <br><label class="form-label">- 복수 정답(예비 정답)이 있을 경우 콤마(,)로 구분합니다.</label>
                                         <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
                                         <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
@@ -207,7 +218,14 @@
                                     <div id="hiddenDiv{{ $question->number }}" style="display: none;">
                                         <button type="button" id="addButton" class="mb-4 btn rounded-pill btn-primary" onclick="addInput({{ $question->number }}, {{ $question->id }})">보기 추가</button>
                                         <div id="inputContainer{{ $question->number }}"></div>
-                                    </div>                            
+                                    </div>
+                                    <div id="shortAnswerDiv{{ $question->number}}" style="display: none;">
+                                        <input type="text" class="form-control" id="shortAnswer{{ $question->number}}" name="shortAnswer{{ $question->number}}" placeholder="정답" value="">
+                                        <br><label class="form-label">- 복수 정답(예비 정답)이 있을 경우 콤마(,)로 구분합니다.</label>
+                                        <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
+                                        <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
+                                        <div id="shortAnswerInputContainer{{ $question->number}}"></div>
+                                    </div>                                                        
                                 @endif
                                 <div class="text-end mt-5 mb-3">
                                     <button type="button" class="btn rounded-pill btn-danger" onclick="removeQuestion({{ $question->number }})">삭제</button>
@@ -295,8 +313,8 @@
         // 페이지 로딩 시 자동 실행
         const fadeElement = document.querySelector('.fade-element'); // JavaScript를 사용하여 페이드 효과를 적용
         fadeElement.style.opacity = 1; // 투명도를 1로 설정하여 나타나게 함
-        alert("문제 수 : " + cardArray);
-        alert('cardCount :' + cardCount);
+        // alert("문제 수 : " + cardArray);
+        // alert('cardCount :' + cardCount);
     });
 
     // 문제 타입 선택
@@ -308,6 +326,12 @@
         // 선택된 옵션의 값을 가져옵니다.
         var selectedValue = selectBox.options[selectBox.selectedIndex].value;
     
+        if (!selectedValue || selectedValue === "선택하세요") {
+            hiddenDiv.style.display = "none";
+            shortAnswerDiv.style.display = "none";
+            return;
+        }
+
         // 값이 1(객관식)일 경우
         if (selectedValue === "1") {
             shortAnswerDiv.style.display = "none";
@@ -352,7 +376,7 @@
         } else if (selectedValue === "3") {
             // OX일 경우
         } else {
-            hiddenDiv.style.display = "none";
+            // hiddenDiv.style.display = "none";
         }
     }  
 
@@ -684,7 +708,7 @@
                             <div id="inputContainer${cardCount}"></div>
                         </div>
                         <div id="shortAnswerDiv${cardCount}" style="display: none;">
-                            <input type="text" class="form-control" name="shortAnswer${cardCount}" placeholder="정답">
+                            <input type="text" class="form-control" id="shortAnswer${cardCount}" name="shortAnswer${cardCount}" placeholder="정답">
                             <br><label class="form-label">- 복수 정답이 있을 경우 콤마(,)로 구분합니다.</label>
                             <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
                             <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
@@ -824,10 +848,8 @@
 
     // 전체 저장
     function save() {
+        alert('지금까지의 내용을 저장합니다.');
         count = cardArray.length;
-        // alert('현재 cardCount : ' + count);
-        alert('문제를 저장합니다.')
-
         var unUsedNumber = findUnusedQuestion();
         if ((count + 1) == unUsedNumber) {
 
@@ -839,32 +861,87 @@
         }
 
         for (var i = 1; i <= count; i++) {
-            // alert(cardArray[i-1] + "번 문제를 저장합니다..");
+            var questionNum = cardArray[i-1];
+            var validationMessage = validateForm(questionNum);
+            if (validationMessage) {
+                alert(validationMessage);
+                break;
+            } else {
+                // 폼 제출 전에 tinyMCE 내용을 업데이트
+                tinymce.get('largeInput' + cardArray[i-1]).save(); // 에디터의 내용을 textarea에 적용
+                
+                var formData = $("#question" + cardArray[i-1]).serialize();
+                var quizInfo = $("#quiz_info").serialize();
+                
+                $.ajax({
+                    headers: {'X-CSRF-TOKEN': csrfToken},
+                    url: "{{ url('quiz/updateQuestion') }}",
+                    type: "PATCH",
+                    data: formData + '&' + quizInfo,
+                    dataType: "json",
+                    success: function(data) {
+                        //alert("완료!");
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+                    }
+                });
+                
+            }
 
-            // 폼 제출 전에 tinyMCE 내용을 업데이트
-            tinymce.get('largeInput' + cardArray[i-1]).save(); // 에디터의 내용을 textarea에 적용
-            
-            var formData = $("#question" + cardArray[i-1]).serialize();
-            var quizInfo = $("#quiz_info").serialize();
-            
-            $.ajax({
-                headers: {'X-CSRF-TOKEN': csrfToken},
-                url: "{{ url('quiz/updateQuestion') }}",
-                type: "PATCH",
-                data: formData + '&' + quizInfo,
-                dataType: "json",
-                success: function(data) {
-                    // alert("완료!");
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert("AJAX 오류: " + textStatus + " - " + errorThrown);
-                }
-            }); 
         }
-        alert('문제 저장이 완료되었습니다.');
+        if (!validationMessage) {alert("저장 완료!");}
+        
         i = 1;
     }
 
+    function validateForm(questionNum) {
+        tinymce.get('largeInput' + questionNum).save();
+        var question = document.getElementById("largeInput" + questionNum).value;
+        var gubun = document.getElementById("largeSelect" + questionNum).value;
+        
+
+        if (question.trim() === '') {
+            // largeInput이 비어 있을 때의 처리
+            return "❗저장 오류\n" + questionNum + "번의 문제 내용이 비어있습니다.";
+        } else if (gubun === "선택하세요.") {
+            // 선택 옵션이 선택되지 않았을 때의 처리
+            return "❗저장 오류\n" + questionNum +"번의 문제 유형이 선택되지 않았습니다.";
+        } else if (gubun === "2") {
+            var shortAnswerValue = document.getElementById("shortAnswer" + questionNum).value;
+            if (shortAnswerValue.trim() === '') {
+                return "❗저장 오류\n" + questionNum + "번의 정답을 입력하세요.";
+            }
+        } else if (gubun === "1") {
+            var choiceInputContainer = document.getElementById('inputContainer' + questionNum);
+            
+            // div 내부의 모든 input 요소를 선택
+            var inputElements = choiceInputContainer.querySelectorAll('input');
+            // div 내부의 모든 checkbox 요소를 선택
+            var checkboxElements = choiceInputContainer.querySelectorAll('input[type="checkbox"]');
+            console.log(checkboxElements);
+            var checked = false;
+            // 입력 요소의 값을 확인하고 비어 있는지 여부를 검사
+            for (var i = 0; i < inputElements.length; i++) {
+                if (inputElements[i].value.trim() === '') {
+                    return "❗저장 오류\n" + questionNum + "번 문제에 내용이 비어있는 선택지가 있습니다.";
+                }
+            }
+            // checkbox 요소를 반복하며 체크 상태를 확인
+            for (var i = 0; i < checkboxElements.length; i++) {
+                if (checkboxElements[i].checked) {
+                    checked = true;
+                    break; // 하나라도 체크되었으면 루프 종료
+                }
+            }
+            if (!checked) {
+                    return "❗저장 오류\n" + questionNum + "번의 정답이 선택되지 않았습니다.";
+                }
+        }
+
+        return null;
+    }
+    
     function exit() {
         $('#modal2').modal('show');
     }

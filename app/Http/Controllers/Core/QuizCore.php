@@ -18,29 +18,33 @@ class QuizCore extends Controller
     public function index()
     {
         $nickname = null;
-        $tests = null;
+        $myQuizs = null;
 
         if (Auth::check()) {
             // 로그인 했을 경우
             $user = Auth::user();
             $nickname = $user->nickname;
 
-            $tests = Test::where('uid', $user->uid)->orderby('date', 'desc')->get();
+            $myQuizs = Test::where('uid', $user->uid)->orderby('created_at', 'desc')->take(3)->get();
 
-            if ($tests->isEmpty()) {
+            if ($myQuizs->isEmpty()) {
                 // 결과가 없는 경우
-                $tests = null;
+                $myQuizs = null;
             }
         }
+
+        $publicQuizs = Test::where('secret', 'N')->where('incomplete', 'N')->orderby('created_at', 'desc')->get();
+
         return view('quiz.index', [
             'nickname'=> $nickname,
-            'tests' => $tests,
+            'myQuizs' => $myQuizs,
+            'quizs' => $publicQuizs,
         ]);
     }
 
     public function publicQuizIndex()
     {
-        $quizs = Test::where('secret', 'N')->get();
+        $quizs = Test::where('secret', 'N')->where('incomplete', 'N')->orderby('created_at', 'desc')->get();
 
         return view('quiz.publicQuiz', [
             'quizs' => $quizs,
@@ -293,6 +297,7 @@ class QuizCore extends Controller
         } else {
             $testModel->secret = 'N';
         }
+        $testModel->incomplete = "Y";
         
 
         $testModel->save();
@@ -321,6 +326,10 @@ class QuizCore extends Controller
     
                 $questionID = $questionModel->id;
 
+                $testModel = Test::find($testID);
+                $testModel->incomplete = "Y";
+                $testModel->save();
+
                 $response = [
                     'success' => true,
                     'questionID' => $questionID,
@@ -338,10 +347,15 @@ class QuizCore extends Controller
             $questionModel = new Question();
             $questionModel->testID = $request->input('testID');
             $questionModel->number = $request->input('number');
+            $questionModel->gubun = "선택하세요";
             $questionModel->save();
     
             $questionID = $questionModel->id;
     
+            $testModel = Test::find($testID);
+            $testModel->incomplete = "Y";
+            $testModel->save();
+
             $response = [
                 'success' => true,
                 'questionID' => $questionID,
@@ -386,16 +400,20 @@ class QuizCore extends Controller
         $shortAnswer = 'shortAnswer' . $number;
 
         // 퀴즈 Update
-        $testID = $request->input('testID');
-        $testModel = Test::find($testID);
-        $testModel->name = $request->input('quiz_name');
-        $testModel->subject = $request->input('subject');
+        $testModel = Test::find($request->input('testID'));
+
+        if ($request->input('quiz_name')) {
+            $testModel->name = $request->input('quiz_name');
+        }
+        if ($request->input('subject')) {
+            $testModel->subject = $request->input('subject');
+        }
         if ($request->input('secret') == 'Y') {
             $testModel->secret = $request->input('secret');
         } else {
             $testModel->secret = 'N';
         }
-
+        $testModel->incomplete = 'N';
         $testModel->save();
 
         // 문제 정보 Update
@@ -495,6 +513,10 @@ class QuizCore extends Controller
 
             $choiceID = $choiceModel->id;
 
+            $question = Question::find($request->input('questionID'));
+            $question->gubun = "1";
+            $question->save();
+
             $response = [
                 'success' => true,
                 'choiceID' => $choiceID,
@@ -547,6 +569,10 @@ class QuizCore extends Controller
                 foreach ($choices as $choice) {
                     $choice->delete();
                 }
+
+                $question = Question::find($request->input('questionID'));
+                $question->gubun = "2";
+                $question->save();
 
                 $response = [
                     'success' => true,

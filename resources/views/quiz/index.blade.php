@@ -13,8 +13,8 @@
 
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
-        @if (!Auth::check()) <!-- 로그인이 안되어 있으면 -->
-            <div class="col-lg-12 mb-5 order-0">
+        @if (!Auth::check()) {{-- 로그인이 안되어 있으면 --}}
+            <div class="col-lg-12 mb-2 order-0">
                 <div class="card bg-primary text-white mb-3">
                     <div class="card-header">Welcome!</div>
                     <div class="card-body">
@@ -28,10 +28,13 @@
                     </div>
                 </div>
             </div>
-        @else <!-- 로그인이 되어있으면 -->
+        @else {{-- 로그인이 되어있으면 --}}
             <!-- #나의 퀴즈 -->
-            <h5 class="mt-4 pb-1 mb-4"><i class="fa-solid fa-hashtag">&nbsp;</i>나의 퀴즈 💁‍♂️</h5>
-            @if (!$tests) <!-- 만든 퀴즈가 없으면 -->
+            <div class="mt-4 mb-2 pb-1 d-flex justify-content-between">
+                <h5><i class="fa-solid fa-hashtag">&nbsp;</i>나의 퀴즈 💁‍♂️</h5>
+                <a href="#">더보기</a>
+            </div>
+            @if (!$myQuizs) {{-- 만든 퀴즈가 없으면 --}}
                 <div class="col-lg-12 mb-4 order-0">
                     <div class="card">
                         <div class="d-flex align-items-end row">
@@ -52,7 +55,7 @@
                         </div>
                     </div>
                 </div>
-            @else <!-- 만든 퀴즈가 있으면 : 만든 퀴즈 목록 -->
+            @else {{-- 만든 퀴즈가 있으면 : 만든 퀴즈 목록 --}}
             <div class="col-lg-12 mb-4 order-0">
                 <div class="card">
                     <div class="d-flex align-items-end row">
@@ -65,23 +68,30 @@
                     </div>
                 </div>
             </div>
-                @foreach ($tests as $test)
+                @foreach ($myQuizs as $myQuiz)
                     <div class="col-md-4">
                         <div class="card mb-3">
                         <div class="row g-0">
                             <div class="col-md-12">
                             <div class="card-body">
-                                @if ($test->secret == "N")
+                                @if ($myQuiz->secret == "N")
                                     <p class="badge bg-label-primary">공개</p>
-                                @elseif ($test->secret == "Y")
+                                    @if ($myQuiz->incomplete == "Y")
+                                        <span class="badge bg-label-danger">미완성</span>
+                                    @endif
+                                @elseif ($myQuiz->secret == "Y")
                                     <p class="badge bg-label-warning">비공개</p>
+                                    @if ($myQuiz->incomplete == "Y")
+                                        <span class="badge bg-label-danger">미완성</span>
+                                    @endif                                    
                                 @endif
-                                <h5 class="card-title">{{ $test->name }}</h5>
-                                <p class="card-text">{{ $test->subject }}</p>
-                                <p class="card-text"><small class="text-muted">{{ $test->created_at->diffForHumans() }}</small></p>
+                                <h5 class="card-title">{{ $myQuiz->name }}</h5>
+                                <p class="card-text">{{ $myQuiz->subject }}</p>
+                                <p class="card-text"><small class="text-muted">{{ $myQuiz->created_at->diffForHumans() }}</small></p>
                                 <div class="text-end">
-                                    <a class="btn btn-primary" href="{{ url('quiz/solve/' . $test->id . "/type1") }}">풀기</a>
-                                    <a class="btn btn-primary" href="{{ url('quiz/' . $test->id . '/edit') }}">수정</a>
+                                    <a class="btn btn-primary" href="{{ url('quiz/solve/' . $myQuiz->id . "/type1") }}">풀기</a>
+                                    <a class="btn btn-secondary" href="{{ url('quiz/' . $myQuiz->id . '/edit') }}">수정</a>
+                                    <a class="btn btn-danger" href="{{ url('quiz/' . $myQuiz->id . '/edit') }}">삭제</a>
                                     {{-- <div class="btn-group dropup">
                                         <button type="button" class="btn btn-primary dropdown-toggle show" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                           풀기
@@ -105,6 +115,30 @@
                 @endforeach
             @endif
         @endif
+    </div>
+    {{-- 공통 --}}
+    <div class="mt-4 mb-2 pb-1 d-flex justify-content-between">
+        <h5 class=""><i class="fa-solid fa-hashtag">&nbsp;</i>공개 퀴즈 🌏</h5>
+        <a href="#">더보기</a>
+    </div>    
+    <div class="card">
+        <div class="table-responsive text-nowrap">
+            <table class="table">
+                <tbody>
+                    @foreach ($quizs as $quiz)
+                        <tr>
+                            <td>
+                                <a href="{{ url('quiz/solve/' . $quiz->id . "/type1") }}"><span style="font-size: 17px;">{{ $quiz->name }}</span></a><br>
+                                <i class="fa-solid fa-circle-user"></i>&nbsp;{{ $quiz->uid }}&nbsp;&nbsp;|&nbsp;&nbsp;
+                                조회: ?? &nbsp;&nbsp;|&nbsp;&nbsp;
+                                {{ $quiz->created_at->diffForHumans() }}
+                                
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
