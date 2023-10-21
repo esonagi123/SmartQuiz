@@ -28,17 +28,61 @@
     }
 </style>
 
+
+{{-- @if (!Auth::check())
+    <script>
+        $(document).ready(function() {
+            $('#noLogin').modal('show');
+        });
+    </script>
+@elseif (Auth::check())
+    <script>
+        $(document).ready(function() {
+            $('#noLogin').modal('show');
+        });
+    </script>
+@endif --}}
+
+{{-- <!-- Modal (data-bs-backdrop="static" : 안사라지게)-->
+<div class="modal fade" id="noLogin" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle"></h5>
+            </div>
+            <div class="modal-body mt-3">
+                <div class="mb-4">
+                    <h5><strong>❗로그인 없이 퀴즈를 풀까요?</strong></h5>
+                    <p><strong>로그인하면 랜덤 출제 기능을 사용할 수 있어요. 🎲</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-primary" href="{{ url('login') }}">로그인</a>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">그냥 풀기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> --}}
+
 <div class="button-bar">
-    <button type="button" class="btn btn-danger fixed-btn" onclick="">나가기</button>
-    <button type="button" class="btn btn-warning fixed-btn" onclick="submitForm()">제출</button>
+    @if (Auth::check() && $type == '1')
+        <button type="button" class="btn btn-primary fixed-btn" onclick="randomQuiz({{ $testModel->id }})">랜덤 출제&nbsp;<i class="fa-solid fa-dice fa-shake"></i></button>
+    @elseif (Auth::check() && $type == '2')
+        <a class="btn btn-primary fixed-btn" href="{{ url('quiz/solve/' . $testModel->id . "/type1") }}">일반 출제&nbsp;<i class="fa-solid fa-arrow-rotate-left"></i></a>
+    @endif
+    <button type="button" class="btn btn-warning fixed-btn" onclick="submitForm()">제출!</button>
+    <button type="button" class="btn btn-danger fixed-btn" onclick="exit()">나가기</button>
 </div>
 
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-1">{{ $testModel->name }}</h4>
-    <h6 class="pb-1 text-muted">퀴즈 풀기</h6>
+    <div class="text-center">
+    <h2 class="fw-bold py-1">{{ $testModel->name }}</h2>
+    <h5 class="pb-1 text-muted">{{ $testModel->subject }}</h5>
+    </div>
     <div id="questionContainer" class="col-md-12">
         <form id="test_{{ $testModel->id }}" method="post" action="{{ url('quiz/result/' . $testModel->id) }}">
         @csrf
+        <input type="hidden" name="type" value="{{ $type }}">
             @foreach($items['questions'] as $question)
                 <section id="Q{{ $question->number }}">
                     <div class="card mb-4">
@@ -53,9 +97,11 @@
                                             <label class="list-group-item">
                                                 <input class="form-check-input me-1" type="checkbox" name="Q{{ $question->number }}answer{{ $choice->number }}" value="{{ $choice->number }}">
                                                 @if ($choice->content == "")
-                                                &nbsp;&nbsp; ❗ 선택지 내용이 없어요.
-                                                @else
-                                                &nbsp;&nbsp; {{ $choice->content }}
+                                                    &nbsp;&nbsp; ❗ 선택지 내용이 없어요.
+                                                @elseif ($type == '1')
+                                                    &nbsp;&nbsp; ({{ $choice->number }})&nbsp;&nbsp;&nbsp;{{ $choice->content }}
+                                                @elseif ($type == '2')
+                                                    &nbsp;&nbsp;{{ $choice->content }}
                                                 @endif
                                             </label>
                                     @endforeach
@@ -92,6 +138,31 @@
         form.submit();
     }
 
+    function randomQuiz(testID) {
+      // confirm 창을 띄우고 사용자의 선택을 확인합니다.
+      var isConfirmed = confirm("문제를 랜덤으로 출제합니다.\n❗ 입력한 내용이 사라집니다.");
+
+      // 사용자가 확인을 눌렀을 때
+      if (isConfirmed) {
+        var url = "{{ url('quiz/solve') }}/" + testID + "/type2";
+        window.location.href = url;
+      } else {
+        return;
+      }
+    }
+
+    function exit() {
+      // confirm 창을 띄우고 사용자의 선택을 확인합니다.
+      var isConfirmed = confirm("메인으로 이동합니다.");
+
+      // 사용자가 확인을 눌렀을 때
+      if (isConfirmed) {
+        var url = "{{ url('quiz') }}";
+        window.location.href = url;
+      } else {
+        return;
+      }
+    }
 </script>
 
 @endsection()
