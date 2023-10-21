@@ -42,6 +42,10 @@ Route::middleware(['app'])->group(function () {
             Route::delete('/reset', [QuizCore::class, 'ajax_reset'])->name('ajax.QuestionReset');
 
             Route::get('/{testID}/edit', [QuizCore::class, 'editQuestion'])->name('quiz.editQuestion');
+
+            Route::get('/myQuiz', [QuizCore::class, 'myQuizIndex'])->name('quiz.myQuiz');
+
+
             // 로그인 안하면 접근 불가 ↑
         });
         Route::get('/solve/{testID}/type{type}', [QuizCore::class, 'solve'])->name('quiz.solve');
