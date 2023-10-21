@@ -182,13 +182,13 @@
                   <div>✏️ 만들기</div>
                 </a>
               </li>
-              <li class="menu-item {{ Request::is('quiz/create/hh') ? 'active' : '' }}">
-                <a href="#" class="menu-link">
+              <li class="menu-item {{ Request::is('quiz/myQuiz') ? 'active' : '' }}">
+                <a href="{{ url('quiz/myQuiz') }}" class="menu-link">
                   <div>📒 나의 퀴즈</div>
                 </a>
               </li>              
             @endif
-            <li class="menu-item">
+            <li class="menu-item {{ Request::is('quiz/public') ? 'active' : '' }}">
               <a href="{{ url('quiz/public') }}" class="menu-link">
                 <div>📖 공개 퀴즈 목록</div>
               </a>
@@ -206,7 +206,7 @@
                 </a>
               </li> 
             @else <!-- 로그인이 되어 있으면 -->  
-              <li class="menu-item">
+              <li class="menu-item {{ Request::is('mypage') ? 'active' : '' }}">
                 <a href="{{ url('mypage') }}" class="menu-link">
                   <i class="fa-solid fa-user"></i>&nbsp;&nbsp;&nbsp;
                   <div>마이페이지</div>
@@ -261,8 +261,8 @@
                         <img src="{{ asset('/assets/img/avatars/avatar' .  $userData['avatar'] .'.png') }}" alt class="w-px-40 h-auto rounded-circle" />
                       </div>
                     </a>
-                  @else
-                    <a class="btn btn-primary" href="{{ url('login') }}">로그인</a>
+                  @else               
+                    <a class="btn rounded-pill btn-icon btn-primary" href="{{ url('login') }}"><i class="fa-solid fa-right-to-bracket fa-bounce"></i></a>
                   @endif
                   
                   @if (Auth::check())
