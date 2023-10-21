@@ -11,6 +11,8 @@
     }
 </style>
 
+<div id="noLoginModal"></div>
+
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
         @if (!Auth::check()) {{-- 로그인이 안되어 있으면 --}}
@@ -32,7 +34,7 @@
             <!-- #나의 퀴즈 -->
             <div class="mt-4 mb-2 pb-1 d-flex justify-content-between">
                 <h5><i class="fa-solid fa-hashtag">&nbsp;</i>나의 퀴즈 💁‍♂️</h5>
-                <a href="#">더보기</a>
+                <a href="{{ url('/quiz/myQuiz') }}">더보기</a>
             </div>
             @if (!$myQuizs) {{-- 만든 퀴즈가 없으면 --}}
                 <div class="col-lg-12 mb-4 order-0">
@@ -80,32 +82,18 @@
                                         <span class="badge bg-label-danger">미완성</span>
                                     @endif
                                 @elseif ($myQuiz->secret == "Y")
-                                    <p class="badge bg-label-warning">비공개</p>
+                                    <p class="badge bg-label-secondary">비공개</p>
                                     @if ($myQuiz->incomplete == "Y")
                                         <span class="badge bg-label-danger">미완성</span>
                                     @endif                                    
                                 @endif
                                 <h5 class="card-title">{{ $myQuiz->name }}</h5>
                                 <p class="card-text">{{ $myQuiz->subject }}</p>
-                                <p class="card-text"><small class="text-muted">{{ $myQuiz->created_at->diffForHumans() }}</small></p>
+                                <p class="card-text"><small class="text-muted">{{ $myQuiz->updated_at->diffForHumans() }} 최종 수정</small></p>
                                 <div class="text-end">
                                     <a class="btn btn-primary" href="{{ url('quiz/solve/' . $myQuiz->id . "/type1") }}">풀기</a>
                                     <a class="btn btn-secondary" href="{{ url('quiz/' . $myQuiz->id . '/edit') }}">수정</a>
                                     <a class="btn btn-danger" href="{{ url('quiz/' . $myQuiz->id . '/edit') }}">삭제</a>
-                                    {{-- <div class="btn-group dropup">
-                                        <button type="button" class="btn btn-primary dropdown-toggle show" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                          풀기
-                                        </button>
-                                        <ul class="dropdown-menu" style="position: absolute; inset: auto auto 0px 0px; margin: 0px; transform: translate(0px, -42px);" data-popper-placement="top-start">
-                                          <li><a class="dropdown-item" onclick="solve1({{ $test->id }})">풀기</a></li>
-                                          <li><a class="dropdown-item" onclick="solve2({{ $test->id }})">한 문제씩 풀기</a></li>
-                                          <li>
-                                            <hr class="dropdown-divider">
-                                          </li>
-                                          <li><a class="dropdown-item" href="{{ url('quiz/' . $test->id . '/edit') }}">수정</a></li>
-                                          <li><a class="dropdown-item" href="javascript:void(0);">삭제</a></li>
-                                        </ul>
-                                    </div> --}}
                                 </div>
                             </div>
                             </div>
@@ -119,7 +107,7 @@
     {{-- 공통 --}}
     <div class="mt-4 mb-2 pb-1 d-flex justify-content-between">
         <h5 class=""><i class="fa-solid fa-hashtag">&nbsp;</i>공개 퀴즈 🌏</h5>
-        <a href="#">더보기</a>
+        <a href="{{ url('quiz/public') }}">더보기</a>
     </div>    
     <div class="card">
         <div class="table-responsive text-nowrap">
@@ -128,11 +116,18 @@
                     @foreach ($quizs as $quiz)
                         <tr>
                             <td>
-                                <a href="{{ url('quiz/solve/' . $quiz->id . "/type1") }}"><span style="font-size: 17px;">{{ $quiz->name }}</span></a><br>
+                                @if (!Auth::check())
+                                <a href="javascript:void(0);" onclick="confirm1({{ $quiz->id }})">
+                                    <span style="font-size: 17px;">{{ $quiz->name }}</span>
+                                </a><br>
+                                @else
+                                <a href="{{ url('quiz/solve/' . $quiz->id . "/type1") }}">
+                                    <span style="font-size: 17px;">{{ $quiz->name }}</span>
+                                </a><br>
+                                @endif                     
                                 <i class="fa-solid fa-circle-user"></i>&nbsp;{{ $quiz->uid }}&nbsp;&nbsp;|&nbsp;&nbsp;
                                 조회: ?? &nbsp;&nbsp;|&nbsp;&nbsp;
-                                {{ $quiz->created_at->diffForHumans() }}
-                                
+                                {{ $quiz->updated_at->diffForHumans() }} 수정
                             </td>
                         </tr>
                     @endforeach
@@ -143,30 +138,77 @@
 </div>
 
 <script>
-    function solve1(testID) {
-      // confirm 창을 띄우고 사용자의 선택을 확인합니다.
-      var isConfirmed = confirm("일반적인 시험처럼 모든 문제가 표시되고 정답과 결과는 마지막에 표시됩니다.");
+    function confirm1(testID) {
+        // 모달을 동적으로 생성
+        var modal = document.createElement('div');
+        modal.classList.add('modal', 'fade');
+        modal.id = 'noLogin';
+        modal.setAttribute('data-bs-backdrop', 'static');
+        modal.tabIndex = -1;
+        modal.setAttribute('aria-hidden', 'true');
 
-      // 사용자가 확인을 눌렀을 때
-      if (isConfirmed) {
-        var url = "{{ url('quiz/solve') }}/" + testID + "/type1";
-        window.location.href = url;
-      } else {
-        return;
-      }
-    }
+        var modalDialog = document.createElement('div');
+        modalDialog.classList.add('modal-dialog', 'modal-dialog-centered');
+        modalDialog.setAttribute('role', 'document');
 
-    function solve2(testID) {
-      // confirm 창을 띄우고 사용자의 선택을 확인합니다.
-      var isConfirmed = confirm("한 문제씩 표시되고 정답과 결과를 바로 확인할 수 있습니다.");
+        var modalContent = document.createElement('div');
+        modalContent.classList.add('modal-content');
 
-      // 사용자가 확인을 눌렀을 때
-      if (isConfirmed) {
-        window.location.href = "#";
-      } else {
-        return;
-      }
-    }    
+        var modalHeader = document.createElement('div');
+        modalHeader.classList.add('modal-header');
+
+        var closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.classList.add('btn-close');
+        closeButton.setAttribute('data-bs-dismiss', 'modal');
+        closeButton.setAttribute('aria-label', 'Close');
+
+        var modalBody = document.createElement('div');
+        modalBody.classList.add('modal-body');
+
+        var messageDiv = document.createElement('div');
+
+        var messageHeader = document.createElement('h5');
+        messageHeader.innerHTML = '<strong>❗로그인 없이 퀴즈를 풀까요?</strong>';
+
+        var messageText = document.createElement('p');
+        messageText.innerHTML = '<strong>로그인하면 랜덤 출제 기능을 사용할 수 있어요.🎲</strong>';
+
+        var modalFooter = document.createElement('div');
+        modalFooter.classList.add('modal-footer');
+
+        var loginButton = document.createElement('a');
+        loginButton.classList.add('btn', 'btn-primary');
+        loginButton.href = '{{ url('login') }}';
+        loginButton.innerHTML = '로그인';
+
+        var justPlayButton = document.createElement('a');
+        justPlayButton.classList.add('btn', 'btn-primary');
+        justPlayButton.href = "{{ url('quiz/solve') }}/" + testID + "/type1";
+        justPlayButton.innerHTML = '그냥 풀기';
+
+        // 모달을 조립
+        messageDiv.appendChild(messageHeader);
+        messageDiv.appendChild(messageText);
+        modalBody.appendChild(messageDiv);
+        modalFooter.appendChild(loginButton);
+        modalFooter.appendChild(justPlayButton);
+        modalHeader.appendChild(closeButton);
+        modalContent.appendChild(modalHeader);
+        modalContent.appendChild(modalBody);
+        modalContent.appendChild(modalFooter);
+        modalDialog.appendChild(modalContent);
+        modal.appendChild(modalDialog);
+
+        // 모달을 원하는 위치에 추가
+        var container = document.getElementById('noLoginModal'); // 모달을 추가할 컨테이너 선택
+        container.appendChild(modal);
+
+
+        $(document).ready(function() {
+            $('#noLogin').modal('show');
+        });
+    } 
 </script>
 
 @endsection()
