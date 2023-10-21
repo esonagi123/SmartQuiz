@@ -18,48 +18,107 @@ class QuizCore extends Controller
     public function index()
     {
         $nickname = null;
-        $tests = null;
+        $myQuizs = null;
 
         if (Auth::check()) {
             // 로그인 했을 경우
             $user = Auth::user();
             $nickname = $user->nickname;
 
-            $tests = Test::where('uid', $user->uid)->orderby('date', 'desc')->get();
+            $myQuizs = Test::where('uid', $user->uid)->orderby('updated_at', 'desc')->take(3)->get();
 
-            if ($tests->isEmpty()) {
+            if ($myQuizs->isEmpty()) {
                 // 결과가 없는 경우
-                $tests = null;
+                $myQuizs = null;
             }
         }
+
+        $publicQuizs = Test::where('secret', 'N')->where('incomplete', 'N')->orderby('updated_at', 'desc')->get();
+
         return view('quiz.index', [
             'nickname'=> $nickname,
-            'tests' => $tests,
+            'myQuizs' => $myQuizs,
+            'quizs' => $publicQuizs,
         ]);
     }
+
+    public function publicQuizIndex()
+    {
+        $quizs = Test::where('secret', 'N')->where('incomplete', 'N')->orderby('updated_at', 'desc')->get();
+
+        return view('quiz.publicQuiz', [
+            'quizs' => $quizs,
+        ]);
+
+    }
+
+    public function myQuizIndex()
+    {
+        $user = Auth::user();
+        $uid = $user->uid;
+        $myQuizs = Test::where('uid', $uid)->orderby('updated_at', 'desc')->get();
+
+        return view('quiz.myQuiz', [
+            'myQuizs' => $myQuizs,
+        ]);
+
+    }    
 
     // 시험 풀기
     public function solve($testID, $type)
     {
-        $testModel = Test::find($testID);
-        $questions = Question::where('testID', $testID)->orderby('number', 'asc')->get();
-        $questionCount = Question::where('testID', $testID)->count();
-        
-        $choices = [];
-        $value = [];
-        
-        
-        foreach ($questions as $question) {
-            // 문제 수 만큼 순회하면서 동적으로 choices 배열을 생성
-            $choices[$question->id] = Choice::where('qid', $question->id)->orderby('number', 'asc')->get();
+        if ($type == "1") {
+            // 1 = 일반 출제
+            $testModel = Test::find($testID);
+            $questions = Question::where('testID', $testID)->orderby('number', 'asc')->get();
+            $questionCount = Question::where('testID', $testID)->count();
             
-            // 선택지들을 담을 배열을 동적으로 만들고 초기화
-            $value[$question->number] = [];
+            $choices = [];
+            $value = [];
             
-            foreach ($choices[$question->id] as $choice) {
-                // 동적으로 만들어진 choices 배열을 순회
+            
+            foreach ($questions as $question) {
+                // 문제 수 만큼 순회하면서 동적으로 choices 배열을 생성
+                $choices[$question->id] = Choice::where('qid', $question->id)->orderby('number', 'asc')->get();
+                
+                // 선택지들을 담을 배열을 동적으로 만들고 초기화
+                $value[$question->number] = [];
+                
+                foreach ($choices[$question->id] as $choice) {
+                    // 동적으로 만들어진 choices 배열을 순회
 
-                $value[$question->number][] = $choice->number;
+                    $value[$question->number][] = $choice->number;
+                }
+            }
+
+        } elseif ($type == "2") {
+            // 2 = 랜덤 출제
+
+            if (!Auth::check()) {
+                // session()->flash('not_auth', '로그인이 필요합니다.');
+                return redirect('quiz/solve/' . $testID . '/type1');
+            } else {
+                $testModel = Test::find($testID);
+                $questions = Question::where('testID', $testID)->inRandomOrder()->get();
+                $questionCount = Question::where('testID', $testID)->count();
+                
+                $choices = [];
+                $value = [];
+                
+                
+                foreach ($questions as $question) {
+                    // 문제 수 만큼 순회하면서 동적으로 choices 배열을 생성
+                    $choices[$question->id] = Choice::where('qid', $question->id)->inRandomOrder()->get();
+                    
+                    // 선택지들을 담을 배열을 동적으로 만들고 초기화
+                    $value[$question->number] = [];
+                    
+                    foreach ($choices[$question->id] as $choice) {
+                        // 동적으로 만들어진 choices 배열을 순회
+    
+                        $value[$question->number][] = $choice->number;
+                    }
+                }  
             }
         }
         
@@ -75,6 +134,7 @@ class QuizCore extends Controller
             'testModel' => $testModel,
             'items' => $result,
             'value' => $value,
+            'type' => $type,
 
         ]);
     }
@@ -82,6 +142,9 @@ class QuizCore extends Controller
     // 시험 결과
     public function result($testID, Request $request)
     {
+
+        $type = $request->input('type');
+
         $maximumScore = 100;
         $score = 0;
         
@@ -91,6 +154,8 @@ class QuizCore extends Controller
         $questionCount = Question::where('testID', $test->id)->count();
 
         $wrongQuestion = [];
+        $returnInputs = null;
+        $returnAnswers = null;
 
         // 각 문제당 배점 계산
         if ($questionCount > 0) {
@@ -210,6 +275,7 @@ class QuizCore extends Controller
             'testModel' => $test,
             'items' => $result,
             'value' => $value,
+            'type' => $type,
         ]);
     }
 
@@ -283,6 +349,7 @@ class QuizCore extends Controller
         } else {
             $testModel->secret = 'N';
         }
+        $testModel->incomplete = "Y";
         
 
         $testModel->save();
@@ -311,6 +378,10 @@ class QuizCore extends Controller
     
                 $questionID = $questionModel->id;
 
+                $testModel = Test::find($testID);
+                $testModel->incomplete = "Y";
+                $testModel->save();
+
                 $response = [
                     'success' => true,
                     'questionID' => $questionID,
@@ -328,10 +399,15 @@ class QuizCore extends Controller
             $questionModel = new Question();
             $questionModel->testID = $request->input('testID');
             $questionModel->number = $request->input('number');
+            $questionModel->gubun = "선택하세요";
             $questionModel->save();
     
             $questionID = $questionModel->id;
     
+            $testModel = Test::find($testID);
+            $testModel->incomplete = "Y";
+            $testModel->save();
+
             $response = [
                 'success' => true,
                 'questionID' => $questionID,
@@ -376,16 +452,21 @@ class QuizCore extends Controller
         $shortAnswer = 'shortAnswer' . $number;
 
         // 퀴즈 Update
-        $testID = $request->input('testID');
-        $testModel = Test::find($testID);
-        $testModel->name = $request->input('quiz_name');
-        $testModel->subject = $request->input('subject');
+        $testModel = Test::find($request->input('testID'));
+
+        if ($request->input('quiz_name')) {
+            $testModel->name = $request->input('quiz_name');
+        }
+        if ($request->input('subject')) {
+            $testModel->subject = $request->input('subject');
+        }
         if ($request->input('secret') == 'Y') {
             $testModel->secret = $request->input('secret');
         } else {
             $testModel->secret = 'N';
         }
-
+        $testModel->incomplete = 'N';
+        $testModel->updated_at = now();
         $testModel->save();
 
         // 문제 정보 Update
@@ -485,6 +566,10 @@ class QuizCore extends Controller
 
             $choiceID = $choiceModel->id;
 
+            $question = Question::find($request->input('questionID'));
+            $question->gubun = "1";
+            $question->save();
+
             $response = [
                 'success' => true,
                 'choiceID' => $choiceID,
@@ -537,6 +622,10 @@ class QuizCore extends Controller
                 foreach ($choices as $choice) {
                     $choice->delete();
                 }
+
+                $question = Question::find($request->input('questionID'));
+                $question->gubun = "2";
+                $question->save();
 
                 $response = [
                     'success' => true,

@@ -21,6 +21,7 @@
     background-color: #333;
     padding: 10px;
     text-align: center;
+    z-index: 100;
     }
 
     /* 선택지 삭제 버튼 */
@@ -503,10 +504,8 @@
 
     // 문제 추가 버튼을 누르면
     function addCard2() {
-        //updateQuestion();
         cardCount = findUnusedQuestion();
-        // cardCount = cardArray.length + 1;
-        cardArray.push(cardCount);    
+        cardArray.push(cardCount);
         $.ajax({
             headers: {'X-CSRF-TOKEN': csrfToken},
             url: "{{ url('quiz/storeQuestion') }}",
@@ -568,7 +567,7 @@
                             <div id="inputContainer${cardCount}"></div>
                         </div>
                         <div id="shortAnswerDiv${cardCount}" style="display: none;">
-                            <input type="text" class="form-control" name="shortAnswer${cardCount}" placeholder="정답">
+                            <input type="text" class="form-control" id="shortAnswer${cardCount}" name="shortAnswer${cardCount}" placeholder="정답">
                             <br><label class="form-label">- 복수 정답이 있을 경우 콤마(,)로 구분합니다.</label>
                             <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
                             <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
@@ -653,6 +652,7 @@
                             var question = document.getElementById(formID);
                             if (question) {
                                 question.remove();
+                                tinymce.get('largeInput' + cardCount).remove();
                                 alert('문제를 삭제했습니다.');
 
                                 // 배열에서 cardCount 제거
@@ -706,10 +706,9 @@
 
     // 전체 저장
     function save() {
+        alert('지금까지의 내용을 저장합니다.');
         count = cardArray.length;
-        alert('현재 cardCount : ' + count);
-
-        unUsedNumber = findUnusedQuestion();
+        var unUsedNumber = findUnusedQuestion();
         if ((count + 1) == unUsedNumber) {
 
         } else {
@@ -719,31 +718,84 @@
             }
         }
 
+        for (var i = 1; i <= count; i++) {            
+            var questionNum = cardArray[i-1];
+            var validationMessage = validateForm(questionNum);
+            if (validationMessage) {
+                alert(validationMessage);
+                break;
+            } else {
+                // alert(cardArray[i-1] + "번 문제를 저장합니다..");
 
-        for (var i = 1; i <= count; i++) {
-            alert(cardArray[i-1] + "번 문제를 저장합니다..");
+                // 폼 제출 전에 tinyMCE 내용을 업데이트
+                tinymce.get('largeInput' + cardArray[i-1]).save(); // 에디터의 내용을 textarea에 적용
 
-            // 폼 제출 전에 tinyMCE 내용을 업데이트
-            tinymce.get('largeInput' + cardArray[i-1]).save(); // 에디터의 내용을 textarea에 적용
-            
-            var formData = $("#question" + cardArray[i-1]).serialize();
-            
-            $.ajax({
-                headers: {'X-CSRF-TOKEN': csrfToken},
-                url: "{{ url('quiz/updateQuestion') }}",
-                type: "PATCH",
-                data: formData,
-                dataType: "json",
-                success: function(data) {
-                    alert("완료!");
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert("AJAX 오류: " + textStatus + " - " + errorThrown);
-                }
-            }); 
+                var formData = $("#question" + cardArray[i-1]).serialize();
+
+                $.ajax({
+                    headers: {'X-CSRF-TOKEN': csrfToken},
+                    url: "{{ url('quiz/updateQuestion') }}",
+                    type: "PATCH",
+                    data: formData,
+                    dataType: "json",
+                    success: function(data) {
+                        alert("완료!");
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+                    }
+                });
+            }
         }
-        alert('i 초기화..');
+        if (!validationMessage) {alert("저장 완료!");}
         i = 1;
+    }
+
+    function validateForm(questionNum) {
+        tinymce.get('largeInput' + questionNum).save();
+        var question = document.getElementById("largeInput" + questionNum).value;
+        var gubun = document.getElementById("largeSelect" + questionNum).value;
+
+        if (question.trim() === '') {
+            // largeInput이 비어 있을 때의 처리
+            return "❗저장 오류\n" + questionNum + "번의 문제 내용이 비어있습니다.";
+        } else if (gubun === "선택하세요.") {
+            // 선택 옵션이 선택되지 않았을 때의 처리
+            return "❗저장 오류\n" + questionNum +"번의 문제 유형이 선택되지 않았습니다.";
+        } else if (gubun === "2") {
+            var shortAnswerValue = document.getElementById("shortAnswer" + questionNum).value;
+            if (shortAnswerValue.trim() === '') {
+                // 입력 필드가 비어 있을 때의 처리
+                return "❗저장 오류\n" + questionNum + "번의 정답을 입력하세요.";
+            }
+        } else if (gubun === "1") {
+            var choiceInputContainer = document.getElementById('inputContainer' + questionNum);
+            
+            // div 내부의 모든 input 요소를 선택
+            var inputElements = choiceInputContainer.querySelectorAll('input');
+            // div 내부의 모든 checkbox 요소를 선택
+            var checkboxElements = choiceInputContainer.querySelectorAll('input[type="checkbox"]');
+            console.log(checkboxElements);
+            var checked = false;
+            // 입력 요소의 값을 확인하고 비어 있는지 여부를 검사
+            for (var i = 0; i < inputElements.length; i++) {
+                if (inputElements[i].value.trim() === '') {
+                    return "❗저장 오류\n" + questionNum + "번 문제에 내용이 비어있는 선택지가 있습니다.";
+                }
+            }
+            // checkbox 요소를 반복하며 체크 상태를 확인
+            for (var i = 0; i < checkboxElements.length; i++) {
+                if (checkboxElements[i].checked) {
+                    checked = true;
+                    break; // 하나라도 체크되었으면 루프 종료
+                }
+            }
+            if (!checked) {
+                    return "❗저장 오류\n" + questionNum + "번의 정답이 선택되지 않았습니다.";
+                }
+        }
+
+        return null;
     }
 
     function exit() {

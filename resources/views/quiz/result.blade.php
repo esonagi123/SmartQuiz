@@ -63,8 +63,12 @@
                         이네요.                    
                     @endif
                 </div>
-                <div class="modal-footer">          
-                    <a class="btn btn-warning" href="{{ url('/quiz/solve/'. $testID . '/type1')}}" >다시 풀기</a>
+                <div class="modal-footer">
+                    @if ($type == '1')
+                        <a class="btn btn-warning" href="{{ url('/quiz/solve/'. $testID . '/type1')}}" >다시 풀기</a>
+                    @elseif ($type == '2')
+                        <a class="btn btn-warning" href="{{ url('/quiz/solve/'. $testID . '/type2')}}" >다시 풀기</a>
+                    @endif
                     <a class="btn btn-danger" href="{{ url('/quiz') }}">나가기</a>
                 </div>
             </div>
@@ -73,7 +77,11 @@
 </div>
 
 <div class="button-bar">
-    <a class="btn btn-warning fixed-btn" href="{{ url('/quiz/solve/'. $testID . '/type1')}}">다시 풀기</a>
+    @if ($type == '1')
+        <a class="btn btn-warning fixed-btn" href="{{ url('/quiz/solve/'. $testID . '/type1')}}">다시 풀기</a>
+    @elseif ($type == '2')
+        <a class="btn btn-warning fixed-btn" href="{{ url('/quiz/solve/'. $testID . '/type2')}}">다시 풀기</a>
+    @endif
     <a class="btn btn-danger fixed-btn" href="{{ url('/quiz') }}">나가기</a>
 </div>
 
@@ -121,7 +129,7 @@
                                             @if ($choice->content == "")
                                                 &nbsp;&nbsp; ❗ 선택지 내용이 없어요.
                                             @else
-                                                &nbsp;&nbsp; {{ $choice->content }}
+                                                &nbsp;&nbsp; ({{ $choice->number }})&nbsp;&nbsp;&nbsp;{{ $choice->content }}
                                             @endif
                                         </label>
                                     @endforeach
