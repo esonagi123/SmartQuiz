@@ -43,7 +43,16 @@ class Mypage extends Controller
             'password.regex' => '비밀번호는 8~16자 이내, 소문자와 숫자로 구성되어야 합니다.',
         ]);
 
-        $userModel = User::find($id);
+        $userModel = User::find($request->input('id')); 
 
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $userModel = User::find($request->input('id'));
+        $userModel->avatar = $request->input('avatar');
+        $userModel->save();
+
+        return redirect('mypage');
     }
 }
