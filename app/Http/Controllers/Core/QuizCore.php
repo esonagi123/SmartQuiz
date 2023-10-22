@@ -142,7 +142,6 @@ class QuizCore extends Controller
     // 시험 결과
     public function result($testID, Request $request)
     {
-
         $type = $request->input('type');
 
         $maximumScore = 100;
@@ -176,7 +175,8 @@ class QuizCore extends Controller
                     $inputAnswers[$question->number][] = $request->input('Q'. $question->number . 'answer' . $choice->number);
 
                     // answer[$question->number] 배열에 정답을 추가 ( 1번 문제에 정답이 5번일 경우 ex. { 1 : null, null, null, null, 5 } )
-                    $answer[$question->number][] = $choice->answer;
+                    $answer[$question->number][] = $choice->answer; // 정답 확인 후 초기화 되는 배열
+                    $returnAnswer[$question->number][] = $choice->answer; // 뷰로 전달할 배열 (정답 확인)
                 }
                 
                 if ($inputAnswers == $answer) {
@@ -193,12 +193,13 @@ class QuizCore extends Controller
                 $returnInputs[] = [
                     'number' => $question->number,
                     'input' => $inputAnswers[$question->number],
+                    
                 ];
                 
                 // \Log::info("input: " . json_encode($wrongQuestion));
                 // \Log::info("input: " . json_encode($inputAnswers));
                 // \Log::info("input: " . json_encode($returnInputs));
-                // \Log::info("DB: " . json_encode($answer));
+                    \Log::info("DB: " . json_encode($returnAnswer));
                 
                 // 배열 초기화 (안하면 1 : ... , 2 : ... 이런식으로 문제를 순회할 때마다 늘어나 버린다.)
                 $inputAnswers = [];
@@ -236,7 +237,8 @@ class QuizCore extends Controller
 
                 $returnAnswers[$question->number] = [
                     // 'number' => $question->number,
-                    'value' => $userAnswer
+                    'value' => $userAnswer,
+                    
                 ];
 
                 // \Log::info("return: " . json_encode($returnAnswers));
@@ -276,6 +278,7 @@ class QuizCore extends Controller
             'items' => $result,
             'value' => $value,
             'type' => $type,
+            'answer' => $returnAnswer,
         ]);
     }
 

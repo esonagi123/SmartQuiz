@@ -1,7 +1,6 @@
 @extends('base')
 
 @section('content')
-
 <style>
     .result-container {
         position: relative;
@@ -135,19 +134,40 @@
                                     @endforeach
                                     </div>
                                 </div>
+                                <div class="mt-3 text-end">
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#showAnswer{{ $question->number }}">정답 확인</button>
+                                </div>
+                                <div class="collapse" id="showAnswer{{ $question->number }}">
+                                    <div class="d-grid d-sm-flex p-3 border">
+                                      <span>
+                                        @foreach ($answer as $number => $item)
+                                            @if ($number == $question->number) {{-- $number가 $question->number와 일치하는 경우에만 루프 실행 --}}
+                                                @foreach ($item as $value)
+                                                    @if (!is_null($value)) {{-- $value가 null이 아닌 경우에만 출력 --}}
+                                                        {{ $value }}번<br>
+                                                    @endif
+                                                @endforeach
+                                            @endif
+                                        @endforeach
+                                      </span>
+                                    </div>
+                                </div>                                
                             @elseif ($question->gubun == "2")
                                 <div id="shortAnswerDiv{{ $question->number}}" style="display: block;">
                                     <input type="text" class="form-control" name="shortAnswer{{ $question->number }}" value="{{ $returnAnswers[$question->number]['value'] }}" readonly>
-                                    <br><label class="form-label">- 복수 정답이 있을 경우 콤마(,)로 구분합니다.</label>
-                                    <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
-                                    <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
+
                                 </div>
+                                <div class="mt-3 text-end">
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#showAnswer{{ $question->number }}">정답 확인</button>
+                                </div>
+                                <div class="collapse" id="showAnswer{{ $question->number }}">
+                                    <div class="d-grid d-sm-flex p-3 border">
+                                      {{ $question->answer }}
+                                    </div>
+                                </div>                                
                             @else
                                 <p>문제가 올바르지 않습니다.</p>
                             @endif
-                            <div class="mt-3 text-end">
-                                <button type="button" class="btn btn-primary">정답 확인</button>
-                            </div>
                         </div>
                     </div>
                 </section>
