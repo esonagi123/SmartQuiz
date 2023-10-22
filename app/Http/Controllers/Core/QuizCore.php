@@ -197,10 +197,7 @@ class QuizCore extends Controller
                     
                 ];
                 
-                // \Log::info("input: " . json_encode($wrongQuestion));
-                // \Log::info("input: " . json_encode($inputAnswers));
-                // \Log::info("input: " . json_encode($returnInputs));
-                    \Log::info("DB: " . json_encode($returnAnswer));
+                // \Log::info("DB: " . json_encode());
                 
                 // 배열 초기화 (안하면 1 : ... , 2 : ... 이런식으로 문제를 순회할 때마다 늘어나 버린다.)
                 $inputAnswers = [];
