@@ -532,6 +532,7 @@
         
         var cardHtml = `
         <form id="question${cardCount}" enctype="multipart/form-data">
+            <input type="hidden" name="testID" value="{{ $testID }}">
             <input type="hidden" name="questionID" value="${questionID}">
             <section id="Q${cardCount}">
                 <div class="card mb-4">
@@ -739,7 +740,7 @@
                     data: formData,
                     dataType: "json",
                     success: function(data) {
-                        alert("완료!");
+                        // alert("완료!");
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert("AJAX 오류: " + textStatus + " - " + errorThrown);
@@ -747,7 +748,7 @@
                 });
             }
         }
-        if (!validationMessage) {alert("저장 완료!");}
+        if (!validationMessage) {alert("저장 완료 💾");}
         i = 1;
     }
 
