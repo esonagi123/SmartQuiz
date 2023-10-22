@@ -890,7 +890,7 @@
             }
 
         }
-        if (!validationMessage) {alert("저장 완료!");}
+        if (!validationMessage) {alert("저장 완료 💾");}
         
         i = 1;
     }
