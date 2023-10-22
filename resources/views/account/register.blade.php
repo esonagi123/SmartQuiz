@@ -19,7 +19,7 @@
 
     <!-- Icons. Uncomment required icon fonts -->
     <link rel="stylesheet" href="{{ asset('/assets/vendor/fonts/boxicons.css') }}" />
-
+    <script src="https://kit.fontawesome.com/649102945e.js" crossorigin="anonymous"></script>
     <!-- Core CSS -->
     <link rel="stylesheet" href="{{ asset('/assets/vendor/css/core.css') }}" class="template-customizer-core-css" />
     <link rel="stylesheet" href="{{ asset('/assets/vendor/css/theme-default.css') }}" class="template-customizer-theme-css" />
@@ -78,6 +78,91 @@
 
 <body>
     <!-- Content -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="agreeModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalScrollableTitle">개인정보 처리 방침 및 이용 약관</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>[개인정보처리방침]</strong></p>
+
+            <p>SmartQuiz는 대한민국의 개인정보 보호법, 정보통신망법과 본 방침에 따라 개인정보를 처리하고 있습니다.</p>
+            
+            <p><strong>1. 정의</strong></p>
+            <p>'개인정보'란 살아 있는 개인에 관한 정보로서 이름, 연락처, 영상 등을 통하여 개인을 알아볼 수 있는 정보를 의미합니다. 해당 정보만으로는 특정 개인을 알아볼 수 없더라도 다른 정보와 쉽게 결합하여 알아볼 수 있는 것도 포함합니다.</p>
+            
+            <p>예를 들어 개인정보가 포함되지 않은 게시물과 닉네임은 그 자체만으로 개인정보라 할 수 없으며, 이메일 주소, 전화번호 등과 같이 연관지어 개인을 특정할 수 있을만한 다른 정보들이 수집되어 있어야 합니다.</p>
+            
+            <p><strong>2. 수집</strong></p>
+            <p><strong>1) 서비스 이용 과정에서 다음과 같은 개인정보가 자동으로 생성되어 수집될 수 있습니다.</strong></p>
+            <p>항목 : IP 주소, 접속일시, 서비스 이용 기록</p>
+            <p>주목적 : 서비스 제공 및 부정 이용 방지</p>
+            <p>보관기간 : 삭제 전 까지</p>
+            
+            <p><strong>2) 회원가입시 본 방침에 대한 동의 절차 후 다음과 같은 개인정보를 수집합니다.</strong></p>
+            <p>항목 : 아이디, 이메일 주소, * 비밀번호, 닉네임</p>
+            <p>주목적 : 서비스 이용</p>
+            <p>보관기간 : 탈퇴 전 까지</p>
+            
+            <p style="color:red;">* 별표에 해당하는 항목은 그 누구도 알 수 없도록 복호화가 불가능한 단방향 암호화 처리 후 해시값만 보관됩니다.</p>
+            
+            <p><strong>3. 이용</strong></p>
+            <p>수집된 개인정보는 보관기간 동안 주목적 외에도 다음과 같은 목적으로 이용될 수 있습니다.</p>
+            
+            <p><strong>1) 이용자 보호</strong></p>
+            <p>본 방침 개정 등의 고지사항 전달</p>
+            <p>계약이행을 위한 연락</p>
+            <p>분쟁조정을 위한 기록 보존</p>
+            <p>민원 및 분쟁 처리</p>
+            
+            <p><strong>2) 기타</strong></p>
+            <p>서비스 개선 및 신규 서비스 개발</p>
+            <p>프라이버시 보호 측면의 서비스 환경 구축</p>
+            
+            <p><strong>4. 보호</strong></p>
+            <p>수집된 개인정보는 훼손되거나 유출되지 않도록 철저하게 보호되고 있습니다.</p>
+            <p>항상 암호화하여 전송하고 있습니다.</p>
+            <p>항상 지정된 디바이스에만 보관하고 있습니다.</p>
+            <p>보안 업데이트와 백업을 주기적으로 실시하고 있습니다.</p>
+            
+            <p><strong>5. 파기</strong></p>
+            <p>수집된 개인정보는 보관기간이 만료되면 다음과 같은 방법에 따라 즉시 파기됩니다.</p>
+            <p>데이터 파일 : 복구 및 재생이 불가능한 기술적 방법으로 삭제</p>
+            <p>다만, 이용자가 보관기간에 대하여 별도의 동의를 했거나 대한민국 법령에 의거 보관의무가 발생했을 경우에 한하여 일정기간 동안 파기되지 않을 수 있습니다. 또한 일부 개인정보는 *암호화되어 서비스 부정이용 방지를 위하여 다음과 같이 별도로 보관될 수 있습니다.</p>
+            
+            <p>*이메일 주소가 포함된 징계기록 등의 부정이용기록은 탈퇴 시점으로 부터 1년간 보관되어 재가입 방지에 이용될 수 있습니다.</p>
+            <p>규정위반 등으로 징계받기 전 탈퇴와 재가입을 반복하며 부정이용하는 사례를 방지하기 위하여 탈퇴한 이용자의 *이메일 주소는 탈퇴 시점으로 부터 3개월간 보관되어 부정이용기록 작성에 이용될 수 있습니다.</p>
+            <p>* 별표에 해당하는 항목은 그 누구도 알 수 없도록 복호화가 불가능한 단방향 암호화 처리 후 해시값만 보관됩니다.</p>
+            
+            <p><strong>6. 권리</strong></p>
+            <p>이용자는 언제든지 회원정보 페이지에서 자신의 개인정보를 조회하거나 수정할 수 있으며, 회원탈퇴 페이지를 통하여 본 방침에 대한 동의를 철회할 수 있습니다. 최고 관리자에게 요청할 수도 있습니다.</p>
+            
+            <p>아래의 최고 관리자는 이용자의 개인정보를 보호할 의무가 있으며, 이용자는 최고 관리자에게 자신의 개인정보 처리를 요청할 권리가 있습니다.</p>
+            
+            <p>이름 : 김대현</p>
+            <p>이메일 : esonagi123@naver.com</p>
+            
+            <p><strong>7. 개정</strong></p>
+            <p>본 방침이 변경될 경우 공지사항을 통하여 사전 고지될 것입니다. 다만, 수집하는 개인정보의 항목, 이용목적의 변경 등과 같이 이용자 권리의 중대한 변경이 발생했을 경우 최소 30일 전에 고지될 것입니다. 시행되기 전 회원탈퇴 페이지를 통하여 거부권을 행사할 수 있으며, 그러지 않을 경우 동의한 것으로 봅니다.</p>
+            
+            <p>공고일자 : 2023년 10월 22일</p>
+            <p>시행일자 : 2023년 10월 22일</p>
+
+            <p><strong>[이용 약관]</strong></p>
+            <p>준비 중..</p>
+                    
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            {{-- <button type="button" class="btn btn-primary">Save changes</button> --}}
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="container-xxl">
         <div class="authentication-wrapper authentication-basic container-p-y">
@@ -153,7 +238,7 @@
 
                             <div class="mb-3 form-password-toggle">
                                 <label class="form-label" for="password">❗ 비밀번호</label>&nbsp;&nbsp;
-                                <span class="badge bg-label-primary">암호화 되어 안전하게 저장됩니다.</span>
+                                <span class="badge bg-label-primary"><i class="fa-solid fa-lock"></i>&nbsp;단방향 암호화 되어 안전하게 저장됩니다.</span>
                                 <div class="input-group input-group-merge">
                                     <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
                                     <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
@@ -248,14 +333,12 @@
 
                             <div class="mb-3">
                               <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="terms-conditions" name="terms" />
-                                <label class="form-check-label" for="terms-conditions">
-                                  <a href="javascript:void(0);">개인정보 보호정책 및 이용약관</a>에 동의합니다.
-                                </label>
+                                <input class="form-check-input" type="checkbox" id="agree" name="agree" />
+                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#agreeModal">개인정보 보호정책 및 이용약관</a>에 동의합니다.
                               </div>
                             </div>
 
-                            <button class="btn btn-primary d-grid w-100" type="submit">회원가입</button>
+                            <button class="btn btn-primary d-grid w-100" id="submitBtn" type="submit">회원가입</button>
                         </form>
 
                         <p class="text-center">
@@ -308,6 +391,17 @@
                     }
                 });
             });
+        });
+
+        const agreeCheckbox = document.getElementById('agree');
+        const formAuthentication = document.getElementById('formAuthentication');
+        const submitBtn = document.getElementById('submitBtn');
+
+        formAuthentication.addEventListener('submit', (event) => {
+          if (!agreeCheckbox.checked) {
+            event.preventDefault(); // 폼 제출을 중지합니다.
+            alert('개인정보 보호정책 및 이용약관에 동의해야 합니다.'); // 사용자에게 경고 메시지를 표시할 수 있습니다.
+          }
         });
     </script>
 
