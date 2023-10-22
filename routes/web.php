@@ -54,6 +54,7 @@ Route::middleware(['app'])->group(function () {
     });
     
     Route::get('/mypage', [Mypage::class, 'index'])->name('mypage');
+    Route::post('/updateAvatar', [Mypage::class, 'updateAvatar'])->name('mypage.updateAvatar');
 });
 
 Route::get('register', [Account::class, 'index'])->name('register');
