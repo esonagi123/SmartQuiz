@@ -155,6 +155,7 @@ class QuizCore extends Controller
         $wrongQuestion = [];
         $returnInputs = null;
         $returnAnswers = null;
+        $answerForCheck = null;
 
         // 각 문제당 배점 계산
         if ($questionCount > 0) {
@@ -176,7 +177,7 @@ class QuizCore extends Controller
 
                     // answer[$question->number] 배열에 정답을 추가 ( 1번 문제에 정답이 5번일 경우 ex. { 1 : null, null, null, null, 5 } )
                     $answer[$question->number][] = $choice->answer; // 정답 확인 후 초기화 되는 배열
-                    $returnAnswer[$question->number][] = $choice->answer; // 뷰로 전달할 배열 (정답 확인)
+                    $answerForCheck[$question->number][] = $choice->answer; // 뷰로 전달할 배열 (정답 확인)
                 }
                 
                 if ($inputAnswers == $answer) {
@@ -278,7 +279,7 @@ class QuizCore extends Controller
             'items' => $result,
             'value' => $value,
             'type' => $type,
-            'answer' => $returnAnswer,
+            'answer' => $answerForCheck,
         ]);
     }
 
@@ -482,7 +483,7 @@ class QuizCore extends Controller
         }
         $testModel->incomplete = 'N';
         $testModel->updated_at = now();
-        $testModel->save();
+        $testModel->save(); 
 
         // 문제 정보 Update
         $questionModel = Question::find($questionID);
