@@ -102,7 +102,7 @@
             <form id="quiz_info" method="post" action="{{ route('quiz.store') }}">
                 @csrf
                 <h5 class="card-header">퀴즈 정보</h5>
-                <input type="hidden" name="testID" value="{{ $testModel->id }}">
+                <input type="hidden" name="testID" value="{{ $testID }}">
                 <div class="card-body">
                     <div class="mt-2 mb-3">
                         <label for="largeInput" class="form-label">퀴즈 이름</label>
