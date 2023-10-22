@@ -63,11 +63,34 @@
     scroll-behavior: smooth;
   }
 }
-@font-face {
+
+/* @font-face {
   font-family: 'pretendard';
   src: url('/assets/vendor/fonts/PretendardVariable.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
+} */
+
+/* @font-face {
+	font-family: 'Pretendard Variable';
+	font-weight: 45 920;
+	font-style: normal;
+	font-display: swap;
+	src: url('/assets/vendor/fonts/PretendardVariable.woff2') format('woff2-variations');
+} */
+
+/* @font-face {
+	font-family: 'Pretendard';
+	font-weight: 600;
+	font-display: swap;
+	src: local('Pretendard SemiBold'), url('/assets/vendor/fonts/Pretendard-SemiBold.woff2') format('woff2');
+} */
+
+@font-face {
+	font-family: 'Pretendard';
+	font-weight: 500;
+	font-display: swap;
+	src: local('Pretendard Medium'), url('/assets/vendor/fonts/Pretendard-Medium.woff2') format('woff2');
 }
 
 body {
