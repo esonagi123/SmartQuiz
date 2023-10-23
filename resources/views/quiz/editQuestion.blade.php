@@ -489,7 +489,7 @@
                 headers: {'X-CSRF-TOKEN': csrfToken},
                 url: "{{ url('quiz/destroyChoice') }}",
                 type: "DELETE",
-                data: { choiceID: hiddenInputValue, questionID: questionID },
+                data: {  type: '1', choiceID: hiddenInputValue, questionID: questionID },
                 dataType: "json",
                 success: function(data) {
                     alert('Delete Complete!');
@@ -532,7 +532,7 @@
                 headers: {'X-CSRF-TOKEN': csrfToken},
                 url: "{{ url('quiz/destroyChoice') }}",
                 type: "DELETE",
-                data: { choiceID: choiceNumber, questionID: questionID },
+                data: { type: '1', choiceID: choiceNumber, questionID: questionID },
                 dataType: "json",
                 success: function(data) {
                     
