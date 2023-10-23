@@ -93,7 +93,7 @@
                                 <div class="text-end">
                                     <a class="btn btn-primary" href="{{ url('quiz/solve/' . $myQuiz->id . "/type1") }}">풀기</a>
                                     <a class="btn btn-secondary" href="{{ url('quiz/' . $myQuiz->id . '/edit') }}">수정</a>
-                                    <a class="btn btn-danger" href="{{ url('quiz/' . $myQuiz->id . '/edit') }}">삭제</a>
+                                    <a class="btn btn-danger" href="javascript:void(0);" onclick="confirmDelete({{ $myQuiz->id }})">삭제</a>
                                 </div>
                             </div>
                             </div>
@@ -209,6 +209,14 @@
             $('#noLogin').modal('show');
         });
     } 
+
+    function confirmDelete(quizId) {
+        if (confirm("퀴즈를 삭제합니다.")) {
+            window.location.href = "{{ url('quiz/destroy') }}" + "/" + quizId;
+            alert('삭제했습니다.')
+        }
+        return false;
+    }  
 </script>
 
 @endsection()

@@ -56,7 +56,7 @@ class QuizCore extends Controller
     {
         $user = Auth::user();
         $uid = $user->uid;
-        $myQuizs = Test::where('uid', $uid)->orderby('updated_at', 'desc')->get();
+        $myQuizs = Test::where('uid', $uid)->orderby('updated_at', 'desc')->paginate(3);
 
         return view('quiz.myQuiz', [
             'myQuizs' => $myQuizs,
@@ -371,6 +371,28 @@ class QuizCore extends Controller
         return redirect()->route('quiz.createQuestion', ['testID' => $testID]);
         
     }
+
+    public function destroyFromMyQuiz($id, $page) {
+        $user = Auth::user();
+        $quiz = Test::find($id);
+        if ($user->uid == $quiz->uid) {
+            $quiz->delete();
+            return redirect()->route('quiz.myQuiz', ['page' => $page]);
+        } else {
+            return;
+        }
+    }
+
+    public function destroyFromMain($id) {
+        $user = Auth::user();
+        $quiz = Test::find($id);
+        if ($user->uid == $quiz->uid) {
+            $quiz->delete();
+            return redirect('quiz');
+        } else {
+            return;
+        }
+    }    
 
     // 문제 생성 (Ajax)
 	public function ajax_QuestionStore(Request $request)
