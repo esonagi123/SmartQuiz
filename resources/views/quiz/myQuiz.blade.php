@@ -29,13 +29,13 @@
                                     @endif                                    
                                 @endif
                                 <br>                         
-                                <a href="{{ url('quiz/solve/' . $myQuiz->id . "/type1") }}"><span style="font-size: 20px;">{{ $myQuiz->name }}</span></a><br>
+                                <a href="{{ url('quiz/solve/' . $myQuiz->id . "/type1") }}"><span style="font-size: 17px;">{{ $myQuiz->name }}</span></a><br>
                                 조회: ?? &nbsp;&nbsp;|&nbsp;&nbsp;
                                 {{ $myQuiz->updated_at->diffForHumans() }} 업데이트
                                 <br>
                                 <div class="text-end">
                                     <a class="mt-2 mb-2 btn btn-sm btn-primary" href="{{ url('quiz/' . $myQuiz->id . '/edit') }}"><i class="fa-solid fa-pen"></i>&nbsp; 수정</a>
-                                    <a class="mt-2 mb-2 btn btn-sm btn-danger" href="{{ url('quiz/' . $myQuiz->id . '/edit') }}"><i class="fa-solid fa-trash"></i>&nbsp; 삭제</a>
+                                    <a class="mt-2 mb-2 btn btn-sm btn-danger" href="javascript:void(0);" onclick="return confirmDelete({{ $myQuiz->id }}, {{ $myQuizs->currentPage() }});"><i class="fa-solid fa-trash"></i>&nbsp; 삭제</a>
                                 </div>
                             </td>
                         </tr>
@@ -44,6 +44,33 @@
             </table>
         </div>
     </div>
+    <nav aria-label="PageNavigation">
+        <ul class="mt-4 pagination justify-content-center">
+            <li class="page-item">
+                <a class="page-link" href="{{ $myQuizs->previousPageUrl() }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            @for ($i = 1; $i <= $myQuizs->lastPage(); $i++)
+                <li class="page-item {{ $i == $myQuizs->currentPage() ? 'active' : '' }}">
+                    <a class="page-link" href="{{ $myQuizs->url($i) }}">{{ $i }}</a>
+                </li>
+            @endfor
+            <li class="page-item">
+                <a class="page-link" href="{{ $myQuizs->nextPageUrl() }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </div>
 
+<script>
+    function confirmDelete(quizId, currentPage) {
+        if (confirm("퀴즈를 삭제합니다.")) {
+            window.location.href = "{{ url('quiz/destroy') }}" + "/" + quizId + "/" + currentPage;
+        }
+        return false;
+    }
+</script>
 @endsection()

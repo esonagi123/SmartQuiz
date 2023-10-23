@@ -40,6 +40,9 @@ Route::middleware(['app'])->group(function () {
             Route::delete('/destroyChoice', [QuizCore::class, 'ajax_ChoiceDestroy'])->name('ajax.ChoiceDestroy');
             Route::delete('/destroyQuestion', [QuizCore::class, 'ajax_QuestionDestroy'])->name('ajax.QuestionDestroy');
             Route::delete('/reset', [QuizCore::class, 'ajax_reset'])->name('ajax.QuestionReset');
+            
+            Route::get('/destroy/{id}/{page}', [QuizCore::class, 'destroyFromMyQuiz'])->name('quiz.destoryFromMyQuiz');
+            Route::get('/destroy/{id}', [QuizCore::class, 'destroyFromMain'])->name('quiz.destoryFromMain');
 
             Route::get('/{testID}/edit', [QuizCore::class, 'editQuestion'])->name('quiz.editQuestion');
 
