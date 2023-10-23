@@ -594,7 +594,7 @@
         // 동적으로 추가된 textarea에 대해 TinyMCE 초기화
         tinymce.init({
             selector: `#largeInput${cardCount}`,
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount',
             menubar: 'edit insert format table tools help',
             menu: {
                 file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
@@ -606,7 +606,39 @@
                 table: { title: 'Table', items: 'inserttable | cell row column | advtablesort | tableprops deletetable' },
                 help: { title: 'Help', items: 'help' }
             },
-            toolbar: 'fontsize bold italic underline strikethrough forecolor backcolor | table charmap | align lineheight | numlist bullist | emoticons | removeformat',
+            toolbar: 'fontsize image bold italic underline strikethrough forecolor backcolor table charmap align lineheight numlist bullist code removeformat',
+            file_picker_types: 'image',
+            file_picker_callback: (cb, value, meta) => {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
+
+                input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+
+                const reader = new FileReader();
+                reader.addEventListener('load', () => {
+                    /*
+                    Note: Now we need to register the blob in TinyMCEs image blob
+                    registry. In the next release this part hopefully won't be
+                    necessary, as we are looking to handle it internally.
+                    */
+                    const id = 'blobid' + (new Date()).getTime();
+                    const blobCache =  tinymce.activeEditor.editorUpload.blobCache;
+                    const base64 = reader.result.split(',')[1];
+                    const blobInfo = blobCache.create(id, file, base64);
+                    blobCache.add(blobInfo);
+
+                    /* call the callback and populate the Title field with the file name */
+                    cb(blobInfo.blobUri(), { title: file.name });
+                });
+                reader.readAsDataURL(file);
+                });
+
+                input.click();
+            },
+            image_uploadtab: false,
+            image_advtab: true,
             tinycomments_mode: 'embedded',
             tinycomments_author: 'Author name',
             relative_urls: false,
