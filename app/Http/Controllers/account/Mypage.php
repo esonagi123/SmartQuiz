@@ -20,6 +20,33 @@ class Mypage extends Controller
         }
     }
 
+    public function checkPasswordForEdit(Request $request)
+    {
+        $request->validate( ['pwd' => 'required',], ['pwd.required' => '비밀번호를 입력하세요.',] );
+
+        $user = Auth::user();
+        $userModel = User::find($user->id);
+
+        if ($userModel) {
+            $hashedPassword = $userModel->password;
+            $inputPassword = $request->input('pwd');
+
+            if (Hash::check($inputPassword, $hashedPassword)) {
+                return view('mypage.edit');
+            } else {
+                session()->flash('error', '비밀번호가 올바르지 않습니다.');
+                return back();
+            }
+        } else {
+            return redirect('quiz');
+        }
+    }
+
+    public function edit()
+    {
+
+    }
+
     public function update(Request $request)
     {
         $request->validate([
@@ -43,7 +70,9 @@ class Mypage extends Controller
             'password.regex' => '비밀번호는 8~16자 이내, 소문자와 숫자로 구성되어야 합니다.',
         ]);
 
-        $userModel = User::find($request->input('id')); 
+        $user = User::find($request->input('id'));
+        $user->nickname = $request->input('nickname');
+        $user->email = $request->input('email');
 
     }
 

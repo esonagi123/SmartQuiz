@@ -39,15 +39,7 @@
   }
 </style>
 
-@if (session()->has('error') || $errors->any())
-  <script>
-    $(document).ready(function() {
-      $('#checkPassword').modal('show');
-    });
-  </script>
-@endif
-
-{{-- 아바타 변경 모달 --}}
+<!-- Modal (data-bs-backdrop="static" : 안사라지게)-->
 <div class="modal fade" id="modalCenter" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
@@ -91,37 +83,6 @@
   </div>
 </div>
 
-{{-- 비밀번호 확인 모달 --}}
-<div class="modal fade" id="checkPassword" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title" id="modalCenterTitle">❗ 비밀번호 확인</h5>
-          </div>
-          <form method="post" action="{{ route('mypage.checkPassword') }}">
-            @csrf
-            <div class="modal-body">
-              <input type="hidden" name="id" value="{{ $userData['id'] }}">
-              <label for="defaultFormControlInput" class="form-label">* 비밀번호를 입력하세요.</label>
-              <input type="password" class="form-control" name="pwd" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;">
-              <div id="defaultFormControlHelp" class="form-text" style="color: red;">
-                @error('pwd')
-                  {{ $message }}
-                @enderror
-                @if (\session()->has('error'))
-                  {{ session('error') }}
-                @endif
-              </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                <button type="submit" class="btn btn-primary">확인</button>
-            </div>
-          </form>
-      </div>
-  </div>
-</div>
-
 <div class="container-xxl flex-grow-1 container-p-y">
   <h4 class="fw-bold py-3 mb-4">마이페이지</h4>
 
@@ -149,29 +110,49 @@
         </div>
         <hr class="my-0" />
         <div class="card-body">
+          <form method="POST" action="">
+            @csrf
+            <input type="hidden" name="id" value="{{ $userData['id'] }}">
             <div class="row">
               <div class="mb-3">
                 <label for="uid" class="form-label">아이디</label>
                 <input type="text" class="form-control" id="uid" value="{{ $userData['uid'] }}" readonly>
                 <div id="defaultFormControlHelp" class="form-text">
+                  아이디는 변경할 수 없어요.
                 </div>
               </div>
               <div class="mb-3">
                 <label for="defaultFormControlInput" class="form-label">이메일</label>
-                <input type="email" class="form-control" id="defaultFormControlInput" value="{{ $userData['email'] }}" readonly>
+                <input type="email" class="form-control" id="defaultFormControlInput" value="{{ $userData['email'] }}" aria-describedby="defaultFormControlHelp">
                 <div id="defaultFormControlHelp" class="form-text">
+                  We'll never share your details with anyone else.
                 </div>
               </div>
               <div class="mb-3">
-                <label for="defaultFormControlInput" class="form-label">닉네임</label>
-                <input type="text" class="form-control" id="defaultFormControlInput" value="{{ $userData['nickname'] }}" readonly>
+                <label for="defaultFormControlInput" class="form-label">닉네임 (2~8자 이내의 한글과 영문 대/소문자)</label>
+                <input type="text" class="form-control" id="defaultFormControlInput" value="{{ $userData['nickname'] }}" aria-describedby="defaultFormControlHelp">
                 <div id="defaultFormControlHelp" class="form-text">
+                  에러메시지
                 </div>
-              </div>
-              <div class="mt-2 text-end">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#checkPassword">회원정보 수정</button>
-              </div>                           
+              </div>              
             </div>
+            <div class="mb-3">
+              <label for="defaultFormControlInput" class="form-label">비밀번호 (8~16자 이내의 소문자+숫자)</label>
+              <input type="password" class="form-control" id="defaultFormControlInput" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="defaultFormControlHelp">
+              <div id="defaultFormControlHelp" class="form-text">
+                에러메시지
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="defaultFormControlInput" class="form-label">비밀번호 확인</label>
+              <input type="password" class="form-control" id="defaultFormControlInput" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="defaultFormControlHelp">
+              <div id="defaultFormControlHelp" class="form-text">
+              </div>
+            </div>                  
+            <div class="mt-2 text-end">
+              <button type="submit" class="btn btn-primary me-2">변경사항 저장</button>
+            </div>
+          </form>
         </div>
         <!-- /Account -->
       </div>
