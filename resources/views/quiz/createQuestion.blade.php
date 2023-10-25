@@ -314,7 +314,7 @@
             headers: {'X-CSRF-TOKEN': csrfToken},
             url: "{{ url('quiz/storeChoice') }}", // AjaxController -> index 함수 실행
             type: "POST",
-            data: { questionID: questionID, number: choiceValue }, // ex) $request->input('id') == var movieID
+            data: { testID: testID, questionID: questionID, number: choiceValue }, // ex) $request->input('id') == var movieID
             dataType: "json",
             success: function(data) {
                 // alert('Choice Store Complete! : ' + data.choiceID);
@@ -454,8 +454,19 @@
 
     // 문제 정렬 및 화면에 다시 렌더링
     function sortAndRender() {
+        count = cardArray.length;
+
         // 문제 카드 컨테이너
         var cardContainer = document.getElementById("cardContainer");
+
+        // tinyMCE 에디터 내용을 저장하는 배열
+        var editorContents = [];
+
+        for (var i = 0; i < cardArray.length; i++) {
+            editorContents.push(tinymce.get('largeInput' + cardArray[i]).getContent());
+            // tinymce.get('largeInput' + cardArray[i]).save();
+            tinymce.get('largeInput' + cardArray[i]).remove();
+        }
 
         // 컨테이너의 자식 DIV들의 ID를 기준으로 오름차순 정렬
         var sortedForms = Array.from(cardContainer.children).sort((a, b) => {
@@ -464,11 +475,70 @@
             return idA.localeCompare(idB); // 문자열 비교로 정렬
         });
 
-        // 정렬 후 Card 컨테이너를 갱신
-        cardContainer.innerHTML = ''; // 기존 내용 비우기
-        sortedForms.forEach((form) => {
-            cardContainer.appendChild(form);
-        });
+        // 정렬된 요소를 cardContainer에 다시 추가하고 에디터 내용 복원
+        for (var i = 0; i < sortedForms.length; i++) {
+            cardContainer.appendChild(sortedForms[i]);
+
+            tinymce.init({
+                selector: `#largeInput${cardArray[i]}`,
+                plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount',
+                menubar: 'edit insert format table tools help',
+                menu: {
+                    file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
+                    edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall | searchreplace' },
+                    view: { title: 'View', items: 'code | visualaid visualchars visualblocks | spellchecker | preview fullscreen | showcomments' },
+                    insert: { title: 'Insert', items: 'image link media addcomment pageembed template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents | insertdatetime' },
+                    format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat' },
+                    tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code wordcount' },
+                    table: { title: 'Table', items: 'inserttable | cell row column | advtablesort | tableprops deletetable' },
+                    help: { title: 'Help', items: 'help' }
+                },
+                toolbar: 'fontsize image bold italic underline strikethrough forecolor backcolor table charmap align lineheight numlist bullist code removeformat',
+                file_picker_types: 'image',
+                file_picker_callback: (cb, value, meta) => {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'file');
+                    input.setAttribute('accept', 'image/*');
+
+                    input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+
+                    const reader = new FileReader();
+                    reader.addEventListener('load', () => {
+                        /*
+                        Note: Now we need to register the blob in TinyMCEs image blob
+                        registry. In the next release this part hopefully won't be
+                        necessary, as we are looking to handle it internally.
+                        */
+                        const id = 'blobid' + (new Date()).getTime();
+                        const blobCache =  tinymce.activeEditor.editorUpload.blobCache;
+                        const base64 = reader.result.split(',')[1];
+                        const blobInfo = blobCache.create(id, file, base64);
+                        blobCache.add(blobInfo);
+
+                        /* call the callback and populate the Title field with the file name */
+                        cb(blobInfo.blobUri(), { title: file.name });
+                    });
+                    reader.readAsDataURL(file);
+                    });
+
+                    input.click();
+                },
+                image_uploadtab: false,
+                image_advtab: true,
+                tinycomments_mode: 'embedded',
+                tinycomments_author: 'Author name',
+                relative_urls: false,
+                remove_script_host: false,
+                mergetags_list: [
+                    { value: 'First.Name', title: 'First Name' },
+                    { value: 'Email', title: 'Email' },
+                ],
+                height: 250,
+                language: 'ko_KR',
+            });
+            tinymce.get('largeInput' + cardArray[i]).setContent(editorContents[i]);
+        }
     }
 
     // 문제의 사용 가능한 가장 작은 Value 값을 찾아서 반환
@@ -668,9 +738,9 @@
         var confirmation = confirm(cardCount + '번 문제를 삭제합니다.');
 
         if (confirmation) {
-            var formID = "question" + cardCount; // 특정 form의 id
+            var cardDivID = "Q" + cardCount; // 특정 form의 id
 
-            if (formID === "question1") {
+            if (cardDivID === "Q1") {
                 alert('첫 번째 문제는 삭제할 수 없어요.')
                 return;
             } else {
@@ -682,7 +752,7 @@
                     dataType: "json",
                     success: function(data) {
                         if (data.success === true) {
-                            var question = document.getElementById(formID);
+                            var question = document.getElementById(cardDivID);
                             if (question) {
                                 question.remove();
                                 tinymce.get('largeInput' + cardCount).remove();

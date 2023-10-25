@@ -605,6 +605,13 @@ class QuizCore extends Controller
             $question->gubun = "1";
             $question->save();
 
+            // 선택지 삭제 후 다시 만들었을 경우 미완성 상태로
+            $testModel = Test::find($request->input('testID'));
+            if ($testModel->incomplete == "N") {
+                $testModel->incomplete = "Y";
+                $testModel->save();
+            }
+
             $response = [
                 'success' => true,
                 'choiceID' => $choiceID,

@@ -56,8 +56,14 @@ Route::middleware(['app'])->group(function () {
         Route::get('/public', [QuizCore::class, 'publicQuizIndex'])->name('quiz.public');
     });
     
-    Route::get('/mypage', [Mypage::class, 'index'])->name('mypage');
-    Route::post('/updateAvatar', [Mypage::class, 'updateAvatar'])->name('mypage.updateAvatar');
+    // 로그인 안하면 접근 불가 ↓
+    Route::middleware(['quiz'])->group(function () {
+        Route::get('/mypage', [Mypage::class, 'index'])->name('mypage');
+        Route::post('/mypage/checkPassword', [Mypage::class, 'checkPasswordForEdit'])->name('mypage.checkPassword');
+        // Route::get('/mypage/edit', [Mypage::class, 'edit'])->name('mypage.edit');
+        Route::post('/updateAvatar', [Mypage::class, 'updateAvatar'])->name('mypage.updateAvatar');
+    });
+    // 로그인 안하면 접근 불가 ↑
 });
 
 Route::get('register', [Account::class, 'index'])->name('register');
