@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\User;
+use App\Models\Test;
+use App\Models\Question;
+use App\Models\Choice;
 
 class Mypage extends Controller
 {
@@ -23,24 +26,43 @@ class Mypage extends Controller
 
     public function checkPassword(Request $request)
     {
-        $request->validate( ['pwd' => 'required',], ['pwd.required' => '비밀번호를 입력하세요.',] );
-
-        $user = Auth::user();
-        $userModel = User::find($user->id);
-
-        if ($userModel) {
-            $hashedPassword = $userModel->password;
-            $inputPassword = $request->input('pwd');
-
-            if (Hash::check($inputPassword, $hashedPassword)) {
-                session()->flash('ok', '');
-                return redirect()->route('mypage.edit');
-            } else {
-                session()->flash('error', '비밀번호가 올바르지 않습니다.');
-                return back();
+        if (!$request->input('pwd')){
+            if ($request->input('type') == "edit") {
+                session()->flash('edit_error', '비밀번호가 올바르지 않습니다.');
+            } elseif ($request->input('type') == "destroy") {
+                session()->flash('destroy_error', '비밀번호가 올바르지 않습니다.');
             }
+            return back();
         } else {
-            return redirect('quiz');
+            $user = Auth::user();
+            $userModel = User::find($user->id);
+    
+            if ($userModel) {
+                $hashedPassword = $userModel->password;
+                $inputPassword = $request->input('pwd');
+    
+                if (Hash::check($inputPassword, $hashedPassword)) {
+                    if ($request->input('type') == "edit") {
+                        session()->flash('ok', '');
+                        return redirect()->route('mypage.edit');
+                    } elseif ($request->input('type') == "destroy") {
+                        $this->destroy($request->input('id'));
+                        session()->flash('userDestroyComplete', '탈퇴가 완료되었습니다.');
+                        return redirect('quiz');
+                    } else {
+                        return back();
+                    }
+                } else {
+                    if ($request->input('type') == "edit") {
+                        session()->flash('edit_error', '비밀번호가 올바르지 않습니다.');
+                    } elseif ($request->input('type') == "destroy") {
+                        session()->flash('destroy_error', '비밀번호가 올바르지 않습니다.');
+                    }
+                    return back();
+                }
+            } else {
+                return redirect('quiz');
+            }
         }
     }
 
@@ -123,8 +145,36 @@ class Mypage extends Controller
         return redirect('mypage');
     }
 
-    public function destory()
+    public function destroy($id)
     {
-        
+        return DB::transaction(function () use ($id) {
+            $user = User::find($id);
+            if (!$user) {
+                return redirect()->route('mypage');
+            }
+
+            $uid = $user->uid;
+
+            // 사용자의 퀴즈의 id를 배열로 담기
+            $testIDs = Test::where('uid', $uid)->pluck('id')->toArray();
+
+            // 연결된 모든 문제 가져오기
+            $questions = Question::whereIn('testID', $testIDs)->get();
+
+            foreach ($questions as $question) {
+                // 각 문제에 연결된 선택지 삭제
+                Choice::where('qid', $question->id)->delete();
+            }
+
+            // 문제 삭제
+            Question::whereIn('testID', $testIDs)->delete();
+
+            // 이 사용자와 연결된 모든 퀴즈 삭제
+            Test::where('uid', $uid)->delete();
+
+            // 사용자 삭제
+            $user->delete();
+
+        });
     }
 }

@@ -11,6 +11,12 @@
     }
 </style>
 
+@if (\Session::has('userDestroyComplete'))
+  <script>
+    alert("{!! \Session::get('userDestroyComplete') !!}");;
+  </script>
+@endif
+
 <div id="noLoginModal"></div>
 
 <div class="container-xxl flex-grow-1 container-p-y">

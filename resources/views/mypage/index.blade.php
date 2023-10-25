@@ -39,15 +39,21 @@
   }
 </style>
 
-@if (session()->has('error') || $errors->any())
+@if (\Session::has('edit_error'))
   <script>
     $(document).ready(function() {
       $('#checkPassword').modal('show');
     });
   </script>
+@elseif (\Session::has('destroy_error'))
+  <script>
+    $(document).ready(function() {
+      $('#accountUnActivation').modal('show');
+    });
+  </script>
 @endif
 
-@if (\Session::has('success') || $errors->any())
+@if (\Session::has('success'))
   <script>
     alert("{!! \Session::get('success') !!}");;
   </script>
