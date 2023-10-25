@@ -109,9 +109,7 @@
                                 </div>
                             @elseif ($question->gubun == "2")
                                 <div id="shortAnswerDiv{{ $question->number}}" style="display: block;">
-                                    <input type="text" class="form-control" name="shortAnswer{{ $question->number }}" placeholder="{{ $question->answer }}" value="">
-                                    <br><label class="form-label">- 복수 정답이 있을 경우 콤마(,)로 구분합니다.</label>
-                                    <br><label class="form-label">- 하나라도 맞을 경우 정답 처리됩니다.</label>
+                                    <input type="text" class="form-control" name="shortAnswer{{ $question->number }}" placeholder="" value="">
                                     <br><label class="form-label">- 띄어쓰기는 구분하지 않습니다. </label>
                                 </div>
                             @else

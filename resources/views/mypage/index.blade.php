@@ -47,6 +47,12 @@
   </script>
 @endif
 
+@if (\Session::has('success') || $errors->any())
+  <script>
+    alert("{!! \Session::get('success') !!}");;
+  </script>
+@endif
+
 {{-- 아바타 변경 모달 --}}
 <div class="modal fade" id="modalCenter" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
@@ -91,7 +97,7 @@
   </div>
 </div>
 
-{{-- 비밀번호 확인 모달 --}}
+{{-- 비밀번호 확인 모달 : 회원정보 수정 --}}
 <div class="modal fade" id="checkPassword" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
@@ -100,6 +106,7 @@
           </div>
           <form method="post" action="{{ route('mypage.checkPassword') }}">
             @csrf
+            <input type="hidden" name="type" value="edit">
             <div class="modal-body">
               <input type="hidden" name="id" value="{{ $userData['id'] }}">
               <label for="defaultFormControlInput" class="form-label">* 비밀번호를 입력하세요.</label>
@@ -116,6 +123,38 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
                 <button type="submit" class="btn btn-primary">확인</button>
+            </div>
+          </form>
+      </div>
+  </div>
+</div>
+
+{{-- 비밀번호 확인 모달 : 계정 삭제 --}}
+<div class="modal fade" id="accountUnActivation" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="modalCenterTitle">❗계정 삭제 - 비밀번호 확인</h5>
+          </div>
+          <form method="post" id="accountUnActivationForm" action="{{ route('mypage.checkPassword') }}">
+            @csrf
+            <input type="hidden" name="type" value="destroy">
+            <div class="modal-body">
+              <input type="hidden" name="id" value="{{ $userData['id'] }}">
+              <label for="defaultFormControlInput" class="form-label">* 비밀번호를 입력하세요.</label>
+              <input type="password" class="form-control" name="pwd" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;">
+              <div id="defaultFormControlHelp" class="form-text" style="color: red;">
+                @error('pwd')
+                  {{ $message }}
+                @enderror
+                @if (\session()->has('error'))
+                  {{ session('error') }}
+                @endif
+              </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" id="deleteConfirm" class="btn btn-primary" onclick="confirmAccountUnActivationForm()">확인</button>
             </div>
           </form>
       </div>
@@ -184,27 +223,27 @@
               <p class="mb-0">생성된 모든 퀴즈가 삭제되고 되돌릴 수 없습니다.</p>
             </div>
           </div>
-          <form id="formAccountDeactivation" onsubmit="return false">
             <div class="form-check mb-3">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                name="accountActivation"
-                id="accountActivation"
-              />
-              <label class="form-check-label" for="accountActivation"
-                >확인했습니다.</label
-              >
-            </div>
             <div class="text-end">
-              <button type="submit" class="btn btn-danger deactivate-account">삭제</button>
+              <button type="button" id="checkPasswordBtn" class="btn btn-danger deactivate-account" data-bs-toggle="modal" data-bs-target="#accountUnActivation">삭제</button>
             </div>
-          </form>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<script>
+  function confirmAccountUnActivationForm() {
+    // document.getElementById("deleteConfirm").addEventListener("click", function() {
+    var confirmed = confirm("정말 탈퇴할까요? 😢");
+    if (confirmed) {
+        // "확인"을 클릭한 경우 폼을 제출합니다.
+        document.getElementById("accountUnActivationForm").submit();
+    } else {
+      return; 
+    }
+  }
+</script>
 
   @endsection()

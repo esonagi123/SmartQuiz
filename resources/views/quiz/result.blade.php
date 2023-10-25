@@ -155,7 +155,6 @@
                             @elseif ($question->gubun == "2")
                                 <div id="shortAnswerDiv{{ $question->number}}" style="display: block;">
                                     <input type="text" class="form-control" name="shortAnswer{{ $question->number }}" value="{{ $returnAnswers[$question->number]['value'] }}" readonly>
-
                                 </div>
                                 <div class="mt-3 text-end">
                                     <button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#showAnswer{{ $question->number }}">정답 확인</button>

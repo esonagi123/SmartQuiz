@@ -91,7 +91,11 @@
                                 <p class="card-text">{{ $myQuiz->subject }}</p>
                                 <p class="card-text"><small class="text-muted">{{ $myQuiz->updated_at->diffForHumans() }} 최종 수정</small></p>
                                 <div class="text-end">
-                                    <a class="btn btn-primary" href="{{ url('quiz/solve/' . $myQuiz->id . "/type1") }}">풀기</a>
+                                    @if ($myQuiz->incomplete == "Y")  
+                                        <a class="btn btn-primary" href="#" onclick="alert('미완성인 문제입니다.\n수정을 눌러 부족한 부분을 채워주세요.')">풀기</a>
+                                    @else
+                                        <a class="btn btn-primary" href="{{ url('quiz/solve/' . $myQuiz->id . "/type1") }}">풀기</a>
+                                    @endif
                                     <a class="btn btn-secondary" href="{{ url('quiz/' . $myQuiz->id . '/edit') }}">수정</a>
                                     <a class="btn btn-danger" href="javascript:void(0);" onclick="confirmDelete({{ $myQuiz->id }})">삭제</a>
                                 </div>

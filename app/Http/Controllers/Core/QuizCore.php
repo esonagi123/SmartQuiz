@@ -44,7 +44,7 @@ class QuizCore extends Controller
 
     public function publicQuizIndex()
     {
-        $quizs = Test::where('secret', 'N')->where('incomplete', 'N')->orderby('updated_at', 'desc')->get();
+        $quizs = Test::where('secret', 'N')->where('incomplete', 'N')->orderby('updated_at', 'desc')->paginate(3);
 
         return view('quiz.publicQuiz', [
             'quizs' => $quizs,
@@ -350,7 +350,7 @@ class QuizCore extends Controller
             }
         }
 
-        $testModel = new Test();
+        $testModel = new Test(); 
         $serverTime = now();
 
         $testModel->uid = $uid;

@@ -110,8 +110,9 @@
         </div>
         <hr class="my-0" />
         <div class="card-body">
-          <form method="POST" action="">
+          <form method="post" action="{{ url('/mypage/update') }}">
             @csrf
+            @method('PATCH')
             <input type="hidden" name="id" value="{{ $userData['id'] }}">
             <div class="row">
               <div class="mb-3">
@@ -123,29 +124,35 @@
               </div>
               <div class="mb-3">
                 <label for="defaultFormControlInput" class="form-label">이메일</label>
-                <input type="email" class="form-control" id="defaultFormControlInput" value="{{ $userData['email'] }}" aria-describedby="defaultFormControlHelp">
-                <div id="defaultFormControlHelp" class="form-text">
-                  We'll never share your details with anyone else.
+                <input type="email" class="form-control" id="defaultFormControlInput" name="email" value="{{ $userData['email'] }}" aria-describedby="defaultFormControlHelp">
+                <div id="defaultFormControlHelp" style="color: red;" class="form-text">
+                  @error('email')
+                    {{ $message }}
+                  @enderror
                 </div>
               </div>
               <div class="mb-3">
                 <label for="defaultFormControlInput" class="form-label">닉네임 (2~8자 이내의 한글과 영문 대/소문자)</label>
-                <input type="text" class="form-control" id="defaultFormControlInput" value="{{ $userData['nickname'] }}" aria-describedby="defaultFormControlHelp">
-                <div id="defaultFormControlHelp" class="form-text">
-                  에러메시지
+                <input type="text" class="form-control" id="defaultFormControlInput" name="nickname" value="{{ $userData['nickname'] }}" aria-describedby="defaultFormControlHelp">
+                <div id="defaultFormControlHelp" style="color: red;" class="form-text">
+                  @error('nickname')
+                    {{ $message }}
+                  @enderror
                 </div>
               </div>              
             </div>
             <div class="mb-3">
               <label for="defaultFormControlInput" class="form-label">비밀번호 (8~16자 이내의 소문자+숫자)</label>
-              <input type="password" class="form-control" id="defaultFormControlInput" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="defaultFormControlHelp">
-              <div id="defaultFormControlHelp" class="form-text">
-                에러메시지
+              <input type="password" class="form-control" id="defaultFormControlInput" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="defaultFormControlHelp">
+              <div id="defaultFormControlHelp" style="color: red;" class="form-text">
+                @error('password')
+                  {{ $message }}
+                @enderror
               </div>
             </div>
             <div class="mb-3">
               <label for="defaultFormControlInput" class="form-label">비밀번호 확인</label>
-              <input type="password" class="form-control" id="defaultFormControlInput" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="defaultFormControlHelp">
+              <input type="password" class="form-control" id="defaultFormControlInput" name="password_confirmation" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="defaultFormControlHelp">
               <div id="defaultFormControlHelp" class="form-text">
               </div>
             </div>                  
@@ -155,33 +162,6 @@
           </form>
         </div>
         <!-- /Account -->
-      </div>
-      <div class="card">
-        <h5 class="card-header">계정 삭제</h5>
-        <div class="card-body">
-          <div class="mb-3 col-12 mb-0">
-            <div class="alert alert-warning">
-              <h6 class="alert-heading fw-bold mb-1">정말 계정을 삭제하시겠습니까?</h6>
-              <p class="mb-0">생성된 모든 퀴즈가 삭제되고 되돌릴 수 없습니다.</p>
-            </div>
-          </div>
-          <form id="formAccountDeactivation" onsubmit="return false">
-            <div class="form-check mb-3">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                name="accountActivation"
-                id="accountActivation"
-              />
-              <label class="form-check-label" for="accountActivation"
-                >확인했습니다.</label
-              >
-            </div>
-            <div class="text-end">
-              <button type="submit" class="btn btn-danger deactivate-account">삭제</button>
-            </div>
-          </form>
-        </div>
       </div>
     </div>
   </div>

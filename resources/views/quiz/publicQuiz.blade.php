@@ -26,5 +26,24 @@
             </table>
         </div>
     </div>
+    <nav aria-label="PageNavigation">
+        <ul class="mt-4 pagination justify-content-center">
+            <li class="page-item">
+                <a class="page-link" href="{{ $quizs->previousPageUrl() }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            @for ($i = 1; $i <= $quizs->lastPage(); $i++)
+                <li class="page-item {{ $i == $quizs->currentPage() ? 'active' : '' }}">
+                    <a class="page-link" href="{{ $quizs->url($i) }}">{{ $i }}</a>
+                </li>
+            @endfor
+            <li class="page-item">
+                <a class="page-link" href="{{ $quizs->nextPageUrl() }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </div>
 @endsection()
