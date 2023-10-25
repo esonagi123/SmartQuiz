@@ -22,7 +22,7 @@
 <div class="fade-element container-xxl flex-grow-1 container-p-y">
     <div class="col-md-12">
         <div class="card mb-4">
-            <form method="post" action="{{ route('quiz.store') }}">
+            <form method="post" action="{{ route('quiz.store') }}" onsubmit="return validateForm()">
                 @csrf
                 <h5 class="card-header">✨ 퀴즈를 만들어볼까요?</h5>
                 <div class="card-body">
@@ -32,7 +32,7 @@
                     </div>
                     <div class="mt-2 mb-3">
                         <label for="largeInput" class="form-label">❗ 이 퀴즈의 주제는 무엇인가요?</label>
-                        <input id="largeInput" class="form-control form-control-lg" type="text" name="subject" placeholder="시험, 상식, 퀴즈 등">
+                        <input id="largeInput" class="form-control form-control-lg" type="text" name="subject" placeholder="시험, 상식, 퀴즈 등 자유롭게 입력">
                         <div id="floatingInputHelp" class="form-text"></div>
                     </div>
                     <div class="form-check form-switch mt-4 mb-2">
@@ -48,4 +48,17 @@
     </div>
 </div>
 
+<script>
+    function validateForm() {
+        var nameField = document.forms[0]["name"].value;
+        var subjectField = document.forms[0]["subject"].value;
+    
+        if (nameField === "" || subjectField === "") {
+            alert("이름과 주제를 입력해주세요.");
+            return false;
+        }
+    
+        return true;
+    }
+</script>
 @endsection()
