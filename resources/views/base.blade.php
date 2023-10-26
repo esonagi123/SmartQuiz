@@ -245,7 +245,7 @@
                   <input
                     type="text"
                     class="form-control border-0 shadow-none"
-                    placeholder="퀴즈 검색"
+                    placeholder="공개 퀴즈 검색"
                     aria-label="Search..."
                   />
                 </div>

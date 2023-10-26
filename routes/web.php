@@ -59,8 +59,9 @@ Route::middleware(['app'])->group(function () {
     // 로그인 안하면 접근 불가 ↓
     Route::middleware(['quiz'])->group(function () {
         Route::get('/mypage', [Mypage::class, 'index'])->name('mypage');
-        Route::post('/mypage/checkPassword', [Mypage::class, 'checkPasswordForEdit'])->name('mypage.checkPassword');
-        // Route::get('/mypage/edit', [Mypage::class, 'edit'])->name('mypage.edit');
+        Route::post('/mypage/checkPassword', [Mypage::class, 'checkPassword'])->name('mypage.checkPassword');
+        Route::get('/mypage/edit', [Mypage::class, 'edit'])->name('mypage.edit');
+        Route::patch('/mypage/update', [Mypage::class, 'update'])->name('mypage.update');
         Route::post('/updateAvatar', [Mypage::class, 'updateAvatar'])->name('mypage.updateAvatar');
     });
     // 로그인 안하면 접근 불가 ↑

@@ -28,8 +28,12 @@
                                         <span class="badge bg-label-danger">미완성</span>
                                     @endif                                    
                                 @endif
-                                <br>                         
-                                <a href="{{ url('quiz/solve/' . $myQuiz->id . "/type1") }}"><span style="font-size: 17px;">{{ $myQuiz->name }}</span></a><br>
+                                <br>
+                                @if ($myQuiz->incomplete == "Y")                
+                                    <a href="javascript:void(0);" onclick="alert('미완성인 문제입니다.\n수정을 눌러 부족한 부분을 채워주세요.')"><span style="font-size: 17px;">{{ $myQuiz->name }}</span></a><br>
+                                @else
+                                    <a href="{{ url('quiz/solve/' . $myQuiz->id . "/type1") }}"><span style="font-size: 17px;">{{ $myQuiz->name }}</span></a><br>
+                                @endif
                                 조회: ?? &nbsp;&nbsp;|&nbsp;&nbsp;
                                 {{ $myQuiz->updated_at->diffForHumans() }} 업데이트
                                 <br>
