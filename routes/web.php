@@ -72,3 +72,5 @@ Route::post('register/join', [Account::class, 'store'])->name('register.join');
 Route::get('login', [Login::class, 'index'])->name('login');
 Route::post('login/check', [Login::class, 'check'])->name('login.check');
 Route::get('logout', [Login::class, 'logout'])->name('logout');
+
+Route::post('/upload', [QuizCore::class, 'upload'])->name('upload');
