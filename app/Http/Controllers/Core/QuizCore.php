@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\User;
 use App\Models\Test;
@@ -723,17 +724,19 @@ class QuizCore extends Controller
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $fileName = time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads'), $fileName);
+            $file_path = 'uploads';
+            $image->storeAs($file_path, $fileName);
 
             $fileModel = new File();
             $fileModel->qid = $request->input('questionID');
             $fileModel->fileName = $fileName;
             $fileModel->fileSize = $request->input('fileSize');
-            $fileModel->src = public_path('uploads') . '/' . $fileName;
+            $fileModel->src = Storage::url($file_path . '/' . $fileName);
             $fileModel->save();
     
             // 업로드된 이미지의 경로를 반환
-            return response()->json(['success' => true, 'image_url' => asset('uploads/' . $fileName)]);
+            return response()->json(['success' => true, 'image_url' => asset('storage/uploads/' . $fileName)]);
+            // return response()->json(['success' => true, 'image_url' => Storage::url($file_path . '/' . $fileName)]);
         }
     
         return response()->json(['success' => false, 'message' => '이미지를 업로드하지 못했습니다.']);
