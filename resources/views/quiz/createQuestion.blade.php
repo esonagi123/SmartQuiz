@@ -495,37 +495,36 @@
                 },
                 toolbar: 'fontsize image bold italic underline strikethrough forecolor backcolor table charmap align lineheight numlist bullist code removeformat',
                 file_picker_types: 'image',
-                file_picker_callback: (cb, value, meta) => {
-                    const input = document.createElement('input');
-                    input.setAttribute('type', 'file');
-                    input.setAttribute('accept', 'image/*');
+                file_picker_callback: function(cb, value, meta) {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
 
-                    input.addEventListener('change', (e) => {
+                input.addEventListener('change', function (e) {
                     const file = e.target.files[0];
 
-                    const reader = new FileReader();
-                    reader.addEventListener('load', () => {
-                        /*
-                        Note: Now we need to register the blob in TinyMCEs image blob
-                        registry. In the next release this part hopefully won't be
-                        necessary, as we are looking to handle it internally.
-                        */
-                        const id = 'blobid' + (new Date()).getTime();
-                        const blobCache =  tinymce.activeEditor.editorUpload.blobCache;
-                        const base64 = reader.result.split(',')[1];
-                        const blobInfo = blobCache.create(id, file, base64);
-                        blobCache.add(blobInfo);
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    formData.append('questionID', questionID); // questionID
+                    formData.append('fileSize', file.size);
 
-                        /* call the callback and populate the Title field with the file name */
-                        cb(blobInfo.blobUri(), { title: file.name });
-                    });
-                    reader.readAsDataURL(file);
-                    });
+                    formData.append('_token', csrfToken);
 
-                    input.click();
+                    axios.post("{{ url('/upload') }}", formData)
+                        .then(function (response) {
+                            const imageUrl = response.data.image_url;
+                            cb(imageUrl, { title: file.name });
+                        })
+                        .catch(function (error) {
+                            console.error('이미지 업로드 에러:', error);
+                        });
+                });
+
+                input.click();
                 },
                 image_uploadtab: false,
                 image_advtab: true,
+                object_resizing: 'img',
                 tinycomments_mode: 'embedded',
                 tinycomments_author: 'Author name',
                 relative_urls: false,
@@ -534,9 +533,10 @@
                     { value: 'First.Name', title: 'First Name' },
                     { value: 'Email', title: 'Email' },
                 ],
-                height: 250,
+                height: 350,
                 language: 'ko_KR',
             });
+            
             tinymce.get('largeInput' + cardArray[i]).setContent(editorContents[i]);
         }
     }
@@ -613,17 +613,6 @@
                             <label for="largeInput" class="form-label">문제를 여기에 적으세요 ✏️</label>
                             <textarea id="largeInput${cardCount}" class="form-control form-control-lg" name="name${cardCount}"></textarea>
                         </div>
-
-                        <div class="mb-4">	
-                            <label for="file" class="form-label">이미지 업로드 🖼️</label>
-                            <input type="file" class="form-control" id="file${cardCount}" onchange="addFile();" multiple />
-                            <div class="file-list">
-                                <!-- 업로드한 이미지 목록이 여기에 동적으로 추가 -->
-                            </div>
-                            <!-- 응답 결과를 표시 -->
-                            <div id="imgPreview"></div>
-                        </div>
-
                         <div class="mt-2 mb-3">
                             <label for="largeSelect" class="form-label">어떤 형태의 문제인가요?</label>
                             <select id="largeSelect${cardCount}" class="form-select form-select-lg" name="gubun${cardCount}" onchange="showHideDiv(${cardCount}, ${questionID})">
@@ -716,7 +705,7 @@
                 { value: 'First.Name', title: 'First Name' },
                 { value: 'Email', title: 'Email' },
             ],
-            height: 250,
+            height: 350,
             language: 'ko_KR',
         });
 
@@ -913,22 +902,6 @@
         console.log(cardCount);
         console.log(cardArray);
     }
-
-    function addFile(cardCount) {
-        if (!filesArr[cardCount]) {
-            filesArr[cardCount] = [];
-        }
-
-        var selFile = document.querySelector("file" + cardCount);
-        var maxFileCnt = 2;
-        var attFileCnt = document.querySelectorAll('.filebox').length;    // 기존 추가된 첨부파일 개수
-    }
-
-	function generateUniqueFileName(fileName) {
-		var timestamp = new Date().getTime(); // 현재 시간을 밀리초로 얻기
-		var uniqueFileName = timestamp + '_' + fileName;
-		return uniqueFileName;
-	}
 </script>
 
 @endsection()

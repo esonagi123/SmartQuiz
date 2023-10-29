@@ -534,6 +534,15 @@ class QuizCore extends Controller
             $choice->save();
         }
 
+        // 파일이 있으면 state 유효로 변경
+        $files = File::where('qid', $questionID)->get();
+        if ($files) {
+            foreach($files as $file) {
+                $file->state = "유효";
+                $file->save();
+            }
+        }
+
         $response = [
             'success' => true,
         ];
@@ -723,20 +732,29 @@ class QuizCore extends Controller
     {
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $fileName = time() . '.' . $image->getClientOriginalExtension();
-            $file_path = 'uploads';
-            $image->storeAs($file_path, $fileName);
-
-            $fileModel = new File();
-            $fileModel->qid = $request->input('questionID');
-            $fileModel->fileName = $fileName;
-            $fileModel->fileSize = $request->input('fileSize');
-            $fileModel->src = Storage::url($file_path . '/' . $fileName);
-            $fileModel->save();
     
-            // 업로드된 이미지의 경로를 반환
-            return response()->json(['success' => true, 'image_url' => asset('storage/uploads/' . $fileName)]);
-            // return response()->json(['success' => true, 'image_url' => Storage::url($file_path . '/' . $fileName)]);
+            // 파일 확장자 확인
+            $allowedExtensions = ['png', 'jpeg', 'jpg', 'gif', 'webp'];
+            $extension = $image->getClientOriginalExtension();
+    
+            if (in_array(strtolower($extension), $allowedExtensions)) {
+                $fileName = time() . '.' . $extension;
+                $file_path = 'uploads';
+                $image->storeAs($file_path, $fileName);
+    
+                $fileModel = new File();
+                $fileModel->qid = $request->input('questionID');
+                $fileModel->fileName = $fileName;
+                $fileModel->fileSize = $request->input('fileSize');
+                $fileModel->src = Storage::url($file_path . '/' . $fileName);
+                $fileModel->state = "임시";
+                $fileModel->save();
+    
+                // 업로드된 이미지의 경로를 반환
+                return response()->json(['success' => true, 'image_url' => asset('storage/uploads/' . $fileName)]);
+            } else {
+                return response()->json(['success' => false, 'message' => '업로드할 수 없는 파일 형식입니다.']);
+            }
         }
     
         return response()->json(['success' => false, 'message' => '이미지를 업로드하지 못했습니다.']);
