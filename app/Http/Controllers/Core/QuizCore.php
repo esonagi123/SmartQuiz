@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Test;
 use App\Models\Question;
 use App\Models\Choice;
+use App\Models\File;
 
 class QuizCore extends Controller
 {
@@ -717,4 +718,24 @@ class QuizCore extends Controller
 		return response()->json($response);
     }
 
+    public function upload(Request $request)
+    {
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $fileName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('uploads'), $fileName);
+
+            $fileModel = new File();
+            $fileModel->qid = $request->input('questionID');
+            $fileModel->fileName = $fileName;
+            $fileModel->fileSize = $request->input('fileSize');
+            $fileModel->src = public_path('uploads') . '/' . $fileName;
+            $fileModel->save();
+    
+            // 업로드된 이미지의 경로를 반환
+            return response()->json(['success' => true, 'image_url' => asset('uploads/' . $fileName)]);
+        }
+    
+        return response()->json(['success' => false, 'message' => '이미지를 업로드하지 못했습니다.']);
+    }
 }
