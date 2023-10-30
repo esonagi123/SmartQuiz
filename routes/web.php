@@ -54,6 +54,8 @@ Route::middleware(['app'])->group(function () {
         Route::get('/solve/{testID}/type{type}', [QuizCore::class, 'solve'])->name('quiz.solve');
         Route::post('/result/{testID}', [QuizCore::class, 'result'])->name('quiz.result');
         Route::get('/public', [QuizCore::class, 'publicQuizIndex'])->name('quiz.public');
+
+        Route::get('/search', [QuizCore::class, 'searchQuiz'])->name('quiz.search');
     });
     
     // 로그인 안하면 접근 불가 ↓

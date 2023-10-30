@@ -267,7 +267,7 @@
 
         tinymce.init({
             selector: '#largeInput' + {{ $question->number }},
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount autoresize',
             menubar: 'edit insert format table tools help',
             menu: {
                 file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
@@ -279,7 +279,40 @@
                 table: { title: 'Table', items: 'inserttable | cell row column | advtablesort | tableprops deletetable' },
                 help: { title: 'Help', items: 'help' }
             },
-            toolbar: 'fontsize bold italic underline strikethrough forecolor backcolor | table charmap | align lineheight | numlist bullist | emoticons | removeformat',
+            toolbar: 'fontsize image bold italic underline strikethrough forecolor backcolor table charmap align lineheight numlist bullist code removeformat',
+            file_picker_types: 'image',
+            file_picker_callback: function(cb, value, meta) {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+
+            input.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('questionID', {{ $question->id }}); // questionID
+                formData.append('fileSize', file.size);
+
+                formData.append('_token', csrfToken);
+
+                axios.post("{{ url('/upload') }}", formData)
+                    .then(function (response) {
+                        const imageUrl = response.data.image_url;
+                        cb(imageUrl, { title: file.name });
+                    })
+                    .catch(function (error) {
+                        console.error('이미지 업로드 에러:', error);
+                    });
+            });
+
+            input.click();
+            },
+            image_uploadtab: false,
+            image_advtab: true,
+            object_resizing: 'img',
+            autoresize_overflow_padding: 5,
+            autoresize_bottom_margin: 25,            
             tinycomments_mode: 'embedded',
             tinycomments_author: 'Author name',
             relative_urls: false,
@@ -288,7 +321,7 @@
                 { value: 'First.Name', title: 'First Name' },
                 { value: 'Email', title: 'Email' },
             ],
-            height: 250,
+            height: 350,
             language: 'ko_KR',
         });
 
@@ -628,7 +661,7 @@
 
             tinymce.init({
                 selector: `#largeInput${cardArray[i]}`,
-                plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount',
+                plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount autoresize',
                 menubar: 'edit insert format table tools help',
                 menu: {
                     file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
@@ -642,37 +675,38 @@
                 },
                 toolbar: 'fontsize image bold italic underline strikethrough forecolor backcolor table charmap align lineheight numlist bullist code removeformat',
                 file_picker_types: 'image',
-                file_picker_callback: (cb, value, meta) => {
-                    const input = document.createElement('input');
-                    input.setAttribute('type', 'file');
-                    input.setAttribute('accept', 'image/*');
+                file_picker_callback: function(cb, value, meta) {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
 
-                    input.addEventListener('change', (e) => {
+                input.addEventListener('change', function (e) {
                     const file = e.target.files[0];
 
-                    const reader = new FileReader();
-                    reader.addEventListener('load', () => {
-                        /*
-                        Note: Now we need to register the blob in TinyMCEs image blob
-                        registry. In the next release this part hopefully won't be
-                        necessary, as we are looking to handle it internally.
-                        */
-                        const id = 'blobid' + (new Date()).getTime();
-                        const blobCache =  tinymce.activeEditor.editorUpload.blobCache;
-                        const base64 = reader.result.split(',')[1];
-                        const blobInfo = blobCache.create(id, file, base64);
-                        blobCache.add(blobInfo);
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    formData.append('questionID', questionID); // questionID
+                    formData.append('fileSize', file.size);
 
-                        /* call the callback and populate the Title field with the file name */
-                        cb(blobInfo.blobUri(), { title: file.name });
-                    });
-                    reader.readAsDataURL(file);
-                    });
+                    formData.append('_token', csrfToken);
 
-                    input.click();
+                    axios.post("{{ url('/upload') }}", formData)
+                        .then(function (response) {
+                            const imageUrl = response.data.image_url;
+                            cb(imageUrl, { title: file.name });
+                        })
+                        .catch(function (error) {
+                            console.error('이미지 업로드 에러:', error);
+                        });
+                });
+
+                input.click();
                 },
                 image_uploadtab: false,
                 image_advtab: true,
+                object_resizing: 'img',
+                autoresize_overflow_padding: 5,
+                autoresize_bottom_margin: 25,                
                 tinycomments_mode: 'embedded',
                 tinycomments_author: 'Author name',
                 relative_urls: false,
@@ -681,7 +715,7 @@
                     { value: 'First.Name', title: 'First Name' },
                     { value: 'Email', title: 'Email' },
                 ],
-                height: 250,
+                height: 350,
                 language: 'ko_KR',
             });
             tinymce.get('largeInput' + cardArray[i]).setContent(editorContents[i]);
@@ -804,7 +838,7 @@
         // 동적으로 추가된 textarea에 대해 TinyMCE 초기화
         tinymce.init({
             selector: `#largeInput${cardCount}`,
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount autoresize',
             menubar: 'edit insert format table tools help',
             menu: {
                 file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
@@ -816,7 +850,40 @@
                 table: { title: 'Table', items: 'inserttable | cell row column | advtablesort | tableprops deletetable' },
                 help: { title: 'Help', items: 'help' }
             },
-            toolbar: 'fontsize bold italic underline strikethrough forecolor backcolor | table charmap | align lineheight | numlist bullist | emoticons | removeformat',
+            toolbar: 'fontsize image bold italic underline strikethrough forecolor backcolor table charmap align lineheight numlist bullist code removeformat',
+            file_picker_types: 'image',
+            file_picker_callback: function(cb, value, meta) {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+
+            input.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('questionID', questionID); // questionID
+                formData.append('fileSize', file.size);
+
+                formData.append('_token', csrfToken);
+
+                axios.post("{{ url('/upload') }}", formData)
+                    .then(function (response) {
+                        const imageUrl = response.data.image_url;
+                        cb(imageUrl, { title: file.name });
+                    })
+                    .catch(function (error) {
+                        console.error('이미지 업로드 에러:', error);
+                    });
+            });
+
+            input.click();
+            },
+            image_uploadtab: false,
+            image_advtab: true,
+            object_resizing: 'img',
+            autoresize_overflow_padding: 5,
+            autoresize_bottom_margin: 25,            
             tinycomments_mode: 'embedded',
             tinycomments_author: 'Author name',
             relative_urls: false,
@@ -825,7 +892,7 @@
                 { value: 'First.Name', title: 'First Name' },
                 { value: 'Email', title: 'Email' },
             ],
-            height: 250,
+            height: 350,
             language: 'ko_KR',
         });
 
@@ -930,34 +997,36 @@
         }
 
         for (var i = 1; i <= count; i++) {
-            var questionNum = cardArray[i-1];
+            var questionNum = cardArray[i - 1];
             var validationMessage = validateForm(questionNum);
+
             if (validationMessage) {
                 alert(validationMessage);
                 break;
-            } else {
-                // 폼 제출 전에 tinyMCE 내용을 업데이트
-                tinymce.get('largeInput' + cardArray[i-1]).save(); // 에디터의 내용을 textarea에 적용
-                
-                var formData = $("#question" + cardArray[i-1]).serialize();
-                var quizInfo = $("#quiz_info").serialize();
-                
-                $.ajax({
-                    headers: {'X-CSRF-TOKEN': csrfToken},
-                    url: "{{ url('quiz/updateQuestion') }}",
-                    type: "PATCH",
-                    data: formData + '&' + quizInfo,
-                    dataType: "json",
-                    success: function(data) {
-                        //alert("완료!");
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert("AJAX 오류: " + textStatus + " - " + errorThrown);
-                    }
-                });
-                
             }
 
+            if (i == count) {
+                // 유효성 검사가 통과한 경우에만 실행됨
+                for (var j = 1; j <= count; j++) {
+                    tinymce.get('largeInput' + cardArray[j - 1]).save();
+                    var formData = $("#question" + cardArray[j - 1]).serialize();
+                    var quizInfo = $("#quiz_info").serialize();
+
+                    $.ajax({
+                        headers: { 'X-CSRF-TOKEN': csrfToken },
+                        url: "{{ url('quiz/updateQuestion') }}",
+                        type: "PATCH",
+                        data: formData + '&' + quizInfo,
+                        dataType: "json",
+                        success: function (data) {
+                            // alert(j + "번 저장 완료");
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+                        }
+                    });
+                }
+            }
         }
         if (!validationMessage) {alert("저장 완료 💾");}
         

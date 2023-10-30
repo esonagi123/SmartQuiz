@@ -57,7 +57,6 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   </head>
-
 	@if (\Session::has('already_login'))
     <script>
       window.onload = function() {
@@ -240,19 +239,29 @@
 
             <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
               <!-- Search -->
-              <div class="navbar-nav align-items-center">
-                <div class="nav-item d-flex align-items-center">
-                  <i class="bx bx-search fs-4 lh-0"></i>
-                  <input
-                    type="text"
-                    class="form-control border-0 shadow-none"
-                    placeholder="공개 퀴즈 검색"
-                    aria-label="Search..."
-                  />
+              <form method="get" action="{{ route('quiz.search') }}" onsubmit="return validateForm()">
+                <div class="navbar-nav align-items-center">
+                  <div class="nav-item d-flex align-items-center">
+                    <i class="bx bx-search fs-4 lh-0"></i>
+                    @if (Request::is('quiz/search'))
+                    <input type="text" class="form-control border-0 shadow-none" name="value" value="{{ isset($value) ? $value : '' }}" id="searchInput" placeholder="공개 퀴즈 검색" aria-label="Search..."/>
+                    @else
+                    <input type="text" class="form-control border-0 shadow-none" name="value" value="" id="searchInput" placeholder="공개 퀴즈 검색" aria-label="Search..."/>
+                    @endif
+                  </div>
                 </div>
-              </div>
+              </form>
+              <script>
+                function validateForm() {
+                  var searchInput = document.getElementById('searchInput');
+                  if (searchInput.value.length < 2) {
+                    alert('검색어는 2글자 이상이어야 합니다.');
+                    return false; // 폼을 제출하지 않음
+                  }
+                  return true; // 폼을 제출
+                }
+              </script>              
               <!-- /Search -->
-
               <ul class="navbar-nav flex-row align-items-center ms-auto">
                 <!-- User -->
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
