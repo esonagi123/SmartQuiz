@@ -66,6 +66,27 @@ class QuizCore extends Controller
 
     }    
 
+    // 공개퀴즈 검색
+    public function searchQuiz(Request $request)
+    {
+        $value = $request->input('value');
+        if ($value) {
+            $quizs = Test::where('secret', 'N')
+                ->where('incomplete', 'N')
+                ->whereRaw("LOWER(name) LIKE '%" . strtolower($value) . "%'")
+                ->orderBy('updated_at', 'desc')
+                ->paginate(3);
+    
+            return view('quiz.searchQuiz', [
+                'quizs' => $quizs,
+                'value' => $value,
+            ]);
+        } else {
+            return redirect('quiz/public');
+        }
+    }
+    
+
     // 시험 풀기
     public function solve($testID, $type)
     {
