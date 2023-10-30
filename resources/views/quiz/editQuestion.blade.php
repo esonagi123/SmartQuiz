@@ -267,7 +267,7 @@
 
         tinymce.init({
             selector: '#largeInput' + {{ $question->number }},
-            plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount',
+            plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount autoresize',
             menubar: 'edit insert format table tools help',
             menu: {
                 file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
@@ -311,6 +311,8 @@
             image_uploadtab: false,
             image_advtab: true,
             object_resizing: 'img',
+            autoresize_overflow_padding: 5,
+            autoresize_bottom_margin: 25,            
             tinycomments_mode: 'embedded',
             tinycomments_author: 'Author name',
             relative_urls: false,
@@ -659,7 +661,7 @@
 
             tinymce.init({
                 selector: `#largeInput${cardArray[i]}`,
-                plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount',
+                plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount autoresize',
                 menubar: 'edit insert format table tools help',
                 menu: {
                     file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
@@ -703,6 +705,8 @@
                 image_uploadtab: false,
                 image_advtab: true,
                 object_resizing: 'img',
+                autoresize_overflow_padding: 5,
+                autoresize_bottom_margin: 25,                
                 tinycomments_mode: 'embedded',
                 tinycomments_author: 'Author name',
                 relative_urls: false,
@@ -834,7 +838,7 @@
         // 동적으로 추가된 textarea에 대해 TinyMCE 초기화
         tinymce.init({
             selector: `#largeInput${cardCount}`,
-            plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount',
+            plugins: 'anchor autolink charmap codesample emoticons code image link lists media searchreplace table visualblocks wordcount autoresize',
             menubar: 'edit insert format table tools help',
             menu: {
                 file: { title: 'File', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
@@ -878,6 +882,8 @@
             image_uploadtab: false,
             image_advtab: true,
             object_resizing: 'img',
+            autoresize_overflow_padding: 5,
+            autoresize_bottom_margin: 25,            
             tinycomments_mode: 'embedded',
             tinycomments_author: 'Author name',
             relative_urls: false,
@@ -991,34 +997,36 @@
         }
 
         for (var i = 1; i <= count; i++) {
-            var questionNum = cardArray[i-1];
+            var questionNum = cardArray[i - 1];
             var validationMessage = validateForm(questionNum);
+
             if (validationMessage) {
                 alert(validationMessage);
                 break;
-            } else {
-                // 폼 제출 전에 tinyMCE 내용을 업데이트
-                tinymce.get('largeInput' + cardArray[i-1]).save(); // 에디터의 내용을 textarea에 적용
-                
-                var formData = $("#question" + cardArray[i-1]).serialize();
-                var quizInfo = $("#quiz_info").serialize();
-                
-                $.ajax({
-                    headers: {'X-CSRF-TOKEN': csrfToken},
-                    url: "{{ url('quiz/updateQuestion') }}",
-                    type: "PATCH",
-                    data: formData + '&' + quizInfo,
-                    dataType: "json",
-                    success: function(data) {
-                        //alert("완료!");
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert("AJAX 오류: " + textStatus + " - " + errorThrown);
-                    }
-                });
-                
             }
 
+            if (i == count) {
+                // 유효성 검사가 통과한 경우에만 실행됨
+                for (var j = 1; j <= count; j++) {
+                    tinymce.get('largeInput' + cardArray[j - 1]).save();
+                    var formData = $("#question" + cardArray[j - 1]).serialize();
+                    var quizInfo = $("#quiz_info").serialize();
+
+                    $.ajax({
+                        headers: { 'X-CSRF-TOKEN': csrfToken },
+                        url: "{{ url('quiz/updateQuestion') }}",
+                        type: "PATCH",
+                        data: formData + '&' + quizInfo,
+                        dataType: "json",
+                        success: function (data) {
+                            // alert(j + "번 저장 완료");
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            alert("AJAX 오류: " + textStatus + " - " + errorThrown);
+                        }
+                    });
+                }
+            }
         }
         if (!validationMessage) {alert("저장 완료 💾");}
         
