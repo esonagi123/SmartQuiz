@@ -50,7 +50,7 @@
             <div class="modal-body text-center">
                 <div class="mb-4">
                     <p>이 퀴즈의 점수는..</p>
-                    @if ($score == 100)
+                    @if (!$wrongQuestions)
                         <h2><strong>🎉 {{ number_format($score, 0, '.', '') }}점! 🎉</strong></h2>
                         <h5>틀린 문제가 없어요 👏</h5>
                     @else
