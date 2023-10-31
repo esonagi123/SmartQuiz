@@ -223,9 +223,8 @@ class QuizCore extends Controller
         $maximumScore = 100;
         $score = 0;
         
-        $user = Auth::user();
         $test = Test::find($testID);
-        if ($test && $test->uid != $user->uid)
+        if ($test)
         {
             DB::table('tests')
             ->where('id', $test->id)
