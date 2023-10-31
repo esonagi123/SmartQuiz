@@ -34,7 +34,8 @@
                                 @else
                                     <a href="{{ url('quiz/solve/' . $myQuiz->id . "/type1") }}"><span style="font-size: 17px;">{{ $myQuiz->name }}</span></a><br>
                                 @endif
-                                조회: ?? &nbsp;&nbsp;|&nbsp;&nbsp;
+                                조회: {{ $myQuiz->viewCount }}&nbsp;&nbsp;|&nbsp;&nbsp;
+                                체점 수: {{ $myQuiz->solveCount }}&nbsp;&nbsp;|&nbsp;&nbsp;
                                 {{ $myQuiz->updated_at->diffForHumans() }} 업데이트
                                 <br>
                                 <div class="text-end">

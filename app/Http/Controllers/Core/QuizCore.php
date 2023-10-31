@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Session;
 
 use App\Models\User;
 use App\Models\Test;
@@ -35,7 +36,13 @@ class QuizCore extends Controller
             }
         }
 
-        $publicQuizs = Test::where('secret', 'N')->where('incomplete', 'N')->orderby('updated_at', 'desc')->get();
+        $publicQuizs = Test::leftjoin('users', 'tests.uid', '=', 'users.uid')
+        ->select('tests.*', 'users.nickname', 'users.avatar')
+        ->where('tests.secret', 'N')->where('tests.incomplete', 'N')
+        ->orderBy('updated_at', 'desc')
+        ->get();
+        
+        // $publicQuizs = Test::where('secret', 'N')->where('incomplete', 'N')->orderby('updated_at', 'desc')->get();
 
         return view('quiz.index', [
             'nickname'=> $nickname,
@@ -46,10 +53,16 @@ class QuizCore extends Controller
 
     public function publicQuizIndex()
     {
-        $quizs = Test::where('secret', 'N')->where('incomplete', 'N')->orderby('updated_at', 'desc')->paginate(3);
+        $publicQuizs = Test::leftjoin('users', 'tests.uid', '=', 'users.uid')
+        ->select('tests.*', 'users.nickname', 'users.avatar')
+        ->where('tests.secret', 'N')->where('tests.incomplete', 'N')
+        ->orderBy('updated_at', 'desc')
+        ->paginate(3);
+              
+        // $quizs = Test::where('secret', 'N')->where('incomplete', 'N')->orderby('updated_at', 'desc')->paginate(3);
 
         return view('quiz.publicQuiz', [
-            'quizs' => $quizs,
+            'quizs' => $publicQuizs,
         ]);
 
     }
@@ -71,11 +84,19 @@ class QuizCore extends Controller
     {
         $value = $request->input('value');
         if ($value) {
-            $quizs = Test::where('secret', 'N')
-                ->where('incomplete', 'N')
-                ->whereRaw("LOWER(name) LIKE '%" . strtolower($value) . "%'")
-                ->orderBy('updated_at', 'desc')
-                ->paginate(3);
+            
+            $quizs = Test::leftjoin('users', 'tests.uid', '=', 'users.uid')
+            ->select('tests.*', 'users.nickname', 'users.avatar')
+            ->where('tests.secret', 'N')->where('tests.incomplete', 'N')
+            ->whereRaw("LOWER(name) LIKE '%" . strtolower($value) . "%'")
+            ->orderBy('updated_at', 'desc')
+            ->paginate(3);
+
+            // $quizs = Test::where('secret', 'N')
+            //     ->where('incomplete', 'N')
+            //     ->whereRaw("LOWER(name) LIKE '%" . strtolower($value) . "%'")
+            //     ->orderBy('updated_at', 'desc')
+            //     ->paginate(3);
     
             return view('quiz.searchQuiz', [
                 'quizs' => $quizs,
@@ -90,9 +111,26 @@ class QuizCore extends Controller
     // 시험 풀기
     public function solve($testID, $type)
     {
+        $user = Auth::user();
+
         if ($type == "1") {
             // 1 = 일반 출제
             $testModel = Test::find($testID);
+
+            if ($testModel) {
+                $sessionKey = 'test_' . $testID;
+    
+                if (!Session::has($sessionKey)) {
+                    // 중복 카운트 방지를 위해 세션에 기록
+                    Session::put($sessionKey, true);
+    
+                    // 카운트 증가 (update_at 갱신을 막기 위해 SQL 쿼리로)
+                    DB::table('tests')
+                    ->where('id', $testModel->id)
+                    ->increment('viewCount', 1);
+                }
+            }
+
             $questions = Question::where('testID', $testID)->orderby('number', 'asc')->get();
             $questionCount = Question::where('testID', $testID)->count();
             
@@ -122,6 +160,21 @@ class QuizCore extends Controller
                 return redirect('quiz/solve/' . $testID . '/type1');
             } else {
                 $testModel = Test::find($testID);
+
+                if ($testModel) {
+                    $sessionKey = 'test_' . $testID;
+        
+                    if (!Session::has($sessionKey)) {
+                        // 중복 카운트 방지를 위해 세션에 기록
+                        Session::put($sessionKey, true);
+        
+                        // 카운트 증가 (update_at 갱신을 막기 위해 SQL 쿼리로)
+                        DB::table('tests')
+                        ->where('id', $testModel->id)
+                        ->increment('viewCount', 1);
+                    }
+                }
+
                 $questions = Question::where('testID', $testID)->inRandomOrder()->get();
                 $questionCount = Question::where('testID', $testID)->count();
                 
@@ -170,8 +223,15 @@ class QuizCore extends Controller
         $maximumScore = 100;
         $score = 0;
         
-
+        $user = Auth::user();
         $test = Test::find($testID);
+        if ($test && $test->uid != $user->uid)
+        {
+            DB::table('tests')
+            ->where('id', $test->id)
+            ->increment('solveCount', 1);
+        }
+
         $questions = Question::where('testID', $test->id)->orderby('number', 'asc')->get();
         $questionCount = Question::where('testID', $test->id)->count();
 
@@ -380,6 +440,8 @@ class QuizCore extends Controller
         $testModel->name = $request->input('name');
         $testModel->subject = $request->input('subject');
         $testModel->date = $serverTime;
+        $testModel->viewCount = 0;
+        $testModel->solveCount = 0;
         if ($request->input('secret') == 'Y') {
             $testModel->secret = $request->input('secret');
         } else {
